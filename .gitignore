@@ -69,3 +69,6 @@ MUJOCO_LOG.TXT
 
 /integrations/kinesthetic/data/
 /integrations/kinesthetic/results/
+
+# Local workspace documentation is not part of the published source release.
+/docs/

@@ -30,7 +30,7 @@ make smoke
 
 `make test` runs an explicit hardware-free suite covering expert contracts, recording transactions, task success gates, command ownership, and speed-limit configuration. `make smoke` loads the included MuJoCo scene, advances simulation, and validates the 16-axis observation. Neither target launches hardware nodes, opens CAN, or accesses cameras.
 
-The root `uv.lock` pins the CPU baseline. Optional LeRobot/ACT and camera profiles live in `requirements/`; they are not validated by the CPU quickstart. See [reproduction status](docs/REPRODUCIBILITY.md) before using other entry points. Running all historical tests requires additional fixtures and external workspaces.
+The root `uv.lock` pins the CPU baseline. Optional LeRobot/ACT and camera profiles live in `requirements/`; they are not validated by the CPU quickstart. Other entry points may require machine-specific paths, external workspaces, hardware configuration and additional fixtures. Running all historical tests is outside the validated CPU baseline.
 
 ## Components
 
@@ -50,10 +50,7 @@ The existing directory layout is preserved to retain relative imports and resour
 
 ## Reproduction and evidence
 
-- [Environment, commands, limitations and validation](docs/REPRODUCIBILITY.md)
-- [Upstream origins and local changes](docs/UPSTREAM_SOURCES.md)
-- [Publication contents and excluded artifacts](docs/RELEASE_CONTENTS.md)
-- [Historical experiment notes](MD/README.md)
+The commands above define the validated CPU baseline. See [historical experiment notes](MD/README.md) for prior experiments and [NOTICE](NOTICE.md) for upstream attribution.
 
 Historical notes describe different datasets, checkpoints, hardware configurations and success definitions. Their reported metrics are not fresh-clone benchmarks. Raw demonstrations, trained weights, runtime reports and control credentials are not distributed in this source release.
 
