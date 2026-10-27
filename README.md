@@ -50,9 +50,9 @@ The existing directory layout is preserved to retain relative imports and resour
 
 ## Reproduction and evidence
 
-The commands above define the validated CPU baseline. See [historical experiment notes](MD/README.md) for prior experiments and [NOTICE](NOTICE.md) for upstream attribution.
+The commands above define the validated CPU baseline. See [NOTICE](NOTICE.md) for upstream attribution.
 
-Historical notes describe different datasets, checkpoints, hardware configurations and success definitions. Their reported metrics are not fresh-clone benchmarks. Raw demonstrations, trained weights, runtime reports and control credentials are not distributed in this source release.
+Historical experiment notes, raw demonstrations, trained weights, runtime reports and control credentials are not distributed in this source release. Prior experiment metrics are not fresh-clone benchmarks.
 
 ## Real hardware
 

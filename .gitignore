@@ -72,3 +72,4 @@ MUJOCO_LOG.TXT
 
 # Local workspace documentation is not part of the published source release.
 /docs/
+/MD/
