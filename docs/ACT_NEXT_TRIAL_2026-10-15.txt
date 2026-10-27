@@ -1,0 +1,94 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+下一轮 ACT 实物测试：保留当前 ROS 保持力矩，由操作者手动执行
+
+适用状态：本次已经停止，ROS/backend 与 gateway 仍运行，双臂稳定；右夹爪仍空载且已打开。
+本流程不启动电机、不运行 H1、不重复零位起步的 H2、不关闭 ROS、不发送左臂运动目标。
+若姿态不稳定、手中夹有物体、控制器已关闭或重新上电，请停止本流程，不使用旧日志代替现场检查。
+
+本次审计后的限制：
+- task 模式仍是右J1-J8、最多60秒，原有3秒及HOME±0.04rad范围已经不适用。
+- HOME周围±0.07rad的128个假想角点改为诊断信息；真实起点和每一步实际路径碰撞检查仍强制执行。
+- J6运行跟踪容差0.04rad，依据封存ROS H2峰值0.038633rad；其余关节及夹爪0.03rad。
+- HOME实测、起始控制器目标及初始目标/反馈匹配仍要求0.03rad，不用扩大入口容差掩盖姿态变化。
+- 目标速度0.25rad/s，沿用ROS示教配置并与规范限位取交集；加速度0.25rad/s²，来自MoveIt 0.5×H2 0.5。
+- 反馈速度停止线0.50rad/s并受ROS限位及规划缩放约束。这是受限试验判据，不是电机额定能力。
+- CAN/ROS反馈100ms、动作观测500ms、控制周期看门狗100ms、独占租约和来源校验保留。
+- 原executor的动作块混合、Hermite、15Hz低通保留；网关不增加第二套滤波或限幅。
+- 夹爪示教端点[-0.35,-0.10]rad保留；接触引发0.03rad跟踪超限时仍停整轮。当前没有已验证的抓持力控制，不可据此声称已具备稳定抓取能力。
+- 模型原始预测不修改；执行层仍会改变节奏，实验报告须区分原始预测、executor输出、Guard目标和实际CAN反馈。
+
+终端1：现有 ROS 保持运行，不执行任何重启命令。
+终端2：现有 gateway 保持运行，不执行任何重启命令。
+操作者在现场，工作区无人员，物体与桌面布置匹配已有场景，急停可及。
+
+步骤1，终端3：
+source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+actctl stop
+actctl status
+
+预期：已停止，ROS保持。随后在终端5的旧Dora进程按 Ctrl+C，再在终端4的旧policy进程按 Ctrl+C。
+不要在终端1或2按Ctrl+C；不要用pkill。
+
+步骤2，终端3：
+actctl status
+
+仅当 pending=[]、hold_pending=[]、raw_active全部为空、drain_ready=true，且故障确认为上一次J6跟踪误差时执行：
+/usr/bin/python3 -m scripts.control_ownership.client reset-fault
+actctl status
+
+预期：state=idle、synchronized=true、drain_ready=true。reset-fault只清除已完成保持的故障锁存，不回HOME、不移动、不重新使能。
+如果已经idle，跳过reset-fault。若drain_ready=false或出现其他故障，不继续，也不要反复reset。
+
+步骤3，终端3，只规划，不执行：
+actctl plan-home 2>&1 | tee -a "$OWNERSHIP_RUN/return_home_plan_terminal.log"
+
+预期：HOME_PLAN_CHECKED、Plan saved。内部复用ROS H2规划器，右臂从新测得的当前姿态规划到原HOME，速度/加速度缩放均0.10；核对现有桌面、URDF、控制器、CAN状态及增益，并用MuJoCo检查与JTC一致的插值轨迹。不会重建或移动桌面对象，不会打开夹爪。
+查看本次实际轨迹检查结果：
+export HOME_RECOVERY_DIR="$(cat "$OWNERSHIP_RUN/return_home_current.path")"
+/usr/bin/python3 - "$HOME_RECOVERY_DIR/plan.json" <<'PY'
+import json,sys
+p=json.load(open(sys.argv[1]))
+print(json.dumps({k:p[k] for k in ('success','physical_motion_requested','start16','validation')},indent=2))
+PY
+
+应看到success=true、physical_motion_requested=false、left_commanded=false、gripper_commanded=false，以及非零collision_samples。
+这里是几何采样检查，不是动力学或连续碰撞安全证明；新规划轨迹仍需现场观察。
+
+步骤4，终端3，以下命令会实际移动右臂回HOME：
+actctl return-home 2>&1 | tee -a "$OWNERSHIP_RUN/return_home_execution_terminal.log"
+
+预期：ROS_RETURN_HOME_EXECUTING → ROS_RETURN_HOME_ACCEPTED → HOME_AND_HANDOFF_VERIFIED。
+它申请独占H2租约，只执行步骤3保存的同一条轨迹；执行前重查全机器人起点、保持目标与场景，变化超过ROS入口判据则拒绝、要求重新规划。成功后核验HOME与保持交接，不自动启动ACT。
+本轮回HOME过程中需要软件停止时，在这个正在执行return-home的终端按Ctrl+C：父租约连接撤销后由gateway接管保持。危险时直接物理急停；软件停止不是硬实时制动。
+不要用actctl stop停止回HOME，它只停止ACT桥接。
+
+步骤5，终端3，归档旧试验并生成新配置（不运动）：
+actctl next-trial --profile task
+
+预期：PREVIOUS_MOTION_ATTEMPT_ARCHIVED。旧原始预测、命令和停止原因完整保存，新配置采用审计后的判据。
+
+步骤6，终端4：
+source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+actctl policy 2>&1 | tee "$ACT_TRIAL_DIR/policy.log"
+
+等待策略服务Listening/就绪。终端5：
+source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+actctl dora 2>&1 | tee "$ACT_TRIAL_DIR/dora.log"
+
+步骤7，终端3：
+actctl ready
+
+必须看到READY: profile=task, maximum_duration_s=60.0。确认现场准备好后，手动启动：
+actctl start
+actctl status
+
+START requested只表示提出请求。status应显示started=true/stage=active，且没有result.json中的停止故障。最多60秒自动停止保持。
+观察到异常趋势、无进展或任务完成，终端3：
+actctl stop
+actctl status
+
+危险运动直接物理急停。停止后保留ROS/gateway运行，保存日志；不要直接再次START。ROS进程退出会取消保持力矩，只有双臂安全支撑且操作者准备停机时才关闭。
+
+软件验证结果见 results/act_manual_eg_coeyv/next_trial_restrictions_audit.json。
+新回HOME入口尚未经过这台实物执行验证；已完成离线测试、模拟接口流程和记录姿态的几何验证。真正现场规划、执行及ACT效果由上述手动流程验证。

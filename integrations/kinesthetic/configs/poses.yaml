@@ -1,0 +1,33 @@
+schema_version: 1
+coordinate_frame: openarm_joint_coordinates
+arm_dof: 7
+episode_home: right_task_ready
+motor_zero:
+  arm: [0, 0, 0, 0, 0, 0, 0]
+  status: hardware_encoder_definition
+  dataset_role: none
+left_park:
+  candidate_arm: [0, 0, 0, 0, 0, 0, 0]
+  status: provisional_simulation_collision_validated
+  validated: true
+  dataset_role: fixed_left_state_and_action
+right_task_ready:
+  initial_candidate_arm: [0, 0, 0, 1.57079632679, 0, 0, 0]
+  candidate_arm: [-0.76243272, 2.85588892, 0.20977818, 2.06466464, 1.40936607, 0.31656578, 0.37162189]
+  status: provisional_simulation_layout_selected
+  validated: true
+  dataset_role: episode_start_and_end
+initialization_trajectory:
+  from: motor_zero_current_sim_state
+  to: right_task_ready
+  included_in_training_data: false
+  collision_validated: true
+  status: provisional_simulation_validated
+  planner: collision_aware_sampled_waypoint
+  seed: 20260928
+  simulation_start_arm: [0, 0, 0, 0, 0, 0, 0]
+  waypoints:
+    - [0.1479140593, 1.4034167461, 0.2055539124, 2.1304755362, 1.5508, -0.2752601053, 0.4011662213]
+  motor_zero_direct_path_valid: null
+  motor_zero_failure: null
+  required_collision_objects: [table, black_box, pedestal, left_arm, right_arm]

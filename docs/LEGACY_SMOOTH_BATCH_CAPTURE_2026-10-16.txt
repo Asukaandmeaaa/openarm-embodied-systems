@@ -1,0 +1,58 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+旧专家轨迹平滑批次：2026-10-16
+
+当前12条新增实物轨迹采集已完成：12个episode，覆盖12个源trial，无缺失，均有回放完成、两路相机、关节观测、参考动作及close/open事件。都仍在pending_review，并未自动批准训练。
+B_CAPTURE_IGNORED stage=COMPLETE表示批次完成后不再接受新B，不是手柄失联。B_CAPTURE_BATCH_COMPLETE后需要退出旧按钮节点并选择新批次。
+
+旧轨迹来源共25条：本机旧编号集合13条，Nano导入12条。
+Nano原件存于openarm_kinesthetic_data/imports/nano_legacy_20261016/trajectories，12条均与历史episode的SHA256一致。
+使用与当前已实测平滑005相同处理器，原文件保持不变，抓取/释放/起终点姿态保持完全一致，按段平滑并重定时。
+生成23条候选，目录：
+/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections_legacy25_20261016_smooth_v1
+
+两条隔离（原始文件保留，未加入批量清单）：
+20261008_091326_008，原始J6最小-0.786793 rad。
+20261008_091627_012，原始J6最小-0.779545 rad。
+均超出当前MoveIt J6下界-0.7654 rad；没有剪裁关键姿态或放宽限位。
+
+23条离线验证通过：原件及候选哈希、原有轨迹协议、URDF位置界、现有加速度/jerk限制、关键姿态身份、位置消息构建、回放溯源、清单与目录一致。
+23条参考总时长836.387 s → 641.639 s；不含夹爪等待、启动和必要HOME末端修正。
+第一条20260928_151345_001：42.880 s → 33.410 s；释放后回程19.240 s → 9.770 s。
+导数界属于平滑参考曲线，运行时仍为位置点下发，实际动态需实测。现场路径检查及运行保护继续由播放器执行。
+旧轨迹保留旧抓放坐标；平滑没有做新桌面/物体布局的坐标变换，按对应旧示教摆位复位方块与盒子。
+
+切换批次：
+1. 旧批次B按钮终端按Ctrl+C，确认已退出。
+2. 记录器终端（终端6）按Ctrl+C退出已空闲的记录器，改用新输出目录重启。
+3. H1、仅手柄输入、两路相机保持运行；不重复H2。
+
+终端6：
+source /home/lushilin/openarm_vla_ws/scripts/legacy_smooth_capture_env.sh
+ros2 run openarm_kinesthetic_recorder real_episode_recorder \
+  --ros-args --params-file "$CFG" \
+  -p output_root:="$COLLECT_ROOT" \
+  -p require_episode_start_home:=true \
+  -p maximum_home_report_age_s:=7200.0
+7200沿用已有采集设置；过期时核对H1/H2报告，不增加参数绕过检查。
+
+终端2：
+cd /home/lushilin/openarm_vla_ws
+bash scripts/capture_legacy_smooth_batch.sh 1
+
+应看到source_trial_id=20260928_151345_001，(1/23)。
+每次看到B_CAPTURE_READY，先按该条摆位复位物体、夹爪空载张开、松开运动键，再短按B。
+保存后等待下一条B_CAPTURE_READY，再复位，再按B。
+不额外要求单独plan-only或空跑；validation_mode=inline如实保留未单独预演的元数据，实际播放器每条仍检查路径。
+故障停止当前批次，不自动跳过；失败数据保留作分析，不自动纳入成功训练数据。
+
+输出：
+$COLLECT_ROOT/episodes_pending_review/<新episode编号>/
+与当前完成的12条及旧36条数据目录分离，不覆盖。源trial及原始哈希随平滑溯源保存。
+续采：bash scripts/capture_legacy_smooth_batch.sh N；N为本批完整23条清单序号，不是源文件末尾的编号。
+查看顺序（不启动节点）：bash scripts/capture_legacy_smooth_batch.sh --list
+
+报告：
+新批次notes/processing_report.json、notes/offline_integration.json。
+当前12条采集核对：collections_real14_20261016_smooth_v1/notes/capture_batch_audit_20261016.json。
+本次只进行了离线生成/校验和文件准备，没有启动停止设备或执行物理运动。

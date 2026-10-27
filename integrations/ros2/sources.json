@@ -1,0 +1,14 @@
+[
+  {
+    "name": "openarm_ros2",
+    "url": "https://github.com/enactic/openarm_ros2.git",
+    "commit": "4e837e1d0dae692ff67b560b69d8d281d7a8d4ed",
+    "dirty": true
+  },
+  {
+    "name": "openarm_description",
+    "url": "https://github.com/enactic/openarm_description.git",
+    "commit": "6c7b720f1ba48e8bafa3a3dc752c45f397b42221",
+    "dirty": true
+  }
+]

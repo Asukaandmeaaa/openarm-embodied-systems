@@ -1,0 +1,10 @@
+# Right-arm CAN startup diagnostic. No policy, cameras, left arm, or HOME motion.
+# The arm enables and holds its measured starting pose until Dora exits.
+nodes:
+  - id: arm-right
+    build: pip install ./vendor/openarm_can/python -e nodes/dora-openarm
+    path: dora-openarm
+    args: --side right --startup-home /home/ubuntu/official_act_baseline/guarded-home-right.json --guard-hold-only --config /home/ubuntu/official_act_baseline/openarm_real_ros_coordinates.yaml
+    inputs:
+      request_position: dora/timer/millis/50
+    outputs: [position, status, home_status]

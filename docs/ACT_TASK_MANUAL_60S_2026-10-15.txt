@@ -1,0 +1,55 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+ACT 完整任务模式：右臂+右夹爪，最多60秒，全部物理操作由操作者执行
+
+本模式从已验证HOME开始，不自动回零/对齐，不启动或关闭电机。ROS是唯一CAN写入者，Dora通过独占租约网关发送右J1-J8。左臂由ROS保持。
+取消HOME附近±0.04rad限制；右臂命令仍受canonical ROS/URDF位置限位、0.25rad/s目标速度、0.25rad/s²加速度、0.50rad/s反馈停止线及逐步碰撞检查约束。夹爪沿用ROS示教端点[-0.35,-0.10]rad，保留0.03rad跟踪保护；接触导致跟踪超限时会停止整轮，不强行闭合、不修改力矩保护。
+模型权重/归一化/原始预测不变。原始预测、原executor滤波/混合输出、限幅后的网关目标、CAN命令和反馈分开记录。
+
+运行跟踪判据修正：任务模式仅右J6改为0.04rad，依据封存的成功ROS H2记录中J6峰值0.038633rad；其余关节和夹爪保持0.03rad。HOME/启动验收仍为0.03rad。这个经验判据不代表ACT动态响应已验证安全，也不会自动应用到旧进程或旧实验配置。新实验需重新生成配置。
+此次11:35试验在约1.44秒停止，143次下发均受速度/加减速约束，未发生位置目标裁剪。J6超出旧0.03rad判据触发停止；不能把本次结果当作未受执行约束的ACT性能。速度和加速度限制本次未修改。
+当前已运动的失败试验不能直接再次START；最新日志的J1/J2已超出HOME入口容差。下面的流程仅适用于已重新验证HOME和网关idle的情形，不能用synchronize-hold代替回HOME，也不能从任务中间姿态重复机械零位启动流程。
+
+前提：ROS终端1仍在运行、右臂稳定HOME、现场物体布置正确、无人进入工作区、操作者在急停旁。若断电或姿态改变，停止本流程，重新核实入口。终端4/5旧policy/Dora必须已退出；不要关闭ROS。
+
+终端2（gateway若已退出）：
+source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+actctl gateway 2>&1 | tee -a "$OWNERSHIP_RUN/gateway_terminal.log"
+
+终端3（同步发送当前控制器目标位置保持，不回HOME）：
+source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+/usr/bin/python3 -m scripts.control_ownership.client synchronize-hold
+actctl status
+
+必须看到state=idle、synchronized=true、drain_ready=true、supported_dora_scopes含right_arm_gripper。draining稍等再次查看；fault停止后续，不自动reset。
+
+终端3（只读预检并归档前次完整运动记录）：
+actctl next-trial --profile task
+
+终端4：
+source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+actctl policy 2>&1 | tee "$ACT_TRIAL_DIR/policy.log"
+
+等待Listening。终端5：
+source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+actctl dora 2>&1 | tee "$ACT_TRIAL_DIR/dora.log"
+
+终端3：
+actctl ready
+
+只有出现READY: profile=task, maximum_duration_s=60.0，且现场确认完毕，再单独执行：
+actctl start
+
+观察到任务完成、无进展、异常趋势或希望提前结束时：
+actctl stop
+actctl status
+
+危险运动直接物理急停。软件停止依赖通信，不是硬实时制动。60秒到时自动停止保持，reason=duration_limit_reached，不代表抓取成功。手动停止reason=operator_stop_file；故障停止保留原始原因。
+
+停止后保持ROS和gateway运行。记录实际任务成功/失败和肉眼观察；result.json里的task_success=null，不能仅凭执行到时认定任务成功。不要直接再次START；下一轮必须重新检查起始状态，结束位置通常已不是HOME。不要未经支撑关闭ROS。
+
+验证：软件单元/协议测试及60秒合成轨迹MuJoCo几何检查；理想跟踪仿真不能证明真实动力学、夹持接触或未来ACT预测动作的安全性。线上碰撞检查使用现有固定桌面/机器人模型，不是动态物体感知。
+验证报告：results/act_manual_eg_coeyv/task_profile_validation.json
+离线配置：results/act_manual_eg_coeyv/task_config_review.json
+
+最终测试结果：306项通过（Dora/ROS环境305项，真实policy环境另补测1项输出等价测试通过），无未处理的跳过项。60秒几何仿真6000周期、35998次碰撞姿态检查，无碰撞。

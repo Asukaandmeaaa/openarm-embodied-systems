@@ -1,0 +1,101 @@
+Trajectory / Action Interface - Frozen Decision
+================================================
+
+Date: 2026-09-04
+Status: FROZEN after G5.5.2 controlled replay
+Authority: official OpenArm executor source plus fixed-source counterfactual replay
+
+Decision
+--------
+
+Dataset and policy contract:
+
+  30 Hz observation.state + camera observations
+  30 Hz absolute joint-position action labels
+
+Deployment contract:
+
+  ACT 30 Hz position waypoints
+    -> official HermiteUpsampler (250 Hz target grid)
+    -> optional official BiquadLowpass (15 Hz)
+    -> direct MuJoCo / robot position target
+
+The dataset action is the safe target that was actually submitted during expert
+collection.  Do not precompute 250 Hz Hermite/Biquad outputs as ACT labels and do
+not synthesize a 60 Hz training dataset from the 30 Hz demonstrations.
+
+Evidence
+--------
+
+1. The same raw 30 Hz expert trajectory succeeds at every tested command
+   cadence (30, 40, 50, 60, 90, and 120 Hz) when the official interpolation
+   result is sent directly to position control.  There is no observed 60 Hz
+   minimum-cadence requirement.
+
+2. The 30 Hz, 3.3 s ACT-style chunk path succeeds for all five pilot episodes
+   with official Hermite + 15 Hz Biquad + direct control when a common 2 s
+   terminal hold is included.
+
+3. Reapplying the project ActionGuard to already-safe expert targets reduces
+   the five-episode result from 5/5 to 2/5.  The full cadence sweep is 12/12 for
+   direct control and 0/12 for the guarded counterfactual (seed 20260902).
+
+4. The old converter default applied a 1 Hz fourth-order filter while assuming
+   a 250 Hz input rate, even though the source is 30 Hz.  It altered labels by
+   up to 0.12155 rad and the converted trajectory failed strict replay.  The
+   no-smoothing conversion is pointwise identical to the raw sampler and passes
+   all five official-chain replays.
+
+Component responsibilities
+--------------------------
+
+HermiteUpsampler
+  Temporal interpolation from policy knots to the executor clock.  It does not
+  restore information absent from the 30 Hz demonstrations.
+
+BiquadLowpass
+  Optional deployment filter from the official executor.  It is compatible
+  with the expert trajectory, but its delay requires executing the final target
+  long enough to drain the filter.  It is not part of the training-label
+  construction.
+
+Position controller / data.ctrl
+  Consumes the interpolated (and optionally filtered) position target directly,
+  matching the official dora-openarm-mujoco path.
+
+Safety boundary
+---------------
+
+Retain checks for shape, finite values, actuator ctrlrange, freshness/watchdog,
+and emergency stop.  The current ActionGuard velocity/acceleration trajectory
+generator must not be placed after the official executor for these expert/ACT
+targets: that is a second trajectory parameterization and is not semantically
+transparent.  If a dynamic safety filter is required for hardware, design and
+validate it as a separate control contract against task-level replay; do not
+assume that low clamp counts prove equivalence.
+
+Training implications
+---------------------
+
+* Use data/lerobot/openarm_cube_pick_expert_pilot_v3_nosmoothing.
+* Keep dataset and ACT action cadence at 30 Hz.
+* Train on the unmodified 30 Hz action labels.
+* Interpret a 1000-step ACT run as a smoke test, not a trained task policy.
+* Require a one-episode memorization gate and then a multi-episode closed-loop
+  gate before expanding data or starting another policy family.
+
+Primary evidence
+----------------
+
+* results/g5_5_2_command_cadence_sweep/seed_20260902/summary.json
+* results/g5_5_2_lerobot_nosmoothing_replay/
+* results/openarm_expert/g5_5_2_lerobot_nosmoothing_validation.json
+* sim/validation/g5_5_2_command_cadence_sweep.py
+* official/dora-openarm-evaluation/nodes/dora-openarm-actions-executor/src/
+  dora_openarm_actions_executor/main.py
+
+Supersedes
+----------
+
+This file supersedes the earlier unvalidated proposal that named Biquad as the
+primary training-data smoother and prescribed 250 Hz filtered ACT targets.

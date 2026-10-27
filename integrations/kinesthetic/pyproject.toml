@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openarm-kinesthetic"
+version = "0.1.0"
+description = "Isolated OpenArm v2.0 right-arm kinesthetic digital-twin foundation"
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6", "numpy>=1.24"]
+
+[project.optional-dependencies]
+sim = ["mujoco>=3.2", "Pillow>=9"]
+test = ["pytest>=7", "mujoco>=3.2", "Pillow>=9"]
+
+[project.scripts]
+openarm-validate-configs = "openarm_kinesthetic.config:main"
+openarm-verify-manifests = "openarm_kinesthetic.manifest:main"
+openarm-mujoco-smoke = "openarm_kinesthetic.validation.mujoco_smoke:main"
+openarm-gate-a = "openarm_kinesthetic.validation.gate_a:main"
+openarm-layout-scan = "openarm_kinesthetic.planning.layout:main"
+openarm-initialization-plan = "openarm_kinesthetic.planning.initialization:main"
+openarm-ready-search = "openarm_kinesthetic.ready_search.__main__:main"
+openarm-gate-c = "openarm_kinesthetic.validation.gate_c:main"
+openarm-gate-d = "openarm_kinesthetic.validation.gate_d:main"
+openarm-gate-e = "openarm_kinesthetic.validation.gate_e:main"
+openarm-kinesthetic-session = "openarm_kinesthetic.teaching.session:main"
+openarm-gamepad-diagnostic = "openarm_kinesthetic.teaching.gamepad:main"
+openarm-gate-f = "openarm_kinesthetic.validation.gate_f:main"
+openarm-replay-human = "openarm_kinesthetic.replay.human_cli:main"
+openarm-wipe-table-sim = "openarm_kinesthetic.sim.wipe_table:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

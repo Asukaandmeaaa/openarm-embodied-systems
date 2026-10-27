@@ -1,0 +1,38 @@
+task: Pick up the orange cube with the right arm.
+physics_hz: 1000
+record_hz: 30
+episode_timeout_s: 45.0
+stabilize_s: 1.5
+pregrasp_offset_m: 0.07
+approach_step_m: 0.005
+lift_m: 0.065
+support_clearance_m: 0.008
+grasp_center_z_offset_m: 0.035
+aperture_preload_m: 0.002
+object_width_m: 0.040
+finger_contact_radius_m: 0.070
+reference_width_m: 0.040
+reference_right_gripper_rad: -0.10
+pregrasp_right_gripper_rad: -0.55
+approach_right_gripper_rad: -0.55
+hold_height_m: 0.05
+hold_s: 1.0
+tcp_distance_m: 0.075
+planning_timeout_s: 30.0
+ik_attempts: 10
+ik_reference_seed: [-0.84, 2.79, -0.48, 2.12, -0.44, -0.09, -0.17]
+ik_iterations: 250
+ik_position_tolerance_m: 0.0015
+ik_orientation_tolerance_rad: 0.02
+joint_margin_rad: 0.020
+transit_joint_step_rad: 0.04
+max_ik_branch_jump_rad: 0.35
+verify_contact_s: 0.20
+max_relative_drift_m: 0.025
+guard:
+  watchdog_timeout_s: 0.15
+  limit_policy: clip
+  # Temporarily 5x max_velocity to verify ACT policy direction is correct
+  max_velocity: [3.25, 3.25, 3.25, 3.25, 3.25, 2.50, 2.50, 1.25]
+  max_acceleration: [12.5, 12.5, 12.5, 12.5, 12.5, 10.0, 10.0, 4.0]
+  max_step: [0.015, 0.015, 0.015, 0.015, 0.015, 0.0125, 0.0125, 0.002]

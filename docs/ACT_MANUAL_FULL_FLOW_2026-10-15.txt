@@ -1,0 +1,133 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+ROS 后端 + Dora ACT：完整手动实验流程（2026-10-15）
+
+本轮目标：H1 -> 原 ROS H2 -> HOME 保持交接 -> Dora 观察 -> 最多3秒右臂ACT。
+这是受限实机调试，不是完整抓取成功率评估。仅右J1-J7执行ACT；夹爪保持H2
+打开后的参考，左臂由ROS保持。模型原始预测、原有chunk融合/滤波不改。
+
+本轮已准备目录：/home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv
+每个终端先执行同一个环境文件；它只设置环境，不开CAN或启用电机：
+
+  source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+
+共同条件（由操作者现场确认一次）：双臂在允许的机械零位附近且安全支撑；
+桌面、障碍物布局与已验证碰撞场景一致；人员退出运动范围；急停可用。
+在旧控制进程已退出、can0发送队列已清空的前提下，按既有流程恢复电机电源。
+如果有异常动作立即物理急停；不要等待CLI。
+
+终端1：H1，首次使能并执行双臂回零命令
+
+  source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+  actctl h1 2>&1 | tee "$OWNERSHIP_RUN/h1.log"
+
+H1内部自动做一次所有权、队列、双臂16电机地址/MIT模式参数查询；约7秒，
+不需额外手动probe。查询失败时在ROS启动/使能之前退出。不会自动复位CAN。
+通过后运行既有ROS H1及原增益/重力补偿。需要等待right arm、left arm、right
+ gripper控制器激活并且spawner全部正常退出。保留此终端运行。
+新的“Zero command sequence finished; actual arrival is NOT verified here”是
+诚实说明：命令循环结束不等于实机到位。下一步用真实CAN帧自动验收。
+
+终端2：唯一命令网关
+
+  source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+  actctl gateway 2>&1 | tee "$OWNERSHIP_RUN/gateway_terminal.log"
+
+保留运行。网关启动本身不触发HOME或使能。不要启动旧的Dora直连CAN图。
+
+终端3：H1反馈验收、原H2规划执行、HOME验收及交接测试（会运动）
+
+  source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+  actctl h2 2>&1 | tee "$OWNERSHIP_RUN/h2.log"
+
+此命令串行完成：
+- 等待条件必须已满足：H1所需控制器active、网关idle；否则拒绝。
+- 接收全16轴新鲜CAN反馈和实际MIT命令，检查故障/使能状态和静止。
+- H1起点使用现有H2配置maximum_start_from_zero_error_rad=0.06，
+  不把HOME终点0.03误用为起点门限；双臂机械零附近均需满足。
+- 同步已有控制参考，保留PD位置误差，不使用测量位置替换参考。
+- 用独占H2租约执行原两阶段ROS规划/碰撞检查和右夹爪打开。
+- HOME右J1-J8使用原0.03rad验收，再用真实CAN确认。
+- 自动执行1秒既有参考保持/竞争租约拒绝测试。
+预期最后输出 HOME_AND_HANDOFF_VERIFIED。任何一步失败，不会启动后面的步骤。
+失败后保持ROS（若物理稳定），检查报告；不自动重复H1/H2、不放宽门限。
+
+终端4：原ACT模型及原始预测记录服务（本身不控制电机）
+
+  source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+  actctl policy 2>&1 | tee "$ACT_TRIAL_DIR/policy.log"
+
+等待 Listening on ...。模型为之前使用的030000检查点；新建专用Unix socket。
+
+终端5：Dora相机、策略通信、原执行器、受保护ROS桥接
+
+  source /home/lushilin/openarm_vla_ws/results/act_manual_eg_coeyv/environment.sh
+  actctl dora 2>&1 | tee "$ACT_TRIAL_DIR/dora.log"
+
+此时只观察、推理和记录，不申请Dora运动租约。桥接检查当前HOME、URDF、
+控制器、ROS/CAN一致性、16轴新鲜反馈、相机/动作时间戳、关节及碰撞检查。
+
+回终端3：等待一次自动READY，然后显式开始ACT
+
+  actctl ready
+
+45秒内通过输出READY；失败说明原因，不写START。不要删除故障记录绕过。
+准备好观察且急停可用时，再执行：
+
+  actctl start
+
+该命令是明确的实机运动请求。最多3秒，只控制右臂7关节：
+- 以起点为中心最大命令偏移0.04rad；命令速度0.10rad/s、加速度0.25rad/s²。
+- 当前第二档（2026-10-15）：目标速度上限0.25rad/s，取ROS示教配置、已复核命令上限及有效反馈限值的最小值。反馈停止线逐轴 min(0.50rad/s, canonical ROS/URDF上限 × min(MoveIt默认速度缩放, 0.10))，本机均为0.50rad/s。历史H2的J1/J2/J5/J7峰值约0.319/0.385/0.300/0.315rad/s；默认10%缩放下最慢关节上限约0.545rad/s。以上依据用于选择下一档受限试验参数，不代表ACT动力学已验证、或反馈停机距离有保证。加速度0.25rad/s²、3秒、±0.04rad、跟踪/碰撞/新鲜度检查不变。小位移和加速度/制动约束可能使实际指令达不到0.25rad/s。
+- DM4340(J3/J4)实时解码已与ROS SDK统一为±8rad/s；原始帧和旧解码值仍记录。
+- 原始ACT预测不改；执行级裁剪、滤波、融合及实际CAN命令分别记录。
+正常完成或任一保护触发后停止推进目标，经网关保持；ROS不退出、不切断力矩。
+
+  actctl status
+
+结果在act/result.json。completed_three_second_trial表示完成受限3秒试运行；
+其他reason表示提前停止，不等于模型任务成功，也不应自动重试。
+
+停止方法
+- ACT期间：终端3执行 actctl stop。只请求停止ACT生产者，保留ROS和网关。
+- H2期间：终端3按Ctrl-C，保留终端1/2；网关尝试保持。actctl stop不取消H2。
+- 立即危险：物理急停，注意力矩可能丢失；安全后再支撑双臂。
+- 数据流/网关崩溃不等于急停：已接受ROS定时轨迹可能继续。
+- 普通结束：先确认目标停止、实际静止及网关状态；可停终端5/4，留终端1/2保持。
+- 完全关机：先支撑双臂，再停网关和ROS；退出ROS会执行电机停用。
+
+日志目录
+motor_startup.json：启用前参数通信证据。
+h1_actual_pose.json及.can.jsonl：H1真实到位/命令/反馈证据。
+h2_execution.json、home_actual_pose.json、home_hold_test.json：H2及交接证据。
+gateway.jsonl：首次网关的授权、租约、目标、保持。重启使用 gateway_restart_<时间>_<唯一标识>.jsonl，路径在终端以 GATEWAY_LOG 打印；旧日志保留。重启后必须先手动 synchronize-hold 并确认 idle / synchronized=true / drain_ready=true，再继续 ACT。
+act/policy_*.jsonl和observation_*.arrow：模型原始预测与输入。
+act/executor_*.jsonl：原执行器融合、滤波。
+act/bridge.jsonl及bridge_raw_can.jsonl：安全干预、最终目标与实发CAN/反馈。
+
+本轮未自动进行任何实机操作。软件预检和碰撞模型不能证明实际场景安全。
+传输恢复及驱动内部发送失败处理仍不是一个经认证的硬件急停机制。
+
+补充：START前初始化误停的恢复（2026-10-15）
+控制器查询已移到独立ROS执行器定时器；初始化碰撞模型不再阻断查询刷新。
+1秒状态过期保护保留。只有result.started=false且从未请求START/下发目标的
+失败，才能手动执行以下恢复；所有旧日志归档，不删除失败证据。
+先在终端5停Dora、终端4停策略服务，保持终端1 ROS和终端2网关运行。
+终端3执行 actctl retry-observation，然后终端4重新actctl policy，终端5重新
+actctl dora，最后终端3 actctl ready。新的ACT运动仍需显式actctl start。
+不需要重新执行H1/H2。恢复命令不操作电机、不清除已开始运动的实验记录。
+
+已发生运动的试验恢复（2026-10-15速度判据修复）
+- 不使用 retry-observation，不删除 start.request/result.json。
+- 保持终端1 ROS运行、机械臂稳定HOME；仅退出旧的Dora与policy。
+- 若gateway已退出，在终端2 source原environment.sh并执行 actctl gateway；不要启动第二个gateway。
+- 终端3手动执行 /usr/bin/python3 -m scripts.control_ownership.client synchronize-hold。该动作向ROS发送现有目标位置保持命令，不回零。
+- actctl status必须确认 idle、synchronized=true、drain_ready=true。故障时停下，不反复reset。
+- 执行 actctl next-trial：只读核对网关空闲，重做离线配置预检，将整套旧act目录归档为act_completed_attempt_*，生成新目录。不会自动获取控制权/复位故障/回HOME/START。
+- 终端4 actctl policy；监听后终端5 actctl dora。各终端先source原environment.sh。
+- 终端3 actctl ready，现场确认后显式 actctl start。3秒后 actctl status。异常或提前停止用 actctl stop，危险运动用物理急停。
+- 新桥接进程仍要求实时HOME、碰撞、反馈、增益及控制器独占检查通过。HOME不满足时不得放宽或自动对齐。
+- measured_speed_check记录每次速度检查的实测值、限值及超限关节；live_preflight.json和trial_config.json记录来源哈希。停止时Dora终端立即输出ACT_STOPPED。
+- 复核报告：results/act_manual_eg_coeyv/speed_contract_fix_report.json。历史碰撞检查不能证明未来三秒ACT动作安全。
+
+第二档速度复核报告：results/act_manual_eg_coeyv/speed_stage2_report.json；205项软件测试通过。旧实验报告保留原值；执行actctl next-trial重新生成新实验配置，重启policy/Dora后live_preflight.json才记录新速度契约。不可对已运行的桥接进程热修改阈值。

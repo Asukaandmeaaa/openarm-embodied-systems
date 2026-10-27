@@ -1,0 +1,369 @@
+diff --git a/assets/robot/openarm_v2.0/config/arm/joint/joint_limits.yaml b/assets/robot/openarm_v2.0/config/arm/joint/joint_limits.yaml
+index fba7971..5e5271e 100644
+--- a/assets/robot/openarm_v2.0/config/arm/joint/joint_limits.yaml
++++ b/assets/robot/openarm_v2.0/config/arm/joint/joint_limits.yaml
+@@ -30,9 +30,13 @@ joint3:
+     upper: 1.5708
+     effort: 27
+     velocity: 5.4454
++# joint4 lower bound relaxed from 0 to -0.02 rad: the physical arm can
++# rest slightly below 0 (e.g. -0.005 rad) due to encoder zero/assembly
++# offset, which made MTC abort with "start state out of bounds" on every run.
++# -0.02 rad stays well inside the mechanical limit.
+ joint4:
+   limit:
+-    lower: 0
++    lower: -0.02
+     upper: 2.4435
+     effort: 27
+     velocity: 5.4454
+diff --git a/assets/robot/openarm_v2.0/urdf/openarm_v20.urdf.xacro b/assets/robot/openarm_v2.0/urdf/openarm_v20.urdf.xacro
+index 53fcd40..1f1f4ff 100644
+--- a/assets/robot/openarm_v2.0/urdf/openarm_v20.urdf.xacro
++++ b/assets/robot/openarm_v2.0/urdf/openarm_v20.urdf.xacro
+@@ -23,6 +23,30 @@ limitations under the License.
+   <xacro:arg name="emit_grasp_frame" default="false" />
+ 
+   <xacro:arg name="use_fake_hardware" default="true" />
++  <xacro:arg name="use_sim_hardware" default="false" />
++  <xacro:arg name="gravity_compensation" default="false" />
++  <xacro:arg name="gravity_scale" default="1.0" />
++  <xacro:arg name="gravity_urdf_path" default="" />
++
++  <xacro:arg name="gripper_contact_mode" default="disabled" />
++  <xacro:arg name="gripper_torque_threshold" default="0.0" />
++  <xacro:arg name="gripper_torque_release_threshold" default="0.0" />
++  <xacro:arg name="gripper_hard_torque_limit" default="0.0" />
++  <xacro:arg name="gripper_kp" default="5.0" />
++  <xacro:arg name="gripper_kd" default="0.1" />
++  <xacro:arg name="gripper_torque_filter_alpha" default="0.2" />
++  <xacro:arg name="gripper_contact_confirm_cycles" default="5" />
++  <xacro:arg name="gripper_hold_kp_scale" default="1.0" />
++  <xacro:arg name="gripper_hold_kd_scale" default="1.0" />
++  <xacro:arg name="gripper_hold_position_offset" default="0.0" />
++  <xacro:arg name="gripper_close_timeout" default="3.0" />
++  <xacro:arg name="gripper_position_reached_tolerance" default="0.005" />
++  <xacro:arg name="gripper_contact_log_rate" default="10.0" />
++  <xacro:arg name="sim_arm_follow_tau" default="0.02" />
++  <xacro:arg name="sim_gripper_follow_tau" default="0.02" />
++  <xacro:arg name="sim_gripper_kp" default="5.0" />
++  <xacro:arg name="sim_gripper_block" default="false" />
++  <xacro:arg name="sim_gripper_block_position" default="-0.20" />
+ 
+   <xacro:property name="robot_root" value="$(find openarm_description)/assets/robot/openarm_v2.0" />
+   <xacro:property name="config_root" value="${robot_root + '/config'}" />
+@@ -44,10 +68,33 @@ limitations under the License.
+     arm_type="v20"
+     control_gains="${gains_dict}"
+     use_fake_hardware="$(arg use_fake_hardware)"
++    use_sim_hardware="$(arg use_sim_hardware)"
+     ee_type="pinch_gripper"
+     left_arm_prefix="left_"
+     right_arm_prefix="right_"
+     left_finger_mimic_multiplier="${pinch_finger_mimic_multiplier}"
+-    right_finger_mimic_multiplier="${pinch_finger_mimic_multiplier}" />
++    right_finger_mimic_multiplier="${pinch_finger_mimic_multiplier}"
++    gravity_compensation="$(arg gravity_compensation)"
++    gravity_scale="$(arg gravity_scale)"
++    gravity_urdf_path="$(arg gravity_urdf_path)"
++    gripper_contact_mode="$(arg gripper_contact_mode)"
++    gripper_torque_threshold="$(arg gripper_torque_threshold)"
++    gripper_torque_release_threshold="$(arg gripper_torque_release_threshold)"
++    gripper_hard_torque_limit="$(arg gripper_hard_torque_limit)"
++    gripper_kp="$(arg gripper_kp)"
++    gripper_kd="$(arg gripper_kd)"
++    gripper_torque_filter_alpha="$(arg gripper_torque_filter_alpha)"
++    gripper_contact_confirm_cycles="$(arg gripper_contact_confirm_cycles)"
++    gripper_hold_kp_scale="$(arg gripper_hold_kp_scale)"
++    gripper_hold_kd_scale="$(arg gripper_hold_kd_scale)"
++    gripper_hold_position_offset="$(arg gripper_hold_position_offset)"
++    gripper_close_timeout="$(arg gripper_close_timeout)"
++    gripper_position_reached_tolerance="$(arg gripper_position_reached_tolerance)"
++    gripper_contact_log_rate="$(arg gripper_contact_log_rate)"
++    sim_arm_follow_tau="$(arg sim_arm_follow_tau)"
++    sim_gripper_follow_tau="$(arg sim_gripper_follow_tau)"
++    sim_gripper_kp="$(arg sim_gripper_kp)"
++    sim_gripper_block="$(arg sim_gripper_block)"
++    sim_gripper_block_position="$(arg sim_gripper_block_position)" />
+ 
+ </robot>
+diff --git a/assets/robot/openarm_v2.0/urdf/ros2_control/openarm.bimanual.ros2_control.xacro b/assets/robot/openarm_v2.0/urdf/ros2_control/openarm.bimanual.ros2_control.xacro
+index e7b25ad..3291870 100644
+--- a/assets/robot/openarm_v2.0/urdf/ros2_control/openarm.bimanual.ros2_control.xacro
++++ b/assets/robot/openarm_v2.0/urdf/ros2_control/openarm.bimanual.ros2_control.xacro
+@@ -20,44 +20,164 @@ limitations under the License.
+              left_can_interface:=^|can1
+              right_can_interface:=^|can0
+              use_fake_hardware:=^|false
++             use_sim_hardware:=^|false
+              fake_sensor_commands:=^|false
+              ee_type:=^|pinch_gripper
+              left_arm_prefix:=^|left_
+              right_arm_prefix:=^|right_
+              left_finger_mimic_multiplier:=^|1.0
+              right_finger_mimic_multiplier:=^|1.0
+-             can_fd:=^|true">
++             can_fd:=^|true
++             gravity_compensation:=^|false
++             gravity_scale:=^|1.0
++             gravity_urdf_path:=^|
++             gripper_contact_mode:=^|disabled
++             gripper_torque_threshold:=^|0.0
++             gripper_torque_release_threshold:=^|0.0
++             gripper_hard_torque_limit:=^|0.0
++             gripper_kp:=^|5.0
++             gripper_kd:=^|0.1
++             gripper_torque_filter_alpha:=^|0.2
++             gripper_contact_confirm_cycles:=^|5
++             gripper_hold_kp_scale:=^|1.0
++             gripper_hold_kd_scale:=^|1.0
++             gripper_hold_position_offset:=^|0.0
++             gripper_close_timeout:=^|3.0
++             gripper_position_reached_tolerance:=^|0.005
++             gripper_contact_log_rate:=^|10.0
++             sim_arm_follow_tau:=^|0.02
++             sim_gripper_follow_tau:=^|0.02
++             sim_gripper_kp:=^|5.0
++             sim_gripper_block:=^|false
++             sim_gripper_block_position:=^|-0.20">
++
++  <!-- Emits the <hardware> block for one arm, choosing the plugin:
++       OpenArmSimHW (contact simulation) / GenericSystem (mock) / OpenArmHW
++       (real CAN). Contact detection parameters apply to the sim and the real
++       plugin alike; they are all optional and default to disabled so existing
++       behavior is unchanged. -->
++  <xacro:macro name="openarm_hardware_block"
++    params="use_sim_hardware use_fake_hardware fake_sensor_commands
++            can_interface arm_prefix can_fd ee_type
++            gravity_compensation gravity_scale gravity_urdf_path
++            gravity_base_link gravity_tip_link
++            gripper_contact_mode gripper_torque_threshold
++            gripper_torque_release_threshold gripper_hard_torque_limit
++            gripper_kp gripper_kd
++            gripper_torque_filter_alpha gripper_contact_confirm_cycles
++            gripper_hold_kp_scale gripper_hold_kd_scale
++            gripper_hold_position_offset gripper_close_timeout
++            gripper_position_reached_tolerance gripper_contact_log_rate
++            sim_arm_follow_tau sim_gripper_follow_tau sim_gripper_kp
++            sim_gripper_block sim_gripper_block_position">
++    <hardware>
++      <param name="arm_type">${arm_type}</param>
++      <xacro:if value="${use_sim_hardware}">
++        <plugin>openarm_hardware/OpenArmSimHW</plugin>
++        <param name="arm_prefix">${arm_prefix}</param>
++        <param name="ee_type">${ee_type}</param>
++        <param name="hand">true</param>
++        <param name="sim_arm_follow_tau">${sim_arm_follow_tau}</param>
++        <param name="sim_gripper_follow_tau">${sim_gripper_follow_tau}</param>
++        <param name="sim_gripper_kp">${sim_gripper_kp}</param>
++        <param name="sim_gripper_block">${sim_gripper_block}</param>
++        <param name="sim_gripper_block_position">${sim_gripper_block_position}</param>
++        <param name="gripper_contact_mode">${gripper_contact_mode}</param>
++        <param name="gripper_torque_threshold">${gripper_torque_threshold}</param>
++        <param name="gripper_torque_release_threshold">${gripper_torque_release_threshold}</param>
++        <param name="gripper_hard_torque_limit">${gripper_hard_torque_limit}</param>
++        <param name="gripper_torque_filter_alpha">${gripper_torque_filter_alpha}</param>
++        <param name="gripper_contact_confirm_cycles">${gripper_contact_confirm_cycles}</param>
++        <param name="gripper_hold_kp_scale">${gripper_hold_kp_scale}</param>
++        <param name="gripper_hold_kd_scale">${gripper_hold_kd_scale}</param>
++        <param name="gripper_hold_position_offset">${gripper_hold_position_offset}</param>
++        <param name="gripper_close_timeout">${gripper_close_timeout}</param>
++        <param name="gripper_position_reached_tolerance">${gripper_position_reached_tolerance}</param>
++        <param name="gripper_contact_log_rate">${gripper_contact_log_rate}</param>
++      </xacro:if>
++      <xacro:unless value="${use_sim_hardware}">
++        <xacro:if value="${use_fake_hardware}">
++          <plugin>mock_components/GenericSystem</plugin>
++          <param name="fake_sensor_commands">${fake_sensor_commands}</param>
++          <param name="state_following_offset">0.0</param>
++        </xacro:if>
++        <xacro:unless value="${use_fake_hardware}">
++          <plugin>openarm_hardware/OpenArmHW</plugin>
++          <param name="can_interface">${can_interface}</param>
++          <param name="arm_prefix">${arm_prefix}</param>
++          <param name="can_fd">${can_fd}</param>
++          <param name="ee_type">${ee_type}</param>
++          <param name="gravity_compensation">${gravity_compensation}</param>
++          <param name="gravity_scale">${gravity_scale}</param>
++          <param name="gravity_urdf_path">${gravity_urdf_path}</param>
++          <param name="gravity_base_link">${gravity_base_link}</param>
++          <param name="gravity_tip_link">${gravity_tip_link}</param>
++          <param name="kp1">${control_gains['joint1']['kp']}</param>
++          <param name="kp2">${control_gains['joint2']['kp']}</param>
++          <param name="kp3">${control_gains['joint3']['kp']}</param>
++          <param name="kp4">${control_gains['joint4']['kp']}</param>
++          <param name="kp5">${control_gains['joint5']['kp']}</param>
++          <param name="kp6">${control_gains['joint6']['kp']}</param>
++          <param name="kp7">${control_gains['joint7']['kp']}</param>
++          <param name="kd1">${control_gains['joint1']['kd']}</param>
++          <param name="kd2">${control_gains['joint2']['kd']}</param>
++          <param name="kd3">${control_gains['joint3']['kd']}</param>
++          <param name="kd4">${control_gains['joint4']['kd']}</param>
++          <param name="kd5">${control_gains['joint5']['kd']}</param>
++          <param name="kd6">${control_gains['joint6']['kd']}</param>
++          <param name="kd7">${control_gains['joint7']['kd']}</param>
++          <param name="kp_hand">${gripper_kp}</param>
++          <param name="kd_hand">${gripper_kd}</param>
++          <param name="gripper_contact_mode">${gripper_contact_mode}</param>
++          <param name="gripper_torque_threshold">${gripper_torque_threshold}</param>
++          <param name="gripper_torque_release_threshold">${gripper_torque_release_threshold}</param>
++          <param name="gripper_hard_torque_limit">${gripper_hard_torque_limit}</param>
++          <param name="gripper_torque_filter_alpha">${gripper_torque_filter_alpha}</param>
++          <param name="gripper_contact_confirm_cycles">${gripper_contact_confirm_cycles}</param>
++          <param name="gripper_hold_kp_scale">${gripper_hold_kp_scale}</param>
++          <param name="gripper_hold_kd_scale">${gripper_hold_kd_scale}</param>
++          <param name="gripper_hold_position_offset">${gripper_hold_position_offset}</param>
++          <param name="gripper_close_timeout">${gripper_close_timeout}</param>
++          <param name="gripper_position_reached_tolerance">${gripper_position_reached_tolerance}</param>
++          <param name="gripper_contact_log_rate">${gripper_contact_log_rate}</param>
++        </xacro:unless>
++      </xacro:unless>
++    </hardware>
++  </xacro:macro>
+ 
+     <ros2_control name="openarm_left_hardware_interface" type="system">
+-        <hardware>
+-          <param name="arm_type">${arm_type}</param>
+-          <xacro:if value="${use_fake_hardware}">
+-            <plugin>mock_components/GenericSystem</plugin>
+-            <param name="fake_sensor_commands">${fake_sensor_commands}</param>
+-            <param name="state_following_offset">0.0</param>
+-          </xacro:if>
+-          <xacro:unless value="${use_fake_hardware}">
+-            <plugin>openarm_hardware/OpenArmHW</plugin>
+-            <param name="can_interface">${left_can_interface}</param>
+-            <param name="arm_prefix">${left_arm_prefix}</param>
+-            <param name="can_fd">${can_fd}</param>
+-            <param name="ee_type">${ee_type}</param>
+-            <param name="kp1">${control_gains['joint1']['kp']}</param>
+-            <param name="kp2">${control_gains['joint2']['kp']}</param>
+-            <param name="kp3">${control_gains['joint3']['kp']}</param>
+-            <param name="kp4">${control_gains['joint4']['kp']}</param>
+-            <param name="kp5">${control_gains['joint5']['kp']}</param>
+-            <param name="kp6">${control_gains['joint6']['kp']}</param>
+-            <param name="kp7">${control_gains['joint7']['kp']}</param>
+-            <param name="kd1">${control_gains['joint1']['kd']}</param>
+-            <param name="kd2">${control_gains['joint2']['kd']}</param>
+-            <param name="kd3">${control_gains['joint3']['kd']}</param>
+-            <param name="kd4">${control_gains['joint4']['kd']}</param>
+-            <param name="kd5">${control_gains['joint5']['kd']}</param>
+-            <param name="kd6">${control_gains['joint6']['kd']}</param>
+-            <param name="kd7">${control_gains['joint7']['kd']}</param>
+-          </xacro:unless>
+-        </hardware>
++        <xacro:openarm_hardware_block
++            use_sim_hardware="${use_sim_hardware}"
++            use_fake_hardware="${use_fake_hardware}"
++            fake_sensor_commands="${fake_sensor_commands}"
++            can_interface="${left_can_interface}"
++            arm_prefix="${left_arm_prefix}"
++            can_fd="${can_fd}"
++            ee_type="${ee_type}"
++            gravity_compensation="${gravity_compensation}"
++            gravity_scale="${gravity_scale}"
++            gravity_urdf_path="${gravity_urdf_path}"
++            gravity_base_link="openarm_${left_arm_prefix}base_link"
++            gravity_tip_link="openarm_${left_arm_prefix}ee_base_link"
++            gripper_contact_mode="${gripper_contact_mode}"
++            gripper_torque_threshold="${gripper_torque_threshold}"
++            gripper_torque_release_threshold="${gripper_torque_release_threshold}"
++            gripper_hard_torque_limit="${gripper_hard_torque_limit}"
++            gripper_kp="${gripper_kp}"
++            gripper_kd="${gripper_kd}"
++            gripper_torque_filter_alpha="${gripper_torque_filter_alpha}"
++            gripper_contact_confirm_cycles="${gripper_contact_confirm_cycles}"
++            gripper_hold_kp_scale="${gripper_hold_kp_scale}"
++            gripper_hold_kd_scale="${gripper_hold_kd_scale}"
++            gripper_hold_position_offset="${gripper_hold_position_offset}"
++            gripper_close_timeout="${gripper_close_timeout}"
++            gripper_position_reached_tolerance="${gripper_position_reached_tolerance}"
++            gripper_contact_log_rate="${gripper_contact_log_rate}"
++            sim_arm_follow_tau="${sim_arm_follow_tau}"
++            sim_gripper_follow_tau="${sim_gripper_follow_tau}"
++            sim_gripper_kp="${sim_gripper_kp}"
++            sim_gripper_block="${sim_gripper_block}"
++            sim_gripper_block_position="${sim_gripper_block_position}" />
+ 
+       <xacro:macro name="configure_joint" params="joint_name initial_position">
+         <joint name="${joint_name}">
+@@ -101,35 +221,38 @@ limitations under the License.
+     </ros2_control>
+ 
+     <ros2_control name="openarm_right_hardware_interface" type="system">
+-        <hardware>
+-          <param name="arm_type">${arm_type}</param>
+-          <xacro:if value="${use_fake_hardware}">
+-            <plugin>mock_components/GenericSystem</plugin>
+-            <param name="fake_sensor_commands">${fake_sensor_commands}</param>
+-            <param name="state_following_offset">0.0</param>
+-          </xacro:if>
+-          <xacro:unless value="${use_fake_hardware}">
+-            <plugin>openarm_hardware/OpenArmHW</plugin>
+-            <param name="can_interface">${right_can_interface}</param>
+-            <param name="arm_prefix">${right_arm_prefix}</param>
+-            <param name="can_fd">${can_fd}</param>
+-            <param name="ee_type">${ee_type}</param>
+-            <param name="kp1">${control_gains['joint1']['kp']}</param>
+-            <param name="kp2">${control_gains['joint2']['kp']}</param>
+-            <param name="kp3">${control_gains['joint3']['kp']}</param>
+-            <param name="kp4">${control_gains['joint4']['kp']}</param>
+-            <param name="kp5">${control_gains['joint5']['kp']}</param>
+-            <param name="kp6">${control_gains['joint6']['kp']}</param>
+-            <param name="kp7">${control_gains['joint7']['kp']}</param>
+-            <param name="kd1">${control_gains['joint1']['kd']}</param>
+-            <param name="kd2">${control_gains['joint2']['kd']}</param>
+-            <param name="kd3">${control_gains['joint3']['kd']}</param>
+-            <param name="kd4">${control_gains['joint4']['kd']}</param>
+-            <param name="kd5">${control_gains['joint5']['kd']}</param>
+-            <param name="kd6">${control_gains['joint6']['kd']}</param>
+-            <param name="kd7">${control_gains['joint7']['kd']}</param>
+-          </xacro:unless>
+-        </hardware>
++        <xacro:openarm_hardware_block
++            use_sim_hardware="${use_sim_hardware}"
++            use_fake_hardware="${use_fake_hardware}"
++            fake_sensor_commands="${fake_sensor_commands}"
++            can_interface="${right_can_interface}"
++            arm_prefix="${right_arm_prefix}"
++            can_fd="${can_fd}"
++            ee_type="${ee_type}"
++            gravity_compensation="${gravity_compensation}"
++            gravity_scale="${gravity_scale}"
++            gravity_urdf_path="${gravity_urdf_path}"
++            gravity_base_link="openarm_${right_arm_prefix}base_link"
++            gravity_tip_link="openarm_${right_arm_prefix}ee_base_link"
++            gripper_contact_mode="${gripper_contact_mode}"
++            gripper_torque_threshold="${gripper_torque_threshold}"
++            gripper_torque_release_threshold="${gripper_torque_release_threshold}"
++            gripper_hard_torque_limit="${gripper_hard_torque_limit}"
++            gripper_kp="${gripper_kp}"
++            gripper_kd="${gripper_kd}"
++            gripper_torque_filter_alpha="${gripper_torque_filter_alpha}"
++            gripper_contact_confirm_cycles="${gripper_contact_confirm_cycles}"
++            gripper_hold_kp_scale="${gripper_hold_kp_scale}"
++            gripper_hold_kd_scale="${gripper_hold_kd_scale}"
++            gripper_hold_position_offset="${gripper_hold_position_offset}"
++            gripper_close_timeout="${gripper_close_timeout}"
++            gripper_position_reached_tolerance="${gripper_position_reached_tolerance}"
++            gripper_contact_log_rate="${gripper_contact_log_rate}"
++            sim_arm_follow_tau="${sim_arm_follow_tau}"
++            sim_gripper_follow_tau="${sim_gripper_follow_tau}"
++            sim_gripper_kp="${sim_gripper_kp}"
++            sim_gripper_block="${sim_gripper_block}"
++            sim_gripper_block_position="${sim_gripper_block_position}" />
+ 
+       <xacro:configure_joint joint_name="openarm_${right_arm_prefix}joint1" initial_position="0.0"/>
+       <xacro:configure_joint joint_name="openarm_${right_arm_prefix}joint2" initial_position="0.0"/>
+diff --git a/rviz/bimanual.rviz b/rviz/bimanual.rviz
+index e58c036..9a3864d 100644
+--- a/rviz/bimanual.rviz
++++ b/rviz/bimanual.rviz
+@@ -195,7 +195,7 @@ Visualization Manager:
+       Value: true
+       Visual Enabled: true
+     - Class: rviz_default_plugins/TF
+-      Enabled: true
++      Enabled: false
+       Frame Timeout: 15
+       Frames:
+         All Enabled: true

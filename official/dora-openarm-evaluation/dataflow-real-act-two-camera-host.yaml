@@ -1,0 +1,162 @@
+# DIRECT-CAN ROUTE: startup/HOME and live handoff remain unvalidated (2026-10-15).
+# Do not use this graph for the attended ROS-backed ACT trial. Use
+# dataflow-act-trial-ros-host.yaml while ROS retains exclusive motor ownership.
+# Workstation physical graph. Historical checks are in docs/ACT_DORA_SOFTWARE_HANDOFF_2026-10-13.md.
+# This graph owns CAN and enables motors during guarded startup; never run it with ROS controllers.
+# OpenArm real ACT baseline for the local 16D, two-camera checkpoint.
+# Run only when the ROS hardware controllers are stopped: dora-openarm owns CAN.
+# Check the two CAPTURE_PATH values and the OpenArm driver configuration on this host.
+# The right-arm node owns the complete session: it performs its own HOME,
+# remains enabled while cameras and policy become ready, and accepts START only
+# after HOME_READY. Do not run a separate HOME process before this graph.
+nodes:
+  - id: evaluation-ui
+    build: pip install -e nodes/dora-openarm-evaluation-ui
+    path: dora-openarm-evaluation-ui
+    env:
+      DATASET_DIR: /dev/shm/openarm_official_act_run
+      METADATA_FILE: real-act-two-camera-metadata.yaml
+      CHECKPOINT_PATH: ./outputs/act_real_combined_unreviewed_30000_20261008/checkpoints/030000/pretrained_model
+      AUTO_OPEN: "no"
+      PORT: "8001"
+      REQUIRE_HOME: "yes"
+    inputs:
+      tick: dora/timer/secs/1
+      arm_status_right: arm-right/status
+      home_status_right: arm-right/home_status
+      arm_status_left: arm-left/status
+      camera_wrist_right: camera-wrist-right/image
+      camera_ceiling: camera-ceiling/image
+    outputs:
+      - arm_command
+      - task_prompt
+
+  - id: tick-arm
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: evaluation-ui/arm_command
+      # Nominal 100 Hz command tick; actual throughput must be checked on host.
+      # The feedback driver caps explicit CAN refreshes at 20 Hz and drains RX
+      # between refreshes; this is separate from the command tick rate.
+      tick: dora/timer/millis/10
+    outputs: [tick]
+
+  - id: tick-camera
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: evaluation-ui/arm_command
+      tick: dora/timer/millis/33
+    outputs: [tick]
+
+  - id: tick-camera-wrist-right
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: evaluation-ui/arm_command
+      tick: dora/timer/millis/33
+    outputs: [tick]
+
+  - id: tick-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: evaluation-ui/arm_command
+      tick: dora/timer/millis/33
+    outputs: [tick]
+
+  - id: arm-right
+    build: pip install ./vendor/openarm_can/python -e nodes/dora-openarm
+    path: dora-openarm
+    args: --side right --align-threshold 0.2 --startup-home ./official/dora-openarm-evaluation/guarded-home-right.json --config ./official/dora-openarm-evaluation/openarm_real_ros_coordinates.yaml
+    inputs:
+      request_position: tick-arm/tick
+      move_position: actions-executor/move_position_right
+      timing_fault: actions-executor/timing_fault
+      command: evaluation-ui/arm_command
+    outputs: [position, status, home_status]
+
+  - id: arm-left
+    build: pip install ./vendor/openarm_can/python -e nodes/dora-openarm
+    path: dora-openarm
+    args: --side left --hold-start-position --config ./official/dora-openarm-evaluation/openarm_real_ros_coordinates.yaml
+    inputs:
+      request_position: tick-arm/tick
+      command: evaluation-ui/arm_command
+    outputs: [position, status]
+
+  - id: camera-wrist-right
+    build: pip install -e nodes/dora-openarm-observer
+    path: dora-openarm-camera
+    env:
+      CAPTURE_PATH: /dev/v4l/by-id/usb-DCX-250107-ZW_DECXIN-video-index0
+      ENCODING: jpeg
+      # Match the ACT checkpoint (height=360, width=640) before JPEG encoding.
+      # This keeps the 30 Hz camera period without encoding oversized frames.
+      IMAGE_HEIGHT: "360"
+      IMAGE_WIDTH: "640"
+      JPEG_QUALITY: "90"
+    inputs:
+      tick: tick-camera-wrist-right/tick
+    outputs: [image]
+
+  - id: camera-ceiling
+    build: pip install -e nodes/dora-openarm-observer
+    path: dora-openarm-camera
+    env:
+      CAPTURE_PATH: /dev/v4l/by-id/usb-Intel_R__RealSense_TM__Depth_Camera_435i_Intel_R__RealSense_TM__Depth_Camera_435i_254343063881-video-index2
+      ENCODING: jpeg
+      # Match the ACT checkpoint (height=360, width=640) before JPEG encoding.
+      # This keeps the 30 Hz camera period without encoding oversized frames.
+      IMAGE_HEIGHT: "360"
+      IMAGE_WIDTH: "640"
+      JPEG_QUALITY: "90"
+    inputs:
+      tick: tick-camera/tick
+    outputs: [image]
+
+  - id: observer
+    build: pip install -e nodes/dora-openarm-observer
+    path: dora-openarm-observer
+    args: --arms right,left --cameras camera_wrist_right,camera_ceiling --max-source-age-ms 200 --max-source-skew-ms 100
+    inputs:
+      tick: tick-observer/tick
+      arm_right: arm-right/position
+      arm_left: arm-left/position
+      camera_wrist_right: camera-wrist-right/image
+      camera_ceiling: camera-ceiling/image
+      command: evaluation-ui/arm_command
+      arm_right_status: arm-right/status
+      arm_left_status: arm-left/status
+      task_prompt: evaluation-ui/task_prompt
+    outputs: [observation]
+
+  - id: policy-server
+    build: pip install -e nodes/dora-openarm-local-policy-server
+    path: dora-openarm-local-policy-server
+    env:
+      SOCKET: /dev/shm/openarm_official_act_policy.sock
+      OPENARM_PRETRAINED_PATH: ./outputs/act_real_combined_unreviewed_30000_20261008/checkpoints/030000/pretrained_model
+      REQUIRE_SOURCE_TIMING: "yes"
+      MAX_SOURCE_AGE_MS: "200"
+      MAX_SOURCE_SKEW_MS: "100"
+      MAX_OBSERVATION_AGE_MS: "500"
+    inputs:
+      observation: observer/observation
+    outputs: [actions, timing_fault]
+
+  - id: actions-executor
+    build: pip install -e nodes/dora-openarm-actions-executor
+    path: dora-openarm-actions-executor
+    # Match the requested 100 Hz arm period; this does not guarantee throughput.
+    args: --arms right --upsample --filter --control-hz 100
+    env:
+      REQUIRE_SOURCE_TIMING: "yes"
+      MAX_SOURCE_AGE_MS: "200"
+      MAX_SOURCE_SKEW_MS: "100"
+      MAX_OBSERVATION_AGE_MS: "500"
+    inputs:
+      actions: policy-server/actions
+      timing_fault: policy-server/timing_fault
+    outputs: [move_position_right, timing_fault]

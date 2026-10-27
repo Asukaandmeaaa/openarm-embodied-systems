@@ -1,0 +1,20 @@
+parameters:
+  name: openarm_right_global_camera
+  calibration_type: eye_on_base
+  robot_base_frame: world
+  robot_effector_frame: openarm_right_ee_base_link
+  tracking_base_frame: global_camera_link
+  tracking_marker_frame: aruco_marker_1
+  freehand_robot_movement: true
+  move_group_namespace: /
+  move_group: manipulator
+transform:
+  translation:
+    x: 0.07172405647452981
+    y: 0.016428019779203152
+    z: 0.7340815277213198
+  rotation:
+    x: 0.016609500944898666
+    y: 0.4782798421205119
+    z: -0.018683466170425902
+    w: 0.877851607728435

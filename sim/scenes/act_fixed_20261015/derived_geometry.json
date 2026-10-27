@@ -1,0 +1,22 @@
+{
+  "table_near_x_m": 0.185,
+  "table_far_x_m": 0.585,
+  "table_center_surface_xyz_m": [
+    0.385,
+    0.0,
+    0.27
+  ],
+  "cube_center_xyz_m": [
+    0.332,
+    -0.19599999999999998,
+    0.29000000000000004
+  ],
+  "box_bottom_center_xyz_m": [
+    0.385,
+    0.010000000000000009,
+    0.27
+  ],
+  "placement_interpretation": "box short-edge distance measured from robot-right edge, same as cube",
+  "model_origin_note": "z=0 is robot base datum, not room floor",
+  "scene_sha256": "747263d284898c5de0ea74b3fb611ffbcf5389765c9c9ef72c0dbd23be512fe2"
+}

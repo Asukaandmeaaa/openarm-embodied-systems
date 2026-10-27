@@ -1,0 +1,48 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+ACT 跟踪策略 v3：按用户明确要求移除 task 右夹爪运行跟踪停止线
+日期：2026-10-15，本轮真实 ACT 测试后。
+
+授权与范围
+用户在获知右夹爪 error=-0.030803rad 超过0.03rad导致停止后，明确要求去掉该限制。
+本次仅改变 task 在显式 START 后的跟踪误差停止策略：右臂J1-J7和右夹爪
+active_stop_limits_rad 均为 null。跟踪误差及0.03rad诊断告警继续完整记录。
+不将其改成更大的停止阈值，不改模型预测，不根据本轮峰值自适应设阈值。
+这不提供夹爪接触力控制，也不再通过 task 跟踪误差判定夹爪卡滞。
+
+保留
+启动前保持、初始目标/反馈、HOME验收和 stationary_recovery_contract 原样保留。
+commissioning 短试验仍使用原0.03rad跟踪停止判据。
+关节范围、夹爪ROS示教端点、目标速度/加速度、实测速度、数据时效、看门狗、
+碰撞检查、CAN/控制器状态、独占控制和60秒时长限制没有改动。
+人工断电不作为上述软件保护已获验证的依据。
+
+版本与已有记录
+新生成配置 execution_profile.tracking_policy_version=3，合同 schema=act_tracking_policy_v3。
+旧v2配置在新进程入口被拒绝，防止历史配置与运行语义不一致。
+没有改写 results/act_manual_hrmhiu20 的 trial_config、模型预测或执行日志；
+没有启动/停止任何实物程序，没有清除gateway故障，没有执行HOME或START。
+已经运行的进程不会因磁盘代码更新而自动采用新规则。
+
+本轮证据与下一轮前提
+act_manual_hrmhiu20 已执行真实ACT而非专家回放，运行14.856740434秒。
+停止时夹爪参考-0.311190118rad、反馈-0.341992828rad，误差-0.030802710rad。
+该检查比较上一条Guard命令和最新反馈，不是时间对齐的控制器误差。
+停止后记录中的夹爪CAN保持命令约-0.311474784rad，距HOME打开目标-0.35rad
+为0.038525216rad；现有plan-home要求命令和反馈都在打开目标0.03rad内，
+故当前记录姿态不满足该恢复入口。v3没有放宽这一入口，也没有新增开爪动作。
+不能直接再次START，不能通过删除报告或重启gateway绕过故障恢复。
+下一轮先由操作者恢复适用起点，核对实际程序/姿态，再用已有prepare或next-trial
+的适用流程生成v3配置。所有实物动作仍由用户手动执行。
+
+离线验证结果
+183项回归测试通过，包括本轮记录的-0.030802710rad夹爪误差只告警、
+夹爪反馈持续不跟随时无跟踪停止，以及原碰撞/时效/范围/启动门禁保留。
+当前模型与来源配置离线预检通过，hardware_io_performed=false。
+与本轮v2配置比较，变化仅为运行跟踪停止合同、版本及其说明文字；
+模型、60秒时长、运动端点和其他数值约束均未改变。
+没有实物验证，不声称消除了夹爪滞后、接触风险或保证抓取成功。
+
+离线验证命令（仅测试子shell，不能用它替代实物ACT环境）
+source scripts/home_replay/workstation_env.sh
+/usr/bin/python3 -m pytest -q tests/test_act_trial_guard.py tests/test_act_trial_tracking_contract.py tests/test_act_trial_preflight.py tests/test_act_return_home.py tests/test_act_manual_experiment.py tests/test_act_trial_ros_bridge.py tests/test_act_trial_telemetry.py tests/test_act_trial_speed_contract.py

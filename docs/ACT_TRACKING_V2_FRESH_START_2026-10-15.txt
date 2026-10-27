@@ -1,0 +1,110 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+历史 v2 操作单；2026-10-15 实测后更新：
+act_manual_hrmhiu20 已执行并因夹爪跟踪误差停止，不能重新照抄本单重用。
+用户随后明确要求移除 task 运行中夹爪 0.03rad 实验停止线；代码已更新为 v3。
+新规则、旧日志保留与恢复前提见 docs/ACT_TRACKING_POLICY_V3_2026-10-15.txt。
+以下 v2 参数及“未执行”描述仅保留作历史记录。
+
+跟踪策略 v2：H1 已退出后的完整手动测试流程
+
+更新说明（2026-10-15，新对话交接版）
+这是 ACT 实物测试流程，不是最近的 B 键专家轨迹回放流程。
+ACT 必须使用 secure H1 → gateway → H2 → policy → Dora → ready/start；
+专家回放 replay.sh 使用原生 ROS domain 97，不启动 gateway/ACT，二者不得混用。
+
+候选会话目录：/home/lushilin/openarm_vla_ws/results/act_manual_hrmhiu20
+本次只读核对：act/ 仅有 offline_preflight.json 与 trial_config.json；
+尚无 H2/HOME 交接报告、started.json 或 result.json。目录仍是未执行的候选会话。
+本次进程快照没有发现 ROS 控制器、MoveIt、gateway 或 Dora；这不是后续启动保证。
+机械臂当前姿态、支撑、供电、急停及桌面状态需要操作者重新说明，不能沿用旧确认。
+没有操作电机。若开始测试时目录仍未使用，不需要重新 prepare 或 next-trial。
+若已使用，不删除旧证据，也不能仅凭 H1 日志文件可轮换就重用旧 HOME/START 状态。
+完整交接说明：docs/ACT_PHYSICAL_TEST_NEXT_CHAT_2026-10-15.txt。
+本次离线复核通过，配置与当前代码完全一致；证据：
+results/act_handoff_20261015_150925_oo2cpcyl/comparison.json。
+
+task：右臂 J1-J7 和右夹爪，最长60秒；左臂由ROS保持。
+tracking_policy_version=2：任务开始后J1-J7误差只记录/告警，无0.03/0.04rad停止线。
+夹爪保留0.03rad实验停止线，不是接触力保护。启动/HOME检查保留。
+目标速度0.25rad/s、加速度0.25rad/s²及其ROS配置约束保持；不是完全无执行限制。
+独占控制、CAN/控制器状态、数据时效和碰撞检查保持。
+
+开始前
+先由操作者确认本轮起始状态。若已在 HOME 且 ROS 正保持，不为了照抄本流程
+重启 H1；先核对当前控制链路。若已退出 H1，须双臂安全支撑、在允许的机械零位
+起点才能按下面完整启动。不能把“没有进程”理解为“机械臂已经在零位”。
+退出旧Dora、policy、gateway终端，等待返回shell；不另开竞争控制器。
+双臂支撑、允许的机械零位起点，夹爪不夹持物体。底座固定、桌面与障碍物
+布置符合碰撞场景，人员退出运动区，操作者现场急停可及。
+按既有方法恢复电机供电并释放急停（若已经供电，不要求再次重启）。
+不要为了本次修改复位CAN、删锁、删除旧日志或重建DDS密钥。
+
+终端1：H1，会使能并可能运动
+source /home/lushilin/openarm_vla_ws/results/act_manual_hrmhiu20/environment.sh
+actctl h1 2>&1 | tee -a "$OWNERSHIP_RUN/h1.log"
+
+等待控制器spawner完成，right/left arm及right gripper控制器active。
+H1内部检查所有权、CAN发送队列和电机响应；失败就停止后续步骤。
+H1 启动报告自动写到 $OWNERSHIP_RUN/h1_startups/日期_时间_唯一后缀/motor_startup.json，
+无需手动换路径；终端日志使用 tee -a 避免覆盖。H2 的重复执行门禁仍保留。
+ACT 的 secure_launch 已跳过 left_gripper_controller，保留左臂保持控制。
+左夹爪负反馈与 URDF 下限不一致尚未标定修复，不能启用左夹爪任务。
+回零命令结束不等于实测到位，下一步h2会检查。此终端保持运行。
+
+终端2：唯一gateway
+source /home/lushilin/openarm_vla_ws/results/act_manual_hrmhiu20/environment.sh
+actctl gateway 2>&1 | tee -a "$OWNERSHIP_RUN/gateway_terminal.log"
+
+持续静默可以是正常等待；保留运行。首次synchronized=false由h2完成同步。
+
+终端3：原ROS H2和HOME交接，会运动及打开右夹爪
+source /home/lushilin/openarm_vla_ws/results/act_manual_hrmhiu20/environment.sh
+actctl status
+
+确认gateway idle，右/左臂及右夹爪控制器active后执行：
+actctl h2 2>&1 | tee -a "$OWNERSHIP_RUN/h2.log"
+
+必须等待 HOME_AND_HANDOFF_VERIFIED。
+失败不重复h1/h2、不删除报告；稳定时保留ROS/gateway，检查失败原因。
+
+终端4：模型服务
+source /home/lushilin/openarm_vla_ws/results/act_manual_hrmhiu20/environment.sh
+actctl policy 2>&1 | tee -a "$ACT_TRIAL_DIR/policy.log"
+
+等待Listening/服务就绪；此步不触发ACT运动。
+
+终端5：Dora观测、推理和记录
+source /home/lushilin/openarm_vla_ws/results/act_manual_hrmhiu20/environment.sh
+actctl dora 2>&1 | tee -a "$ACT_TRIAL_DIR/dora.log"
+
+保留运行；不使用旧直连CAN数据流，ACT仍等待显式START。
+
+回终端3：实时检查
+actctl ready
+
+必须看到 READY: profile=task, maximum_duration_s=60.0。
+现场准备好观察任务后，以下命令请求实物ACT运动：
+actctl start
+actctl status
+
+预期started=true、stage=active、owner=dora；START requested本身不是执行证明。
+最多60秒，任务完成或出现不希望继续的趋势可以提前停止。不要用手辅助机械臂。
+
+普通停止，终端3：
+actctl stop
+actctl status
+
+确认stage=stopped并查看result.json的reason；正常结束gateway应idle且drain_ready=true。
+故障停止可能保持fault，不自动清除。确认静止后再退出终端5、4，ROS/gateway继续保持。
+
+H2期间actctl stop不停止H2：需在H2终端3 Ctrl+C，网关尝试保持。
+危险运动直接物理急停，不等待软件命令，注意可能失去保持力矩。
+完全停机：先停止运动、确认静止、安全支撑双臂，再退出gateway和H1。
+不要再次先Ctrl+C H1后才安排支撑。
+
+结果目录：/home/lushilin/openarm_vla_ws/results/act_manual_hrmhiu20/act
+result.json：停止原因；policy*.jsonl：原始预测；executor*.jsonl：执行整形；
+bridge.jsonl：performance_warnings与errors分开记录；bridge_raw_can.jsonl：实际电机命令/反馈。
+60秒到期不是任务成功。记录是否接近、抓取、放置、抖动及停止时刻。
+软件和静态场景检查没有验证原停止点之后的真实动态或堵转行为。

@@ -1,0 +1,9 @@
+# Simulation only. No dora-openarm node, CAN interface, ACT, or auto-homing.
+# Set HOME_REPLAY_TRAJECTORY, HOME_REPLAY_REPORT and a NEW HOME_REPLAY_LOG path.
+# Set HOME_REPLAY_SCOPE=right for right-only outputs with measured left collision context.
+nodes:
+  - id: recorded-home-simulator
+    path: ../../scripts/home_replay/run_sim_node.sh
+    inputs:
+      tick: dora/timer/millis/10
+    outputs: [simulated_position, simulated_position_right, status]

@@ -1,0 +1,36 @@
+[submodule "nodes/dora-openarm-actions-executor"]
+	path = nodes/dora-openarm-actions-executor
+	url = https://github.com/enactic/dora-openarm-actions-executor.git
+[submodule "nodes/dora-openarm-mujoco"]
+	path = nodes/dora-openarm-mujoco
+	url = https://github.com/enactic/dora-openarm-mujoco.git
+[submodule "nodes/dora-openarm-observer"]
+	path = nodes/dora-openarm-observer
+	url = https://github.com/enactic/dora-openarm-observer.git
+[submodule "nodes/dora-openarm-quitter"]
+	path = nodes/dora-openarm-quitter
+	url = https://github.com/enactic/dora-openarm-quitter.git
+[submodule "nodes/dora-openarm-local-policy-server"]
+	path = nodes/dora-openarm-local-policy-server
+	url = https://github.com/enactic/dora-openarm-local-policy-server.git
+[submodule "nodes/dora-openarm-docker-policy-server"]
+	path = nodes/dora-openarm-docker-policy-server
+	url = https://github.com/enactic/dora-openarm-docker-policy-server.git
+[submodule "nodes/dora-openarm"]
+	path = nodes/dora-openarm
+	url = https://github.com/enactic/dora-openarm.git
+[submodule "nodes/dora-openarm-evaluation-ui"]
+	path = nodes/dora-openarm-evaluation-ui
+	url = https://github.com/enactic/dora-openarm-evaluation-ui.git
+[submodule "nodes/dora-opencv-image-splitter"]
+	path = nodes/dora-opencv-image-splitter
+	url = https://github.com/enactic/dora-opencv-image-splitter.git
+[submodule "nodes/dora-openarm-inference-controller"]
+	path = nodes/dora-openarm-inference-controller
+	url = https://github.com/enactic/dora-openarm-inference-controller.git
+[submodule "nodes/dora-openarm-classifier"]
+	path = nodes/dora-openarm-classifier
+	url = https://github.com/enactic/dora-openarm-classifier.git
+[submodule "nodes/dora-openarm-dataset-recorder"]
+	path = nodes/dora-openarm-dataset-recorder
+	url = https://github.com/enactic/dora-openarm-dataset-recorder.git

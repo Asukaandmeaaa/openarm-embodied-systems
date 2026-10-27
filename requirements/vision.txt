@@ -1,0 +1,3 @@
+# ROS/OpenCV/NumPy ABI must match the selected ROS installation.
+# This is an optional hardware profile, not validated by the CPU quickstart.
+pyrealsense2==2.59.1.11053

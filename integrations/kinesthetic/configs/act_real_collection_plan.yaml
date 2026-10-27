@@ -1,0 +1,100 @@
+schema_version: 1
+status: FIXED_SCENE_CAMERA_EPISODE_PENDING_MANUAL_REVIEW
+updated: 2026-09-28
+
+fixed_scene_pilot:
+  position_id: fixed_01
+  trajectory_file_on_nano: /home/ubuntu/openarm_kinesthetic_data/recorded_motions/right_motion_20260928_105953_725045672.json
+  sample_count: 1588
+  duration_s: 40.52924919128418
+  marker_types: [gripper_close, gripper_open]
+  end_home_max_error_rad: 0.02496502401607459
+  recorded_rate_plan_only: PASS
+  dry_replay: OPERATOR_REPORTED_SUCCESS_LOG_NOT_ARCHIVED
+  dual_camera_episode: PENDING
+
+numbered_fixed_scene_pilot:
+  trial_id: "20260928_151345_001"
+  trajectory_file_on_nano: /home/ubuntu/openarm_kinesthetic_data/collections/trajectories/20260928_151345_001.json
+  episode_directory_on_nano: /home/ubuntu/openarm_kinesthetic_data/collections/episodes_pending_review/20260928_151345_001
+  sample_count: 1659
+  duration_s: 42.880
+  plan_only: PASS
+  dry_replay: OPERATOR_REPORTED_SUCCESS
+  camera_replay: MARKED_TRAJECTORY_REPLAY_COMPLETE
+  measured_fixed_home_max_error_rad: 0.023058
+  finish_success: true
+  manual_review: PENDING
+
+task:
+  contract: openarm_kinesthetic_right_blue_cube_v1
+  prompt: Put the blue cube inside the fixed black box, then return the right arm home.
+  moving_object: blue_cube
+  fixed_target: black_box
+  arm: right
+
+collection_unit:
+  new_object_placement: true
+  new_continuous_marked_demonstration: true
+  dry_replay_before_capture: true
+  captured_replays_per_demonstration: 1
+  required_markers: [gripper_close, gripper_open]
+  playback_rate: 1.0
+  start_pose: fixed_lifted_home
+  end_pose: fixed_lifted_home
+
+position_frame:
+  frame: placement_mat
+  origin: cube_nominal
+  axes: [forward, lateral]
+  absolute_world_origin_m: null
+  measurement_status: REQUIRED_BEFORE_FORMAL_COLLECTION
+
+pilot_grid:
+  status: PROVISIONAL_UNVALIDATED_REAL_RANGE
+  forward_offsets_m: [-0.04, 0.0, 0.04]
+  lateral_offsets_m: [-0.04, 0.0, 0.04]
+  accepted_episodes_per_cell: 1
+  total_accepted_target: 9
+
+formal_grid:
+  enabled_after_pilot: true
+  forward_half_range_m: 0.05
+  lateral_half_range_m: 0.04
+  cells: [5, 5]
+  first_batch_accepted_per_cell: 4
+  first_batch_total: 100
+  expanded_accepted_per_cell: 8
+  expanded_total: 200
+  split_policy: hold_out_complete_spatial_cells
+
+cameras:
+  ceiling_topic: /camera/global_camera/color/image_raw/compressed
+  wrist_right_topic: /camera/wrist_right/image_raw/compressed
+  raw_encoding: jpeg
+  raw_images_preserved: true
+  export_rate_hz: 30
+  maximum_export_camera_skew_s: 0.05
+  training_resolution_wh: null
+  training_resolution_status: MUST_FREEZE_AFTER_CAMERA_PILOT
+
+required_trial_fields:
+  - batch_id
+  - trial_id
+  - position_id
+  - cube_forward_m
+  - cube_lateral_m
+  - placement_measurement_method
+  - trajectory_file
+  - trajectory_sha256
+  - episode_id
+  - plan_only_passed
+  - dry_replay_passed
+  - operator_success
+  - review_status
+  - failure_reason
+
+formal_collection_blockers:
+  - raw_to_act_30hz_exporter_and_sync_report
+  - unique_training_image_shape
+  - batch_catalog_review_and_acceptance_workflow

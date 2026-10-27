@@ -1,0 +1,19 @@
+captured_at: "2026-09-02"
+repositories:
+  dora-openarm-data-collection:
+    url: https://github.com/enactic/dora-openarm-data-collection.git
+    commit: dd1bab22a92b2828c598a5f42b89572f651b60e1
+  dora-openarm-keyboard:
+    url: https://github.com/enactic/dora-openarm-keyboard.git
+    commit: 2ba2ed9edef399b7457e9f62ec5a385d77e4eaf4
+    local_patch: episodic reset input
+  openarm_dataset:
+    url: https://github.com/enactic/openarm_dataset.git
+    commit: a69fe37384e26bb5c3059de4a52cd6e871727011
+  dora-openarm-evaluation:
+    url: https://github.com/enactic/dora-openarm-evaluation.git
+    commit: d15939afbe5ae30aa0766b3866e58f90e61528b0
+    local_patch: two-camera render, deterministic reset metadata, 30 Hz recorder
+  openarm_mujoco:
+    url: https://github.com/enactic/openarm_mujoco.git
+    commit: a8c979629f2591ad035d99d338ce114969e6cddc

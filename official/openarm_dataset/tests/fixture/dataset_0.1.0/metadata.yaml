@@ -1,0 +1,26 @@
+version: "0.1.0"
+location: Test
+operator: Tester
+tasks:
+  - prompt: Run test.
+    description: Longer task description if need.
+episodes:
+  - id: "0"
+    success: false
+    task_index: 0
+  - id: "3"
+    success: true
+    task_index: 0
+equipment:
+  id: Test
+  version: "1.0"
+  embodiments:
+    arms:
+      id: OpenArm
+      version: "2.0"
+  perceptions:
+    cameras:
+      wrist_left: {}
+      wrist_right: {}
+      ceiling: {}
+      head: {}

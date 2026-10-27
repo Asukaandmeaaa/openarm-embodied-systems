@@ -1,0 +1,302 @@
+schema_version: 1
+captured_at: '2026-09-11'
+source_workspaces:
+- path: /home/lushilin/openarm_ws
+  policy: read_only
+- path: /home/lushilin/openarm_vla_ws
+  policy: read_only
+runtime_import_policy: forbid_implicit_imports_from_source_workspaces
+references:
+- source_absolute_path: /home/lushilin/openarm_vla_ws/MD/当前阶段/蓝色方块_固定黑盒_ACT_200轨迹_50k训练与30seed闭环_建立2026-09-11_修改2026-09-11.md
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/MD/当前阶段/蓝色方块_固定黑盒_ACT_200轨迹_50k训练与30seed闭环_建立2026-09-11_修改2026-09-11.md
+  sha256: c731d47d59bec4f45715a880f4a03e6315faf2d0882d2897cffeb853f275e7c9
+  purpose: source ACT dataset/training/closed-loop handoff record
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/configs/collection/feature_contract.yaml
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/configs/collection/feature_contract.yaml
+  sha256: 628f4b82e0329659db2b2c072c15a9309f573f99c375ebf9a052f018a3042621
+  purpose: source 30 Hz 16D/two-camera ACT feature contract
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/configs/collection/openarm_cube_into_black_box_expert_params.yaml
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/configs/collection/openarm_cube_into_black_box_expert_params.yaml
+  sha256: d422148688a3eacdc0925dd27eae0c59347622b4995cbe9ffd48a2ba3a916928
+  purpose: read-only fixed-black-box expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/configs/collection/openarm_cube_into_black_box_metadata.yaml
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/configs/collection/openarm_cube_into_black_box_metadata.yaml
+  sha256: dd631ba5db2b3f34f63d0b5c2e77ba5f24253dcdbce1caae1851083429426edc
+  purpose: source collection parameters, metadata, or revision provenance
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/configs/collection/source_revisions.yaml
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/configs/collection/source_revisions.yaml
+  sha256: c3d7a6c5e84a6655c6942059442997a4222e4bce73ab4a3987ec083ba525d3b4
+  purpose: source collection parameters, metadata, or revision provenance
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_into_black_box_expert/__init__.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_into_black_box_expert/__init__.py
+  sha256: 8b2130b6901d965c9ca8f6301a42dfa3ed576717e390d3b2ecc2a588f9ca5c7e
+  purpose: read-only fixed-black-box expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_into_black_box_expert/collect.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_into_black_box_expert/collect.py
+  sha256: 67eb5caf414d18f0eddf1710fd1eaa03d7aaf5c08af61820b6b5e50dbdf96137
+  purpose: read-only fixed-black-box expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_into_black_box_expert/contract.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_into_black_box_expert/contract.py
+  sha256: 3cff8c8408c9eacb1897cbbd4e0459149c1030dc82b2f6b0bc354f9a25a9b3fc
+  purpose: read-only fixed-black-box expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_into_black_box_expert/runtime.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_into_black_box_expert/runtime.py
+  sha256: 130ba8b50d32deb8a26a51fda6b0f4b4411d31332d2abaeed02eba7457e78801
+  purpose: read-only fixed-black-box expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_into_black_box_expert/scene.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_into_black_box_expert/scene.py
+  sha256: baf70a778f8eed3037b27860873538dacf67f61ada4c9c2e6e47604e3410c1ff
+  purpose: read-only fixed-black-box expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/__init__.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/__init__.py
+  sha256: 86f78094329e27fd0356878f066e8d9773b69c07e5098f1b4acd10680332fd78
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/candidates.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/candidates.py
+  sha256: f7d38fceb84895bf23f5f4aedb2aa092f864014fa2f405c411de42d384f0567d
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/collect.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/collect.py
+  sha256: 76100b725f5ff0406caa5909919fc175796bcd11caca6150e5e6ec6fc56924bd
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/config.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/config.py
+  sha256: f9ea5b4a33a8396131083e86f80c00de24c43827e8afb0210bef67997afc2ca4
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/controller.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/controller.py
+  sha256: 397cb262b14b9dc248a6fe99fe12f869bee439e3eb0fcca4ca3396a0b279c90d
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/env.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/env.py
+  sha256: ec87eb705bdbc23d1ffad14e9f74c5aa1789aaf7befa15beaf2762bf685722ec
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/expert.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/expert.py
+  sha256: d3f8af336aadab1e930054e772e80b9f8d06fcb026f002981fb05eeef1d4d145
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/fsm.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/fsm.py
+  sha256: ed6b3b63c63e49041a9a0a47d3cae3156bfcb31a26a01bade55b4f9f4b8b1bfc
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/geometry.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/geometry.py
+  sha256: 61abe95d913087a2a5556ab2d7a3ec60316db5774a75d5084d784945d9cc91c7
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/guard.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/guard.py
+  sha256: d9c6fcf2487b3ac289f4d8109781a1311bcc7a9bb380e68221a140029660e693
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/ik.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/ik.py
+  sha256: 5436f1544f310d4d0e4f371113f1b6b138fc8268db79c3cb33248b4a57c30745
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/planner.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/planner.py
+  sha256: f6e5cd53316ce816d9f51b2f78426dcc4bb95d8cbf7fadea928a02894fc36854
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/recorder.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/recorder.py
+  sha256: c2f8f165ea5ade24068fb0afd2ddf905a4399fb050b4d1496a186551c99d6f1e
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/recording.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/recording.py
+  sha256: 7ef0fd606ee440b9e40e3d0ac8e78cfbfed3ff75aa821d723ac7ce26e54cf4ba
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/success.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/success.py
+  sha256: e6e2a330b06f5eb303d36cc2c19c1dcadb6c3eaba36cf989e4e5aecd509e6755
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/openarm_cube_pick_expert/task.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/openarm_cube_pick_expert/task.py
+  sha256: a39f09870bdfb67d019c4f69cd3731bb80fdff1fcf13f6da8fe321a488131ff1
+  purpose: read-only MuJoCo pick expert implementation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/sim/validation/act_closed_loop.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/sim/validation/act_closed_loop.py
+  sha256: a0dcad4eedef5714382023704fa19b66ec31c3482e81303ba382fd5fd2fb4145
+  purpose: source strict replay or ACT closed-loop validation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_vla_ws/sim/validation/expert_action_replay.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_vla/sim/validation/expert_action_replay.py
+  sha256: ac64093c01788ef968f08a009e955c23b66e77c4276e988fb34877ac5898667a
+  purpose: source strict replay or ACT closed-loop validation reference
+  license_or_origin: local OpenArm VLA workspace artifact; no separate license in scoped source directory
+- source_absolute_path: /home/lushilin/openarm_ws/md/04_视觉抓取_MTC/OpenArm_D435i_MTC视觉抓取_完整方案与当前进度交接_2026-08-21.md
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_real/md/04_视觉抓取_MTC/OpenArm_D435i_MTC视觉抓取_完整方案与当前进度交接_2026-08-21.md
+  sha256: ca2bf9897ae57ecf238364c21fe74db91b0bbb8c3481bae854f27b93117a2525
+  purpose: source real-hardware or vision handoff documentation
+  license_or_origin: local OpenArm project documentation
+- source_absolute_path: /home/lushilin/openarm_ws/md/07_双臂主从遥操作/OpenArm_v2.0_左Leader右Follower跨侧镜像遥操作_技术文档.md
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_real/md/07_双臂主从遥操作/OpenArm_v2.0_左Leader右Follower跨侧镜像遥操作_技术文档.md
+  sha256: f6d04497ed34c40279cddf96d82bdb7485b85d680391cf35b2aab6979bf2ad31
+  purpose: source real-hardware or vision handoff documentation
+  license_or_origin: local OpenArm project documentation
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_aruco_vision/config/blue_cube.yaml
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_real/src/openarm_aruco_vision/config/blue_cube.yaml
+  sha256: cd4f1cc896d2e898e0f4001b4c7e0f5893b8731979d2fb9209a95e82b5aaaddc
+  purpose: source real RGB-D object/box perception parameters
+  license_or_origin: local ROS 2 package, Apache-2.0 declared in package.xml
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_aruco_vision/config/box.yaml
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_real/src/openarm_aruco_vision/config/box.yaml
+  sha256: 719e2340767323edd97401966bab050ef1a9829309182ff6cd856fbc2a60c960
+  purpose: source real RGB-D object/box perception parameters
+  license_or_origin: local ROS 2 package, Apache-2.0 declared in package.xml
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_cross_side_teleop/openarm_cross_side_teleop/follower_gate.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_real/src/openarm_cross_side_teleop/openarm_cross_side_teleop/follower_gate.py
+  sha256: 4cfb2bea1ec6558365ac31ba3ac8cf8b564d3514b79a15675a4b7ce040b60d56
+  purpose: source teleoperation frame and motion-gate behavior
+  license_or_origin: local ROS 2 package, Apache-2.0 declared in package.xml
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_cross_side_teleop/scripts/cross_side_follower.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_real/src/openarm_cross_side_teleop/scripts/cross_side_follower.py
+  sha256: 19f3ce67796d4ffdb88558eaac6869f15f45c22333fab50a5bec44dc668497e8
+  purpose: source teleoperation frame and motion-gate behavior
+  license_or_origin: local ROS 2 package, Apache-2.0 declared in package.xml
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_cross_side_teleop/scripts/passive_leader.py
+  source_repo_head: null
+  source_worktree_dirty: null
+  copied_relative_path: references/openarm_real/src/openarm_cross_side_teleop/scripts/passive_leader.py
+  sha256: f5777dff10424b7fb3a8235bc46508bd1f8c065466033d60864e9ef5c6546ae4
+  purpose: source right/left hardware-passive proxy behavior
+  license_or_origin: local ROS 2 package, Apache-2.0 declared in package.xml
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_ros2/openarm_hardware/include/openarm_hardware/gripper_contact_detector.hpp
+  source_repo_head: 4e837e1d0dae692ff67b560b69d8d281d7a8d4ed
+  source_worktree_dirty: true
+  copied_relative_path: references/openarm_real/src/openarm_ros2/openarm_hardware/include/openarm_hardware/gripper_contact_detector.hpp
+  sha256: 30fa3062b995cb5866c0841bb7542aa0d43e8ee6a1dfb3e87cc7c34e351b6f05
+  purpose: source passive dynamics, activation, heartbeat, and gripper-contact behavior
+  license_or_origin: OpenArm ROS 2 repository, Apache-2.0
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_ros2/openarm_hardware/include/openarm_hardware/openarm_simple_hardware.hpp
+  source_repo_head: 4e837e1d0dae692ff67b560b69d8d281d7a8d4ed
+  source_worktree_dirty: true
+  copied_relative_path: references/openarm_real/src/openarm_ros2/openarm_hardware/include/openarm_hardware/openarm_simple_hardware.hpp
+  sha256: 08b734fb8ff300ca6a8600916b799127e96b3fe9484ccec6ad51392a0d38ac95
+  purpose: source passive dynamics, activation, heartbeat, and gripper-contact behavior
+  license_or_origin: OpenArm ROS 2 repository, Apache-2.0
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_ros2/openarm_hardware/src/gripper_contact_detector.cpp
+  source_repo_head: 4e837e1d0dae692ff67b560b69d8d281d7a8d4ed
+  source_worktree_dirty: true
+  copied_relative_path: references/openarm_real/src/openarm_ros2/openarm_hardware/src/gripper_contact_detector.cpp
+  sha256: 46d2292062f0703e977e1e669fbdac46368b8138bcb4e67c7b6f362e29ba7fd7
+  purpose: source passive dynamics, activation, heartbeat, and gripper-contact behavior
+  license_or_origin: OpenArm ROS 2 repository, Apache-2.0
+- source_absolute_path: /home/lushilin/openarm_ws/src/openarm_ros2/openarm_hardware/src/openarm_simple_hardware.cpp
+  source_repo_head: 4e837e1d0dae692ff67b560b69d8d281d7a8d4ed
+  source_worktree_dirty: true
+  copied_relative_path: references/openarm_real/src/openarm_ros2/openarm_hardware/src/openarm_simple_hardware.cpp
+  sha256: 40cc167626d0e5afbb218875e0eba9947c1be2222ab4c869d7599c8697adc50c
+  purpose: source passive dynamics, activation, heartbeat, and gripper-contact behavior
+  license_or_origin: OpenArm ROS 2 repository, Apache-2.0
+external_data:
+- path: /home/lushilin/openarm_vla_ws/data/raw/openarm_cube_into_black_box/expert_blue_box_200_20260909
+  copied: false
+  access: explicit_read_only_configuration_only
+  description: approximately 21 GB raw 200-episode expert dataset
+  metadata_path: /home/lushilin/openarm_vla_ws/data/raw/openarm_cube_into_black_box/expert_blue_box_200_20260909/metadata.yaml
+  metadata_sha256: bc206ab780e356005187003ee32149439b1800d0d82539e4f058c1895a1844ad
+- path: /home/lushilin/openarm_vla_ws/data/lerobot/openarm_cube_into_black_box_train160_20260909
+  copied: false
+  access: explicit_read_only_configuration_only
+  description: LeRobot 160-episode training conversion
+  metadata_path: /home/lushilin/openarm_vla_ws/data/lerobot/openarm_cube_into_black_box_train160_20260909/meta/info.json
+  metadata_sha256: 7c540357053291252b76988d569fe9a82c17e98ca483714cd040a24fe97e3e77
+- path: /home/lushilin/openarm_vla_ws/outputs/act_openarm_cube_into_black_box_200_50k_20260910/checkpoints/050000/pretrained_model
+  copied: false
+  access: explicit_read_only_configuration_only
+  description: ACT 50k historical checkpoint
+  model_file: /home/lushilin/openarm_vla_ws/outputs/act_openarm_cube_into_black_box_200_50k_20260910/checkpoints/050000/pretrained_model/model.safetensors
+  known_model_sha256: bbf2516f2d91c34c1c801826be834cf2920b49254dfb79be4fbb62c703686cef
+  hash_origin: 2026-09-11 VLA handoff document

@@ -1,0 +1,119 @@
+# Initialization -> traditional planning -> manual-teaching handoff.
+#
+# Every geometric field carries an explicit `source` label. Values must never be
+# relabelled as `measured` unless they were physically measured. The simulation
+# scene consumes `simulation_ground_truth`; the real station uses live depth
+# registered against the station prior for XY/yaw, the reviewed configured size,
+# and `live_depth_estimated` for Z.
+#
+# The table is 0.40 m deep (X, away from the robot) x 0.60 m wide (Y, lateral).
+# Its world X is DERIVED, never hardcoded: robot_front_reference is measured off
+# the pedestal collision mesh in the MuJoCo model, then
+#   table_near_edge_x = robot_front_reference_x + near_edge_gap
+#   table_center_x    = table_near_edge_x + size_x / 2
+# A `correction` block lets the operator nudge a cm-level physical placement
+# without editing the prior itself.
+schema_version: 1
+
+initialization:
+  strategy: prior_table_teaching_ready
+  scene: sim/scenes/prior_table_v1.xml
+
+table:
+  frame: world
+
+  size_x_m: {value: 0.40, source: user_reported_measurement}
+  size_y_m: {value: 0.60, source: user_reported_measurement}
+  thickness_m: {value: 0.04, source: provisional_simulation_candidate}
+
+  near_edge_gap_from_robot_front_m: {value: 0.17, source: user_measured_approximate}
+
+  robot_front_reference:
+    source: model_derived
+    geom: openarm_body_link0_collision
+    x_m: null            # derived at runtime from the compiled MuJoCo model
+
+  center_y_m: {value: 0.0, source: configured_prior}
+  top_z_m: {value: 0.40, source: simulation_ground_truth}
+  yaw_rad: {value: 0.0, source: configured_prior}
+
+  correction:
+    x_m: 0.0
+    y_m: 0.0
+    yaw_rad: 0.0
+
+simulation:
+  geometry_source: ground_truth
+  automatic_initialization_execution: true
+  # The physical station starts with the right arm vertically down at encoder
+  # zero. The simulator installs that state, then the planner reads it back as
+  # current q. Real planning still reads live /joint_states and never assumes 0.
+  initial_pose: motor_zero
+
+real:
+  xy_source: live_depth_registered_with_station_prior
+  size_source: configured_prior
+  z_source: live_depth_estimated
+
+teaching_ready:
+  # Selected by the reproducible offset scan in
+  # `openarm_kinesthetic.initialization.pipeline --scan`; the recorded selection is
+  # results/initialization/teaching_ready_offset_scan.json. Rule: keep offsets at
+  # least `minimum_footprint_margin_m` inside the table footprint, then maximize the
+  # normalized joint-limit margin. The recommended initial value is the table centre
+  # (0, 0), but the table centre is NOT reachable with the project's validated TCP
+  # orientation, so these offsets carry scan evidence instead of the recommendation.
+  offset_x_m: {value: -0.15, source: simulation_scan_selected}
+  offset_y_m: {value: -0.19, source: simulation_scan_selected}
+  height_above_table_m: {value: 0.28, source: recommended_initial_value}
+
+  selection_rule:
+    minimum_footprint_margin_m: 0.05
+    grid_step_m: 0.02
+    objective: maximize_normalized_joint_limit_margin
+
+  orientation:
+    source: fk_reference
+    reference_pose: right_task_ready
+    site: right_grasp_frame
+
+  fallback_search:
+    enabled: true
+    step_m: 0.03
+    max_radius_m: 0.09
+    maximum_candidates: 64
+
+  ik:
+    position_tolerance_m: 0.004
+    orientation_tolerance_rad: 0.04
+    iterations: 300
+    joint_margin_rad: 0.02
+
+planning:
+  start_state_source: current_joint_state
+  planner: rrt_connect
+  seed: 20260915
+  maximum_iterations: 6000
+  extension_step_rad: 0.20
+  goal_bias: 0.10
+  collision_check_step_rad: 0.02
+  forbid_cube_contact: true
+  time_scaling:
+    maximum_joint_velocity_rad_s: 0.45
+    maximum_joint_acceleration_rad_s2: 0.60
+
+execution:
+  backend: simulation_position_actuator
+  start_preview_s: 1.0
+  settle_s: 0.5
+  final_position_tolerance_m: 0.010
+  final_orientation_tolerance_rad: 0.050
+  final_joint_tolerance_rad: 0.030
+
+recording:
+  # Hard requirement: the initialization motion is setup, never a demonstration.
+  include_initialization_trajectory: false
+
+real_execution:
+  enabled: false
+  require_operator_confirmation: true

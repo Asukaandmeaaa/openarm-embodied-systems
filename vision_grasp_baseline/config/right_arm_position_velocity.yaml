@@ -1,0 +1,9 @@
+# Local to recovery-h1; shared workstation controller configuration is untouched.
+right_joint_trajectory_controller:
+  ros__parameters:
+    command_interfaces: [position, velocity]
+    state_interfaces: [position, velocity]
+    # Stationary motor feedback has a ~0.01099 rad/s quantization residual.
+    # This is terminal settling tolerance, not a trajectory speed limit.
+    constraints:
+      stopped_velocity_tolerance: 0.02

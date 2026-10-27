@@ -1,0 +1,114 @@
+# Copyright 2026 Enactic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openarm_dataset"
+version = "0.4.0"
+authors = [{name = "Enactic, Inc."}]
+license = {text = "Apache-2.0"}
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "huggingface_hub",
+    "jinja2",
+    "numpy",
+    # FK/IK used for on-the-fly qpos/pose conversion. 0.4.0+ exposes the
+    # IK parameters zeroed by kinematics.OFFLINE_IK_OVERRIDES.
+    "openarm-control>=0.4.0",
+    "pandas",
+    "pillow",
+    "pyarrow",
+    "pyyaml",
+    "scipy",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+"lerobot-dataset-v2.1" = [
+    # lerobot 0.3.3 pins rerun-sdk <0.23 and reads the v2.1 dataset format.
+    # (Newer versions can no longer read the v2.1 dataset format.)
+    "lerobot == 0.3.3",
+]
+"lerobot-dataset-v3.0" = [
+    # lerobot 0.5.0+ writes the v3.0 dataset format and requires Python 3.12+.
+    "lerobot[dataset] >= 0.6.0; python_version >= '3.12'",
+]
+rerun = [
+    # The API differs by version; the latest API requires 0.33+.
+    "rerun-sdk >= 0.33",
+]
+
+[project.urls]
+Changelog = "https://github.com/enactic/openarm_dataset/releases"
+Issues = "https://github.com/enactic/openarm_dataset/issues"
+Repository = "https://github.com/enactic/openarm_dataset.git"
+
+[project.scripts]
+openarm-dataset-convert = "openarm_dataset.convert:main"
+openarm-dataset-merge = "openarm_dataset.merge:main"
+openarm-dataset-repair = "openarm_dataset.repair:main"
+openarm-dataset-upload = "openarm_dataset.upload:main"
+openarm-dataset-validate = "openarm_dataset.validate:main"
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff == 0.14.11", # sync with .pre-commit-config.yaml
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+openarm_dataset = ["card_template.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.uv]
+# The lerobot extras pin incompatible lerobot versions, and the lerobot extra
+# (rerun-sdk <0.23) and the rerun extra (>=0.23) cannot be installed together.
+# Declaring them as conflicting lets uv build a valid lock and resolve each
+# extra separately.
+conflicts = [
+    [
+        { extra = "lerobot-dataset-v2.1" },
+        { extra = "lerobot-dataset-v3.0" },
+    ],
+    [
+        { extra = "lerobot-dataset-v2.1" },
+        { extra = "rerun" },
+    ],
+    [
+        { extra = "lerobot-dataset-v3.0" },
+        { extra = "rerun" },
+    ],
+]
+
+[tool.ruff.lint]
+extend-select = [
+  "D",   # pydocstyle
+  "UP",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"!src/**.py" = ["D"]

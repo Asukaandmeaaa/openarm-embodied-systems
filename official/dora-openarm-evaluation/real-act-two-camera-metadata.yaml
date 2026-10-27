@@ -1,0 +1,3 @@
+tasks:
+  - prompt: Pick up the blue cube with the right arm, place it nearby, release it, and return home.
+    description: Real OpenArm ACT baseline using the ceiling and right wrist cameras.

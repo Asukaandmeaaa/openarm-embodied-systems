@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Default DENY. Only gateway can write raw controller ingress. Bootstrap is
+     trusted startup administration, never an ACT or H2 source identity. -->
+<policy version="0.2.0"><enclaves>
+  <enclave path="/openarm/backend"><profiles><profile ns="/" node="*">
+    <topics publish="ALLOW"><topic>/rosout</topic><topic>/parameter_events</topic><topic>/diagnostics</topic><topic>/joint_states</topic><topic>/dynamic_joint_states</topic><topic>/robot_description</topic><topic>/tf</topic><topic>/tf_static</topic><topic>/*/controller_state</topic><topic>/*/transition_event</topic><topic>/*/passive_state</topic><topic>/left_gripper/contact_state</topic><topic>/left_gripper/motor_torque</topic><topic>/right_gripper/contact_state</topic><topic>/right_gripper/motor_torque</topic><topic>/controller_manager/*</topic></topics>
+    <topics subscribe="ALLOW"><topic>/parameter_events</topic><topic>/clock</topic><topic>/robot_description</topic><topic>/joint_states</topic><topic>/*/joint_trajectory</topic><topic>/*/speed_scaling_input</topic><topic>/*/passive_heartbeat</topic></topics>
+    <services reply="ALLOW"><service>/*</service></services>
+    <actions execute="ALLOW"><action>/*/follow_joint_trajectory</action></actions>
+  </profile></profiles></enclave>
+  <enclave path="/openarm/gateway"><profiles><profile ns="/" node="*">
+    <topics publish="ALLOW"><topic>/rosout</topic><topic>/parameter_events</topic><topic>/right_joint_trajectory_controller/joint_trajectory</topic><topic>/left_joint_trajectory_controller/joint_trajectory</topic><topic>/right_gripper_controller/joint_trajectory</topic><topic>/left_gripper_controller/joint_trajectory</topic></topics>
+    <topics subscribe="ALLOW"><topic>/parameter_events</topic><topic>/clock</topic><topic>/joint_states</topic><topic>/robot_description</topic><topic>/*/controller_state</topic><topic>/*/passive_state</topic><topic>/controller_manager/activity</topic></topics>
+    <services reply="ALLOW"><service>/openarm_command_gateway/*</service></services>
+    <services request="ALLOW"><service>/controller_manager/list_controllers</service><service>/controller_manager/list_hardware_components</service><service>/controller_manager/list_hardware_interfaces</service><service>/*/get_parameters</service><service>/*/describe_parameters</service><service>/*/get_parameter_types</service><service>/*/list_parameters</service></services>
+    <actions call="ALLOW"><action>/right_joint_trajectory_controller/follow_joint_trajectory</action><action>/left_joint_trajectory_controller/follow_joint_trajectory</action><action>/right_gripper_controller/follow_joint_trajectory</action><action>/left_gripper_controller/follow_joint_trajectory</action></actions>
+    <actions execute="ALLOW"><action>/authorized/*/follow_joint_trajectory</action></actions>
+  </profile></profiles></enclave>
+  <enclave path="/openarm/bootstrap"><profiles><profile ns="/" node="*">
+    <topics publish="ALLOW"><topic>/rosout</topic><topic>/parameter_events</topic></topics>
+    <topics subscribe="ALLOW"><topic>/parameter_events</topic><topic>/clock</topic><topic>/controller_manager/activity</topic></topics>
+    <services reply="ALLOW"><service>/spawner_*/*</service></services>
+    <services request="ALLOW"><service>/controller_manager/*</service></services>
+  </profile></profiles></enclave>
+  <enclave path="/openarm/moveit"><profiles><profile ns="/" node="*">
+    <topics publish="ALLOW"><topic>/rosout</topic><topic>/parameter_events</topic><topic>/display_planned_path</topic><topic>/monitored_planning_scene</topic><topic>/planning_scene</topic><topic>/planning_scene_world</topic><topic>/collision_object</topic><topic>/attached_collision_object</topic><topic>/display_contacts</topic><topic>/trajectory_execution_event</topic><topic>/pipeline_state</topic></topics>
+    <topics subscribe="ALLOW"><topic>/parameter_events</topic><topic>/clock</topic><topic>/joint_states</topic><topic>/robot_description</topic><topic>/robot_description_semantic</topic><topic>/tf</topic><topic>/tf_static</topic><topic>/planning_scene</topic><topic>/planning_scene_world</topic><topic>/collision_object</topic><topic>/attached_collision_object</topic><topic>/trajectory_execution_event</topic><topic>/recognized_object_array</topic><topic>/octomap_binary</topic><topic>/monitored_planning_scene</topic></topics>
+    <services reply="ALLOW"><service>/move_group/*</service><service>/move_group_private_*/*</service><service>/moveit_*/*</service><service>/transform_listener_impl_*/*</service><service>/apply_planning_scene</service><service>/get_planning_scene</service><service>/compute_fk</service><service>/compute_ik</service><service>/plan_kinematic_path</service><service>/query_planner_interface</service><service>/get_planner_params</service><service>/set_planner_params</service><service>/check_state_validity</service><service>/clear_octomap</service><service>/get_cartesian_path</service><service>/compute_cartesian_path</service><service>/get_urdf</service><service>/load_geometry_from_file</service><service>/save_geometry_to_file</service><service>/load_map</service><service>/save_map</service></services>
+    <services request="ALLOW"><service>/*/get_parameters</service><service>/*/describe_parameters</service><service>/*/get_parameter_types</service><service>/*/list_parameters</service><service>/controller_manager/list_controllers</service></services>
+    <actions execute="ALLOW"><action>/execute_trajectory</action><action>/move_action</action><action>/execute_task_solution</action></actions>
+    <actions call="ALLOW"><action>/authorized/*/follow_joint_trajectory</action><action>/authorized/left_gripper_controller/gripper_cmd</action></actions>
+  </profile></profiles></enclave>
+  <enclave path="/openarm/h2"><profiles><profile ns="/" node="*">
+    <topics publish="ALLOW"><topic>/rosout</topic><topic>/parameter_events</topic><topic>/display_planned_path</topic></topics>
+    <topics subscribe="ALLOW"><topic>/parameter_events</topic><topic>/clock</topic><topic>/joint_states</topic><topic>/robot_description</topic><topic>/tf</topic><topic>/tf_static</topic><topic>/*/controller_state</topic><topic>/*/passive_state</topic><topic>/monitored_planning_scene</topic></topics>
+    <services reply="ALLOW"><service>/home_guarded_executor/*</service></services>
+    <services request="ALLOW"><service>/controller_manager/list_controllers</service><service>/apply_planning_scene</service><service>/get_planning_scene</service><service>/compute_fk</service><service>/compute_ik</service><service>/plan_kinematic_path</service><service>/check_state_validity</service><service>/*/get_parameters</service><service>/*/describe_parameters</service><service>/*/get_parameter_types</service><service>/*/list_parameters</service></services>
+    <actions call="ALLOW"><action>/execute_trajectory</action><action>/authorized/right_gripper_controller/follow_joint_trajectory</action></actions>
+  </profile></profiles></enclave>
+  <enclave path="/openarm/observer"><profiles><profile ns="/" node="*">
+    <topics publish="ALLOW"><topic>/rosout</topic><topic>/parameter_events</topic></topics>
+    <topics subscribe="ALLOW"><topic>/*</topic></topics>
+    <services reply="ALLOW"><service>/right_act_attended_trial/*</service><service>/openarm_ownership_observer/*</service><service>/h1h2_receive_only_capture/*</service></services>
+    <services request="ALLOW"><service>/controller_manager/list_controllers</service><service>/controller_manager/list_hardware_components</service><service>/controller_manager/list_hardware_interfaces</service><service>/*/get_parameters</service><service>/*/describe_parameters</service><service>/*/get_parameter_types</service><service>/*/list_parameters</service></services>
+  </profile></profiles></enclave>
+</enclaves></policy>

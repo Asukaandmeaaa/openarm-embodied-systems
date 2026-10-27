@@ -1,0 +1,75 @@
+# Workstation-only ACT shadow graph.
+#
+# This graph intentionally contains no dora-openarm hardware nodes, camera
+# capture nodes, CAN interfaces, ROS nodes, or HOME/motion commands. MuJoCo
+# supplies synthetic arm observations and camera frames, and the local policy
+# server is pointed at the workstation checkpoint. Keep the real deployment
+# graph in dataflow-real-act-two-camera.yaml unchanged for the supervised
+# handoff.
+nodes:
+  - id: observer
+    build: pip install -e nodes/dora-openarm-observer
+    path: dora-openarm-observer
+    args: "--arms right,left --cameras camera_wrist_right,camera_ceiling --max-source-age-ms 200 --max-source-skew-ms 100"
+    inputs:
+      tick: tick-observer/tick
+      arm_right: mujoco/arm_right_observation
+      arm_left: mujoco/arm_left_observation
+      camera_wrist_right: mujoco/camera_wrist_right
+      camera_ceiling: mujoco/camera_ceiling
+      command: mujoco/status
+    outputs:
+      - observation
+
+  - id: tick-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      tick: dora/timer/millis/33
+    outputs:
+      - tick
+
+  - id: policy-server
+    build: pip install -e nodes/dora-openarm-local-policy-server
+    path: dora-openarm-local-policy-server
+    env:
+      SOCKET: /dev/shm/openarm_official_act_policy.sock
+      OPENARM_PRETRAINED_PATH: ./outputs/act_real_combined_unreviewed_30000_20261008/checkpoints/030000/pretrained_model
+      REQUIRE_SOURCE_TIMING: "yes"
+      MAX_SOURCE_AGE_MS: "200"
+      MAX_SOURCE_SKEW_MS: "100"
+      MAX_OBSERVATION_AGE_MS: "500"
+    inputs:
+      observation: observer/observation
+    outputs: [actions, timing_fault]
+
+  - id: actions-executor
+    build: pip install -e nodes/dora-openarm-actions-executor
+    path: dora-openarm-actions-executor
+    args: "--arms right --upsample --filter --control-hz 100"
+    env:
+      REQUIRE_SOURCE_TIMING: "yes"
+      MAX_SOURCE_AGE_MS: "200"
+      MAX_SOURCE_SKEW_MS: "100"
+      MAX_OBSERVATION_AGE_MS: "500"
+    inputs:
+      actions: policy-server/actions
+      timing_fault: policy-server/timing_fault
+    outputs:
+      - move_position_right
+      - timing_fault
+
+  - id: mujoco
+    build: pip install -e nodes/dora-openarm-mujoco
+    path: dora-openarm-mujoco
+    # Headless synthetic source. --render is required for the two camera
+    # streams; --viewer is deliberately omitted.
+    args: "--scene demo --keyframe home --ctrl --render"
+    inputs:
+      position_right: actions-executor/move_position_right
+    outputs:
+      - status
+      - arm_right_observation
+      - arm_left_observation
+      - camera_wrist_right
+      - camera_ceiling

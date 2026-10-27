@@ -1,0 +1,72 @@
+schema_version: 1
+device:
+  expected_name: Gamepad MACHENIKE G3V2
+  auto_glob: /dev/input/by-id/usb-Gamepad_MACHENIKE_G3V2-joystick
+  linux_js_fallback: /dev/input/js0
+mapping:
+  # Canonical kernel identities. The real node resolves these through
+  # JSIOCGAXMAP; numeric indices below are only the simulation/old-driver
+  # fallback. This G3V2's kernel js map exposes physical LT on ABS_BRAKE and
+  # RT on ABS_GAS (confirmed by the 2026-09-21 Nano event trace).
+  axis_codes:
+    left_x: ABS_X
+    left_y: ABS_Y
+    # G3V2 identifies the right stick as ABS_Z/ABS_RZ (verified from the
+    # kernel JS axis map in the 2026-09-22 real-hardware trace).
+    right_x: ABS_Z
+    right_y: ABS_RZ
+    lt: ABS_BRAKE
+    rt: ABS_GAS
+    dpad_x: ABS_HAT0X
+    dpad_y: ABS_HAT0Y
+  axes:
+    left_x: 0
+    left_y: 1
+    right_x: 2
+    right_y: 3
+    lt: 5
+    rt: 4
+    dpad_x: 6
+    dpad_y: 7
+  buttons:
+    gripper_open_a: 0
+    episode_capture_b: 1
+    record_toggle_x: 3
+    # Linux js reports this G3V2's shoulders after RB: RB=5, LB=6.  The real
+    # node also resolves BTN_TL from the kernel button map and overrides this
+    # fallback when that metadata is available.
+    hand_drag_lb: 6
+    # L3 is reachable by the hand holding the arm.  During LT+LB physical drag
+    # it alternates gripper open/close without requiring the operator to reach A/Y.
+    hand_drag_gripper_toggle_l3: 13
+    gripper_close_y: 4
+    stop_rb_r1: 5
+control:
+  activation: hold_lt_deadman
+  stop: rb_or_rt_latched_until_lt_release_and_repress
+  trigger_press_threshold: 0.65
+  stick_deadzone: 0.12
+  response_exponent: 1.5
+  # This input is a final keyframe trim, not a task-speed servo.  The earlier
+  # 0.20/0.14 m/s and 1.2 rad/s values saturated the differential IK and the
+  # short JTC goals, producing large transient cross-axis motion on hardware.
+  maximum_translation_velocity_m_s: 0.04
+  maximum_vertical_velocity_m_s: 0.03
+  maximum_angular_velocity_rad_s: 0.25
+  maximum_target_position_error_m: 0.10
+  frame_translation: world
+  frame_rotation: end_effector_local
+  left_stick:
+    up_down: positive_negative_world_x
+    left_right: positive_negative_world_y
+  dpad:
+    up_down: positive_negative_world_z
+    left_right: positive_negative_local_roll
+  right_stick:
+    up_down: positive_negative_local_pitch
+    left_right: positive_negative_local_yaw
+safety:
+  input_loss_behavior: release_virtual_handle
+  deadman_release_behavior: release_virtual_handle
+  stop_is_physical_emergency_stop: false
+  robot_hardware_access: forbidden

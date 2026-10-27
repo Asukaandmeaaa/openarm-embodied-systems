@@ -1,0 +1,5 @@
+# Optional historical training/conversion environment; not part of the CPU CI lock.
+# Requires Python 3.12; select a platform-appropriate PyTorch build.
+-r sim.txt
+lerobot==0.6.1
+-e ./official/openarm_dataset

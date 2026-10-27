@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Fixed operator entrypoint. Environment setup alone never operates hardware.
+set -eo pipefail
+workspace_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$workspace_dir"
+stage=${1:---help}
+if [[ "$stage" == install-h1-fix ]]; then
+    exec /usr/bin/python3 -m scripts.control_ownership.h1_gripper_fix
+fi
+if [[ "$stage" == prepare-host ]]; then
+    exec /usr/bin/python3 -m scripts.control_ownership.host_setup
+fi
+if [[ "$stage" == keyboard ]]; then
+    exec /usr/bin/python3 -m scripts.act_trial.keyboard
+fi
+
+# Ignore stale ACT environment inherited from an old terminal. Hardware stages
+# do not load an ACT log session at all; its path cannot affect H1/H2 admission.
+unset OWNERSHIP_RUN ACT_TRIAL_DIR SOCKET OPENARM_PRETRAINED_PATH
+unset ROS_SECURITY_ENCLAVE_OVERRIDE OPENARM_AUTHORITY_TOKEN
+source scripts/home_replay/workstation_env.sh
+source .control_ownership_overlay/install/setup.bash
+export OPENARM_KEYSTORE="$workspace_dir/.control_ownership_keys/physical117"
+export OPENARM_AUTHORITY_SOCKET="/run/user/$(id -u)/openarm-control.sock"
+security_exports=$(/usr/bin/python3 -m scripts.control_ownership.security env \
+    --keystore "$OPENARM_KEYSTORE" --domain 117)
+eval "$security_exports"
+
+case "$stage" in
+    h1|gateway|h2|prepare|--help|-h) ;;
+    *)
+        if [[ -f results/act_manual_current.env ]]; then
+            source results/act_manual_current.env
+        elif [[ "$stage" != status ]]; then
+            echo 'No ACT trial prepared. Run: ./scripts/actctl prepare --profile visual32' >&2
+            exit 2
+        fi
+        ;;
+esac
+
+interpreter="$workspace_dir/official/dora-openarm-evaluation/.venv/bin/python"
+if [[ $# == 0 ]]; then set -- --help; fi
+case "$stage" in
+    policy)
+        # Serialize policy startup/lifetime. Prepare BEFORE tee opens policy.log,
+        # otherwise its descriptor would keep writing into the archived attempt.
+        exec 8>"$OWNERSHIP_RUN/.policy.lock"
+        flock -n 8 || { echo 'Policy is already starting/running; stop its terminal first.' >&2; exit 2; }
+        "$interpreter" -m scripts.act_trial.manual_experiment prepare-policy
+        "$interpreter" -m scripts.act_trial.manual_experiment "$@" 2>&1 \
+            | tee -a "$ACT_TRIAL_DIR/policy.log"
+        ;;
+    dora)
+        "$interpreter" -m scripts.act_trial.manual_experiment "$@" 2>&1 \
+            | tee -a "$ACT_TRIAL_DIR/$stage.log"
+        ;;
+    *) exec "$interpreter" -m scripts.act_trial.manual_experiment "$@" ;;
+esac

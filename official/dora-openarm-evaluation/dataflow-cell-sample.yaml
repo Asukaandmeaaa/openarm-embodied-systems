@@ -1,0 +1,219 @@
+# Copyright 2026 Enactic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+nodes:
+  # ---- Session UI (this package) ----
+  - id: evaluation-ui
+    build: pip install -e nodes/dora-openarm-evaluation-ui
+    path: dora-openarm-evaluation-ui
+    env:
+      DATASET_DIR: "test/dataset"
+      METADATA_FILE: "metadata.yaml"
+      CHECKPOINT_PATH: "/path/to/checkpoints/<run-name>/<step>"
+      AUTO_OPEN: "yes"
+      PORT: "8000"
+    inputs:
+      tick: dora/timer/secs/1
+      arm_status_right: arm-right/status
+      arm_status_left:  arm-left/status
+      camera_wrist_right: camera-wrist-right/image
+      camera_wrist_left:  camera-wrist-left/image
+      camera_head_left:   camera-head-stereo-splitter/image_0
+      camera_head_right:  camera-head-stereo-splitter/image_1
+      camera_ceiling:     camera-ceiling/image
+    outputs:
+      - arm_command      # start / stop / quit  — for arms, quitters, observer
+      - task_prompt      # current task language instruction
+
+  # ---- Quittable tick sources ----
+  - id: quittable-tick-arm
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: evaluation-ui/arm_command
+      tick: dora/timer/millis/4   # 250 Hz
+    outputs:
+      - tick
+
+  - id: quittable-tick-camera
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: evaluation-ui/arm_command
+      tick: dora/timer/millis/33  # ~30 fps
+    outputs:
+      - tick
+
+  - id: quittable-tick-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: evaluation-ui/arm_command
+      tick: dora/timer/millis/33  # ~30 Hz
+    outputs:
+      - tick
+
+  # ---- Arms ----
+  - id: arm-right
+    build: pip install ./vendor/openarm_can/python -e nodes/dora-openarm
+    path: dora-openarm
+    args: "--side right --align-threshold 0.2 --config ./openarm_cell_higher_pd.yaml"
+    inputs:
+      request_position: quittable-tick-arm/tick
+      request_state:    quittable-tick-arm/tick
+      move_position:    actions-executor/move_position_right
+      command:          evaluation-ui/arm_command
+    outputs:
+      - position
+      - state
+      - status
+
+  - id: arm-left
+    build: pip install ./vendor/openarm_can/python -e nodes/dora-openarm
+    path: dora-openarm
+    args: "--side left --align-threshold 0.2 --config ./openarm_cell_higher_pd.yaml"
+    inputs:
+      request_position: quittable-tick-arm/tick
+      request_state:    quittable-tick-arm/tick
+      move_position:    actions-executor/move_position_left
+      command:          evaluation-ui/arm_command
+    outputs:
+      - position
+      - state
+      - status
+
+  # ---- Cameras ----
+  - id: camera-wrist-right
+    build: pip install opencv-video-capture
+    path: opencv-video-capture
+    env:
+      CAPTURE_PATH: "/dev/camera_wrist_right"
+      ENCODING: "jpeg"
+      IMAGE_HEIGHT: 600
+      IMAGE_WIDTH:  960
+      JPEG_QUALITY: 90
+    inputs:
+      tick: quittable-tick-camera/tick
+    outputs:
+      - image
+
+  - id: camera-wrist-left
+    build: pip install opencv-video-capture
+    path: opencv-video-capture
+    env:
+      CAPTURE_PATH: "/dev/camera_wrist_left"
+      ENCODING: "jpeg"
+      IMAGE_HEIGHT: 600
+      IMAGE_WIDTH:  960
+      JPEG_QUALITY: 90
+    inputs:
+      tick: quittable-tick-camera/tick
+    outputs:
+      - image
+
+  - id: camera-head-stereo
+    build: pip install opencv-video-capture
+    path: opencv-video-capture
+    env:
+      CAPTURE_PATH: "/dev/camera_head_stereo"
+      ENCODING: "bgr8"
+      IMAGE_HEIGHT: 720
+      IMAGE_WIDTH:  2560
+    inputs:
+      tick: quittable-tick-camera/tick
+    outputs:
+      - image
+
+  - id: camera-head-stereo-splitter
+    build: pip install -e nodes/dora-opencv-image-splitter
+    path: dora-opencv-image-splitter
+    env:
+      SPLIT_MODE: "vertical"
+      NUM_SPLITS: 2
+      JPEG_QUALITY: 90
+      IMAGE_HEIGHT: 720
+      IMAGE_WIDTH:  2560
+    inputs:
+      tick:  quittable-tick-camera/tick
+      image: camera-head-stereo/image
+    outputs:
+      - image_0
+      - image_1
+
+  - id: camera-ceiling
+    build: pip install opencv-video-capture
+    path: opencv-video-capture
+    env:
+      CAPTURE_PATH: "/dev/camera_ceiling"
+      ENCODING: "jpeg"
+      IMAGE_HEIGHT: 600
+      IMAGE_WIDTH:  960
+      JPEG_QUALITY: 90
+    inputs:
+      tick: quittable-tick-camera/tick
+    outputs:
+      - image
+
+  # ---- Observer: bundles arms + cameras + task_prompt into one observation ----
+  - id: observer
+    build: pip install -e nodes/dora-openarm-observer
+    path: dora-openarm-observer
+    inputs:
+      tick:              quittable-tick-observer/tick
+      arm_right:         arm-right/position
+      arm_left:          arm-left/position
+      camera_wrist_right: camera-wrist-right/image
+      camera_wrist_left:  camera-wrist-left/image
+      camera_head_left:   camera-head-stereo-splitter/image_0
+      camera_head_right:  camera-head-stereo-splitter/image_1
+      camera_ceiling:     camera-ceiling/image
+      
+      command:           evaluation-ui/arm_command
+      arm_right_status:   arm-right/status
+      arm_left_status:    arm-left/status
+      task_prompt: evaluation-ui/task_prompt
+    outputs:
+      - observation
+
+  - id: quittable-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command:     evaluation-ui/arm_command
+      observation: observer/observation
+    outputs:
+      - observation
+
+  # ---- Policy server ----
+  - id: policy-server
+    build: pip install -e nodes/dora-openarm-local-policy-server
+    path: dora-openarm-local-policy-server
+    args: "--execute-full-chunk"
+    env:
+      SOCKET: "/dev/shm/policy-server.socket"
+    inputs:
+      observation: quittable-observer/observation
+    outputs:
+      - actions
+
+  # ---- Actions executor ----
+  - id: actions-executor
+    build: pip install -e nodes/dora-openarm-actions-executor
+    path: dora-openarm-actions-executor
+    args: "--upsample --filter --control-hz 250"
+    inputs:
+      actions: policy-server/actions
+    outputs:
+      - move_position_right
+      - move_position_left

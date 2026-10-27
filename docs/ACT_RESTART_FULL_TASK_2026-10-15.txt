@@ -1,0 +1,89 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+修复后完整手动流程：机械零位 -> ROS H1/H2 -> HOME交接 -> Dora ACT（最多60秒）
+
+本次新目录：/home/lushilin/openarm_vla_ws/results/act_manual_orhyr6wr
+每个终端均使用该目录的environment.sh。不要继续source旧eg_coeyv目录。
+配置已准备，profile=task，右J1-J8，最多60秒；无需再次prepare或next-trial。
+旧实验和失败plan-home记录保留。当前双臂已由操作者确认安全支撑、位于机械零位附近。
+
+修复：H2权限下的只读观察节点关闭Jazzy自动类型描述服务；参数服务关闭不代表该服务关闭。
+未放宽DDS权限，未修改密钥；现场同一Enforce/H2权限的节点初始化测试通过，无规划、CAN或运动指令。
+构造失败也会留下明确失败报告。新会话支持prepare --profile task，不再默认回退3秒。
+软件测试310项通过，新目录离线模型/配置预检和后台启动只读预检通过。尚未替用户启动任何电机。
+
+保留：目标速度0.25rad/s、加速度0.25rad/s²、反馈速度停止线0.50rad/s（均受既有配置约束）；
+任务模式J6运行跟踪0.04rad，其他轴含夹爪0.03rad；HOME/初始目标与反馈验收0.03rad。
+3秒及HOME±0.04rad任务范围已取消；128个假想角点只诊断，真实起点/轨迹碰撞保护仍强制。
+原始模型预测保持不变，执行层的融合、滤波、限幅介入分别记录。夹爪接触仍可能触发跟踪保护；
+目前没有验证过的接触力控制，60秒上限不等于保证完成抓取任务。
+
+步骤0：现场准备
+确认旧ROS/H1、gateway、Dora、policy均已退出；若某旧终端仍在运行，先退出它，不启动第二份。
+本次软件只读预检时未发现这些旧控制进程或CAN接收者，发送队列为空。无需重复复位CAN、删锁或生成密钥。
+在双臂允许的机械零位起点、按既有方式支撑、场地和桌面布置符合碰撞场景、急停准备好后，
+由操作者恢复电机电源并释放急停（若已正常供电，不需再次断电重启）。开始动作前人员退出运动范围。
+
+终端1：启用ROS硬件、执行原H1（会使能并可能运动）
+source /home/lushilin/openarm_vla_ws/results/act_manual_orhyr6wr/environment.sh
+actctl h1 2>&1 | tee "$OWNERSHIP_RUN/h1.log"
+
+H1自动先验证现有硬件overlay、DDS、控制源/队列及电机响应；失败则停止，不手动忽略错误。
+等待right/left arm及right gripper控制器active、spawner完成。Zero command sequence finished
+只表示指令序列结束，真实到位由下一步检查。保留终端1。
+
+终端2：唯一gateway
+source /home/lushilin/openarm_vla_ws/results/act_manual_orhyr6wr/environment.sh
+actctl gateway 2>&1 | tee "$OWNERSHIP_RUN/gateway_terminal.log"
+
+保留终端2。刚启动时idle但synchronized=false是正常的，H2步骤会自动完成首次同步。
+
+终端3：原H2规划执行和HOME交接（会运动）
+source /home/lushilin/openarm_vla_ws/results/act_manual_orhyr6wr/environment.sh
+actctl h2 2>&1 | tee "$OWNERSHIP_RUN/h2.log"
+
+自动核验H1实测起点，使用独占H2租约运行原ROS两阶段规划、碰撞检查及夹爪打开；
+HOME验收后执行保持交接检查。必须等待 HOME_AND_HANDOFF_VERIFIED。
+任何异常中止后不要重复H1/H2，不删除报告绕过；机械臂稳定时保留ROS和gateway。
+此轮不使用plan-home/return-home：这些只用于ROS保持运行时从中途姿态恢复。
+
+终端4：ACT模型服务，不控制电机
+source /home/lushilin/openarm_vla_ws/results/act_manual_orhyr6wr/environment.sh
+actctl policy 2>&1 | tee "$ACT_TRIAL_DIR/policy.log"
+
+应打印profile=task、maximum_duration_s=60.0。等待Listening/策略服务就绪再进行下一步。
+
+终端5：Dora观察、预测和记录，尚不执行ACT运动
+source /home/lushilin/openarm_vla_ws/results/act_manual_orhyr6wr/environment.sh
+actctl dora 2>&1 | tee "$ACT_TRIAL_DIR/dora.log"
+
+保留终端4/5。Dora复用ROS硬件后端，不启动旧直连CAN数据流。
+
+终端3：等待实时就绪
+actctl ready
+
+必须看到 READY: profile=task, maximum_duration_s=60.0。
+现场准备好观察任务且急停可用时，以下命令开始右臂及右夹爪ACT实物动作：
+actctl start
+actctl status
+
+START requested只是请求。status应看到started=true、stage=active；若已生成result.json，
+应按reason判断是正常完成还是提前停止。不要把请求已写入当作运动成功。
+正常上限60秒；观察到任务完成、无进展或异常趋势时可以提前停止：
+actctl stop
+actctl status
+
+停止与异常：
+- ACT过程中：终端3 actctl stop，保留ROS/gateway保持。通信故障时软件停止不保证及时生效。
+- H2过程中：在执行H2的终端3 Ctrl+C，gateway尝试撤销租约并保持；actctl stop不停止H2。
+- 危险运动：直接物理急停，不等待软件返回；注意失去力矩后的支撑风险。
+- 普通结束：先停止ACT并确认静止，再退出终端5/4；保留终端1/2。
+- 完全停机：双臂已安全支撑后再退出gateway和ROS。不要先Ctrl+C H1再处理支撑。
+- 不直接再次start。需要下一轮时保留日志并根据当前姿态重新安排HOME/交接。
+
+本轮结果：
+/home/lushilin/openarm_vla_ws/results/act_manual_orhyr6wr
+h1.log / h2.log / gateway*.jsonl：硬件启动、ROS HOME、控制权证据。
+act/policy*.jsonl与arrow：模型输入及原始输出；executor*.jsonl：融合/滤波；
+act/bridge.jsonl与bridge_raw_can.jsonl：约束介入、下发目标、CAN命令和反馈；
+act/result.json：停止原因。task_success=null需要操作者补充真实任务结果。

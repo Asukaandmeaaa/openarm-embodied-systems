@@ -1,0 +1,66 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+ACT实物对照：预测50、完整消费前10步
+日期：2026-10-21
+
+本轮固定模型：
+outputs/act_real7030_50k_20261020/checkpoints/050000/pretrained_model
+task，synchronized_v1；此前关闭的task MuJoCo碰撞检查保持关闭。
+模型权重、训练数据、预/后处理、ROS速度/加速度参数不变。
+策略服务在Listening之前做三次合成输入预热并重置状态，避免首次CUDA初始化
+占用现场观测的时效预算；预热不会向Dora或ROS发送动作。
+
+动作调度：queued_prefix_v1
+- 模型仍输出50x16，保留完整原始预测日志。
+- 只将前10步交给执行器，按30Hz占用约0.3333秒。
+- 保留100Hz Hermite插值和低通；第10个动作占满自己的时间槽。
+- 不再在2～3步时用新块中断，不再做旧尾混合。
+- 执行器完成10步后通知客户端；客户端等待完成之后组装的新观测再推理。
+- 推理等待期间ROS保持最后参考，未擅自刷新旧观测时间戳。
+- 人工STOP、桥停止、时效故障仍可立即打断，不必等待10步完成。
+“消费10步”指按时间发送这10步的参考，不保证电机逐点精确到位。
+
+离线验证：218通过，1跳过；修正Dora传输时间戳JSON兼容后队列9项再次通过。
+真实Dora进程+Unix socket的无硬件联调完成9个动作块，每块覆盖0..9原始步，
+约0.333～0.335秒后才通知下一次推理，无时效故障。
+结果：results/act_queue10_dora_validation_v3_20261021/report.json
+现场启动时发现START可能落在队列换块等待间隙：已改为同一个START在原有
+2秒请求有效期内等待所有就绪条件同时满足；没有放宽就绪/反馈/动作时效。
+该修正与相关执行回归43项通过；第一次拒绝发生在使能ACT之前，记录保留。
+复现：
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 official/dora-openarm-evaluation/.venv/bin/python \
+  scripts/validate_act_queue10.py --output results/act_queue10_recheck_新目录
+该联调只用合成观测和预测，不连接ROS/CAN/相机，不证明实物抓取成功。
+
+从关机/机械零位启动的新实测：
+所有终端cd /home/lushilin/openarm_vla_ws。
+双臂位于H1机械零位且有支撑，供电/CAN可用；方块、盒子、相机位置固定。
+
+先离线准备：
+./scripts/actctl prepare --profile task --motion-generator synchronized_v1 \
+  --checkpoint /home/lushilin/openarm_vla_ws/outputs/act_real7030_50k_20261020/checkpoints/050000/pretrained_model
+
+终端1保持：./scripts/actctl h1
+终端2保持：./scripts/actctl gateway
+终端3：./scripts/actctl status
+控制器active、gateway idle后执行：./scripts/actctl h2
+等待HOME_AND_HANDOFF_VERIFIED；同一控制会话不重复H1/H2。
+
+终端4保持：./scripts/actctl policy
+终端5保持：./scripts/actctl dora
+启动输出应含action_schedule=queued_prefix_v1, predict=50 execute=10 at 30Hz。
+Dora执行器应显示：[ACT QUEUE] completed 10/10 raw steps。
+
+终端3：
+./scripts/actctl ready
+./scripts/actctl start
+./scripts/actctl status
+
+完成或异常：./scripts/actctl stop
+或./scripts/actctl keyboard中的x后回车；停止ACT，保留ROS保持。
+task无自动时长上限。H1关闭会停用电机，先支撑双臂。
+如启动失败或故障，不自动重复H1/H2，不清故障硬试。
+
+记录：是否接近后停滞，闭爪/抬升/放置/松爪是否完成；先停ACT再人工干预。
+队列日志queue_prefix_completed证明参考窗口消费完成，不能代替实物成功记录。
+本轮是调度对照，结果出来前不能认定训练数据已经被排除。

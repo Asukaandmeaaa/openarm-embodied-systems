@@ -1,0 +1,281 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+ROS H1/H2 capture -> offline validation -> Dora simulation
+Workstation: /home/lushilin — prepared 2026-10-14
+
+What is ready
+=============
+The existing H2 executor still fresh-plans both stages with MoveIt. It now saves
+the exact full timed RobotTrajectory for each stage, execution call/return times,
+configuration snapshot, measured post-H2 arm pose, and J8 result. Its acceptance
+criteria, targets, collision guard, planning scales and controller are unchanged.
+
+The new receive-only recorder starts before H1 and captures can0 AND can1,
+including H1's hardware-activation motion before /joint_states is available.
+It never enables a motor or transmits a CAN packet. It can run alongside ROS.
+The existing motor-controlling Dora flows must remain stopped during ROS H1/H2.
+
+Replay currently available in this workflow is SIMULATION ONLY. No new physical
+replay dataflow is provided: the recording does not exist yet, its collision
+result is unknown, and the direct-CAN gravity compensation gap remains unresolved.
+The synthetic integration-test artifact is not a robot trajectory.
+
+Do not change the HOME target to guess at the observed discrepancy. This run
+records the actual measured post-H2 pose and compares ROS and raw CAN coordinates.
+If the familiar H2 result still differs, retain this capture for diagnosis.
+
+0. Software preparation (already completed locally)
+==================================================
+The capture-enabled ROS package was built into an isolated overlay:
+  /home/lushilin/openarm_kinesthetic_ws/ros2_ws/install-h1h2-capture
+The original installation is not overwritten.
+
+If rebuilding after edits:
+  source /opt/ros/jazzy/setup.bash
+  source /home/lushilin/openarm_ws/install/setup.bash
+  cd /home/lushilin/openarm_kinesthetic_ws/ros2_ws
+  colcon --log-base log-h1h2-capture build \
+    --packages-select openarm_kinesthetic_recorder \
+    --build-base build-h1h2-capture --install-base install-h1h2-capture --symlink-install
+
+1. Terminal R — start capture BEFORE H1
+=======================================
+Use a new capture directory per experiment. Do not mkdir CAP yourself; the
+recorder refuses an existing directory to protect previous data.
+
+  source /home/lushilin/openarm_vla_ws/scripts/home_replay/workstation_env.sh
+  export CAP="$VLA_CAPTURE_ROOT/results/h1h2_capture_$(date +%Y%m%d_%H%M%S)"
+  printf '%s\n' "$CAP" > "$VLA_CAPTURE_ROOT/results/active_h1h2_capture.path"
+  /usr/bin/python3 "$VLA_CAPTURE_ROOT/scripts/home_replay/capture.py" record \
+    --output "$CAP" \
+    --home-config "$H2_CAPTURE_CONFIG" \
+    --driver-config "$VLA_CAPTURE_ROOT/official/dora-openarm-evaluation/openarm_real_ros_coordinates.yaml" \
+    --snapshot /home/lushilin/openarm_ws/src/openarm_ros2/openarm_hardware/src/openarm_simple_hardware.cpp \
+    --snapshot /home/lushilin/openarm_ws/src/openarm_description/assets/robot/openarm_v2.0/config/arm/control/control_gains.yaml \
+    --snapshot /home/lushilin/openarm_ws/install/openarm_hardware/lib/libopenarm_hardware.so
+
+Wait for CAPTURE_READY. It means recorder sockets/subscriptions are ready, not
+that a robot has been enabled or a trajectory is safe. Keep this terminal running.
+
+2. Terminal H1 — run the existing ROS hardware pipeline
+======================================================
+Follow the established physical H1 procedure: operator present, supported/manual
+mechanical-zero start, clear motion area and physical stop available. This is
+not an arbitrary-pose recovery procedure. Do not run current Dora HOME smoke.
+
+  source /home/lushilin/openarm_vla_ws/scripts/home_replay/workstation_env.sh
+  export CAP=$(cat "$VLA_CAPTURE_ROOT/results/active_h1h2_capture.path")
+  /usr/bin/python3 "$VLA_CAPTURE_ROOT/scripts/home_replay/capture.py" mark "$CAP" H1_start
+  set -o pipefail
+  {
+    set -x
+    ros2 launch openarm_bimanual_moveit_config demo.launch.py \
+      arm_type:=openarm_v2.0 \
+      use_fake_hardware:=false \
+      launch_rviz:=false \
+      robot_controller:=joint_trajectory_controller \
+      right_can_interface:=can0 \
+      left_can_interface:=can1 \
+      gravity_compensation:=true \
+      gravity_scale:=1.0 \
+      gripper_contact_mode:=monitor \
+      gripper_torque_threshold:=0.0 \
+      gripper_torque_release_threshold:=0.0 \
+      gripper_hard_torque_limit:=0.0
+  } 2>&1 | tee "$CAP/h1_terminal.log"
+
+Wait for BOTH arms' return_to_zero completion and active controllers. Keep H1
+running. Do not Ctrl-C H1 just to mark its initialization complete.
+
+3. Terminal H2 — mark, fresh-plan, execute, save actual HOME
+==========================================================
+  source /home/lushilin/openarm_vla_ws/scripts/home_replay/workstation_env.sh
+  export CAP=$(cat "$VLA_CAPTURE_ROOT/results/active_h1h2_capture.path")
+  ros2 pkg prefix openarm_kinesthetic_recorder
+
+The prefix must end in install-h1h2-capture/openarm_kinesthetic_recorder.
+Then, after H1 has completed return_to_zero:
+
+  /usr/bin/python3 "$VLA_CAPTURE_ROOT/scripts/home_replay/capture.py" mark "$CAP" H1_end
+  ros2 param dump /controller_manager > "$CAP/controller_manager.parameters.yaml"
+  ros2 param dump /robot_state_publisher > "$CAP/robot_state_publisher.parameters.yaml"
+  ros2 param dump /right_joint_trajectory_controller > "$CAP/right_arm_controller.parameters.yaml"
+  ros2 param dump /right_gripper_controller > "$CAP/right_gripper_controller.parameters.yaml"
+  /usr/bin/python3 "$VLA_CAPTURE_ROOT/scripts/home_replay/capture.py" mark "$CAP" H2_start
+  set -o pipefail
+  {
+    set -x
+    ros2 run openarm_kinesthetic_recorder home_guarded_executor \
+      --config "$H2_CAPTURE_CONFIG" \
+      --report "$CAP/h2_execution.json" \
+      --allow-real-execution
+  } 2>&1 | tee "$CAP/h2_terminal.log"
+
+Proceed only on successful HOME_READY with both stages and J8 accepted.
+If it fails, preserve the capture and stop here; do not rerun H2 from a partial
+stage. Existing H2 recovery rules still apply.
+
+After successful H2, keep ROS holding the final pose for at least ONE SECOND.
+Observe whether this matches the HOME you remember. Then mark the end:
+
+  /usr/bin/python3 "$VLA_CAPTURE_ROOT/scripts/home_replay/capture.py" mark "$CAP" H2_end
+
+Keep holding for another ONE SECOND so every axis has samples after the marker.
+Optionally save your observations (and a photo separately) in the capture folder:
+
+  ${EDITOR:-nano} "$CAP/operator_observation.txt"
+
+Record whether the table/setup changed and whether this was the expected H2 pose.
+This note is evidence; the code does not silently overwrite the HOME configuration.
+
+4. Stop recording and preserve the experiment
+============================================
+Ctrl-C Terminal R only, while H1 still holds the arm. Recorder prints complete,
+per-stream counts, socket drops and errors, and hashes its files in manifest.json.
+Do not edit its raw files or reports afterward; exporters verify hashes.
+
+The recorder seals a snapshot named h1_activation_terminal.log. The original
+h1_terminal.log remains explicitly unsealed because H1 may append shutdown lines
+later. All CAN/ROS data, H2 results, configuration and the activation-log snapshot
+are hashed. Do not modify the sealed snapshot.
+
+Shut down H1 according to the existing procedure, supporting the arm before motor
+disable. Do not hand off to a physical Dora flow in this session yet.
+
+5. Export recorded commands AND measured motion (offline)
+=========================================================
+  source /home/lushilin/openarm_vla_ws/scripts/home_replay/workstation_env.sh
+  export CAP=$(cat "$VLA_CAPTURE_ROOT/results/active_h1h2_capture.path")
+  cd "$VLA_CAPTURE_ROOT"
+  .venv-real-act/bin/python scripts/home_replay/export.py "$CAP" \
+    --phase H2 --source command --output "$CAP/H2_command_replay.json"
+  .venv-real-act/bin/python scripts/home_replay/export.py "$CAP" \
+    --phase H2 --source measured --output "$CAP/H2_measured_replay.json"
+
+command: decoded MIT position references plus recorded dq/kp/kd/torque; an archive
+of controller commands, not automatically an admissible geometric replay path.
+measured: the actual measured geometric path, used for right-only simulation.
+Export preserves command/feedback start offsets in start_alignment. A successful
+export does not imply a successful replay-entry check or physical authorization.
+
+Both contain all 16 named axes and timestamps; all selected source knots are
+retained. Per-axis timestamp alignment prevents artificial microsteps caused by
+CAN frames arriving sequentially. Piecewise linear interpolation connects only
+adjacent recorded samples; it does not generate a zero/side/HOME shortcut.
+
+Export fails on missing initial axes, >100 ms data gaps, dropped/error CAN frames,
+clock discontinuities, non-enabled feedback, lifecycle operations in the interval,
+unstable final pose, ROS/CAN final mismatch, stale H2 report, config/hash mismatch,
+or absent full accepted plans. Never bypass a failed export by trimming the prefix.
+
+H1 startup is retained in raw CAN/ROS evidence, including enable/disable operations
+and the initial zero command. A whole H1 activation interval will normally NOT
+be exportable as a position-only trajectory: it has lifecycle operations, and
+both arms may not have complete feedback before the first movement. That is an
+explicit refusal, not silent truncation. H2 replay requires its already-recorded
+near-zero starting state; physical motor activation must be handled separately.
+
+6. Validate both paths in simulation
+====================================
+  .venv-real-act/bin/python scripts/home_replay/simulate.py \
+    --trajectory "$CAP/H2_command_replay.json" --scope right --report "$CAP/H2_command.validation.json"
+  .venv-real-act/bin/python scripts/home_replay/simulate.py \
+    --trajectory "$CAP/H2_measured_replay.json" --scope right --report "$CAP/H2_measured.validation.json"
+
+Exit 0 = geometric checks passed; exit 2 = rejected. Each report has a PNG plot.
+Check both reports, the actual post_H2_comparison, and the operator observation.
+The scene explicitly applies the RECORDED H2 table geometry; the stale default
+XML table height is not used. The test checks all original segments and subdivides
+to <=5 ms and <=0.002 rad, joint/velocity limits, table/pedestal/inter-arm/self
+contacts, start consistency and final tracking. Negative contacts are rejected.
+Right scope checks actuator limits for J1-J8 on the right, using the sealed runtime
+ROS URDF and tighter installed MoveIt bounds. The left measured poses remain in
+the full collision scene; its actuator-limit discrepancies are diagnostics, not
+right-only simulation failures. No left commands are emitted. Scope all retains
+all-joint actuator checks. Current physical Dora ACT still actively holds the
+left arm; it does not inherit this simulation-only exemption.
+Model, trajectory, scope, source-code and limit-source hashes are checked at replay.
+
+Limitations are explicit: this is a sampled kinematic check, not a continuous
+collision proof or dynamics validation. Extra real obstacles, the cube and black
+box are not represented by the fixed HOME guard scene. An old table registration
+does not validate a moved table. Physical replay_authorized remains FALSE.
+
+7. Replay the accepted recording THROUGH DORA, still simulation only
+===================================================================
+  export HOME_REPLAY_TRAJECTORY="$CAP/H2_measured_replay.json"
+  export HOME_REPLAY_REPORT="$CAP/H2_measured.validation.json"
+  export HOME_REPLAY_LOG="$CAP/H2_measured.dora_sim.jsonl"
+  export HOME_REPLAY_SCOPE=right
+  cd "$VLA_CAPTURE_ROOT/official/dora-openarm-evaluation"
+  .venv/bin/dora run dataflow-recorded-home-sim-host.yaml
+
+Expected terminal output: SIM_REPLAY_COMPLETE; no physical replay authorization.
+The graph refuses mismatched/failed reports and changed model files. It contains
+no motor node, no CAN sender, no ACT policy, no automatic homing or alignment.
+Right-only outputs are named simulated_position_right and have eight values.
+The JSONL also logs the measured left collision context separately.
+Use new output filenames for repeats; simulation logs are never overwritten.
+
+8. Before physical replay can be added
+======================================
+Review the fresh capture, both simulation reports, actual HOME comparison, and
+ROS controller parameters first. Keep measured HOME and commanded HOME separate.
+If an exact observed endpoint should become the target, it needs explicit review;
+the exporter does not silently turn tracking error into a new commanded HOME.
+
+The later physical executor must reject a fresh 16-joint starting-state mismatch
+against BOTH recorded measured start and first command (0.03 rad), check the
+station/table and parked left arm, retain original intermediate waypoints/timing,
+and log requested/dispatched/measured motion. There must be no automatic
+interpolation from an arbitrary current pose to the recorded start.
+
+The current position-only Dora driver still lacks ROS gravity feedforward.
+Recording a good ROS path does not fix that. Its archived torque trace must NOT
+be blindly replayed as gravity compensation. A physical executor must implement
+the validated live control contract and tracking/stop guards before CAN replay.
+
+Files produced by a real capture
+================================
+can.jsonl: original frame IDs/payloads/FD flags, per-frame kernel/receipt clocks,
+  decoded q/dq/torque/kp/kd/status/temperature and lifecycle commands, both arms.
+ros.jsonl: complete serialized joint_states, controller reference/feedback/error,
+  planned trajectory displays, planning scene, parameter events, TF and TF-static.
+snapshots/: source/config/binary snapshots plus observed robot_description URDF.
+h2_execution.json: exact MoveIt plans, full timing, execution/tracking results,
+  config, collision scene, measured post-H2 arm/J8, provenance hashes.
+mark_*.json: phase boundaries in wall and monotonic nanoseconds.
+manifest.json: captured file hashes, counts, losses, completion and host identity.
+H2_*replay.json: self-contained geometric replay candidates with source provenance.
+H2_*.validation.json and PNG: offline results; never physical authorization.
+H2_command.dora_sim.jsonl: Dora simulator playback timestamps and positions.
+
+Actual execution update — 2026-10-14
+===================================
+ROS H1 and H2 were executed on this workstation with the operator present.
+H2 reached HOME_READY and the operator confirmed the observed pose matches the
+previous ROS H2 HOME. Both hardware interfaces subsequently deactivated cleanly
+after the operator confirmed arm support.
+
+Complete H2 capture: results/h2_capture_20261014_172126/
+Measured 16-joint export: results/h2_capture_20261014_172126_measured.json
+Detailed results: results/h2_capture_20261014_172126_review/REPORT.txt
+
+The first H1 recorder failed on nonfinite ROS metadata; its raw partial capture
+is preserved as incomplete. The fixed recorder made a separate complete H2
+capture. Do not treat these as an uninterrupted full H1/H2 recording.
+
+Initial checking rejected left J4/gripper limits and command-start mismatch.
+Subsequent source audit corrected stale J4 bounds (ROS already allows -0.02 rad)
+and separated right-only actuator checks from left collision context. All 36 real
+training episodes have fixed left action channels; ACT executes right8 while
+observing/predicting 16 dimensions. Physical Dora currently also holds left8.
+
+The measured H2 trajectory now passes right-only validation over 49418 poses and
+completed simulator-only Dora replay, 1623 right8 outputs over 16.21822258 s.
+Full audit: results/h2_validation_scope_audit_20261014/REPORT.txt
+Accepted report: results/h2_validation_scope_audit_20261014/right_measured_validation_v2.json
+Replay log: results/h2_validation_scope_audit_20261014/right_measured_dora_v2.jsonl
+All-arm simulation still rejects the actual left-gripper URDF discrepancy. The
+command archive preserves its initial offset and still fails simulation admission.
+Physical playback remains disabled. The SYNTHETIC_TEST_ONLY fixture is only a test.

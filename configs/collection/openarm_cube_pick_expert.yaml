@@ -1,0 +1,11 @@
+# Autonomous expert dataflow. The standalone batch CLI is the formal entry;
+# this Dora graph exposes the same expert for recorder/UI diagnostics.
+nodes:
+  - id: expert
+    path: python
+    args: >-
+      -m openarm_cube_pick_expert.collect --episodes 5 --seed 20260902
+      --output data/raw/openarm_cube_pick/expert_pilot
+    env:
+      PYTHONPATH: .:official/openarm_mujoco/src
+      MUJOCO_GL: egl

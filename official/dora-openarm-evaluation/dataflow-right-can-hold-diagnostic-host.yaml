@@ -1,0 +1,13 @@
+# Workstation host variant. Physical operation: this flow owns CAN and enables motors.
+# Run only after the operator has confirmed the arm is secured and all ROS/Dora
+# hardware controllers are stopped. Never run this concurrently with another CAN writer.
+# Right-arm CAN startup diagnostic. No policy, cameras, left arm, or HOME motion.
+# The arm enables and holds its measured starting pose until Dora exits.
+nodes:
+  - id: arm-right
+    build: pip install ./vendor/openarm_can/python -e nodes/dora-openarm
+    path: dora-openarm
+    args: --side right --startup-home ./official/dora-openarm-evaluation/guarded-home-right.json --guard-hold-only --config ./official/dora-openarm-evaluation/openarm_real_ros_coordinates.yaml
+    inputs:
+      request_position: dora/timer/millis/50
+    outputs: [position, status, home_status]

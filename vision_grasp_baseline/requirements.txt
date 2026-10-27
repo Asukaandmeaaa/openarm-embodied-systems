@@ -1,0 +1,3 @@
+# Install only in this folder's virtual environment. ROS/OpenCV/numpy/scipy/yaml
+# are provided by the workstation/system packages, not by the ACT environment.
+pyrealsense2==2.59.1.11053

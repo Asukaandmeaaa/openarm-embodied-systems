@@ -1,0 +1,106 @@
+openarm_real_gamepad:
+  ros__parameters:
+    device: auto
+    publish_rate: 20.0
+    command_topic: /openarm_kinesthetic/operator_command
+    status_topic: /openarm_kinesthetic/gamepad_status
+    cartesian_twist_topic: /openarm_kinesthetic/cartesian_twist
+    motion_record_toggle_topic: /openarm_kinesthetic/motion_record_toggle
+    motion_recording_mode: continuous_marked
+    motion_marker_event_topic: /openarm_kinesthetic/motion_marker_event
+    # During recording A/Y only mark replay semantics; the gripper stays still.
+    continuous_marked_drive_gripper: false
+    # Dense samples are authoritative, so standalone LB markers are unnecessary.
+    continuous_marked_enable_lb_keypoints: false
+
+right_motion_recorder:
+  ros__parameters:
+    output_directory: ~/openarm_kinesthetic_data/collections/trajectories
+    toggle_topic: /openarm_kinesthetic/motion_record_toggle
+    # Complete stamped J1-J8 frames, target 50 Hz.
+    minimum_sample_period_s: 0.02
+    joint_state_watchdog_s: 0.50
+    home_start_tolerance_rad: 0.06
+    recording_mode: continuous_marked
+    # Second X requests rigid bridge handoff, guarded runtime HOME, measured
+    # settle, then saves the complete observed trajectory.
+    auto_return_home_on_second_x: true
+    auto_home_execute_timeout_s: 180.0
+    auto_home_velocity_scaling: 0.10
+    auto_home_acceleration_scaling: 0.10
+    keyframe_event_topic: /openarm_kinesthetic/keyframe_event
+    motion_marker_event_topic: /openarm_kinesthetic/motion_marker_event
+    marker_binding_tolerance_s: 0.25  # seconds
+    maximum_sample_gap_s: 0.50        # seconds; reject save above this
+
+recorded_motion_player:
+  ros__parameters:
+    joint_state_startup_timeout_s: 10.0  # seconds
+    joint_state_freshness_s: 0.5         # seconds
+    joint_state_required_consecutive_samples: 3
+
+right_kinesthetic_bridge:
+  ros__parameters:
+    publish_rate: 100.0
+    operator_watchdog_s: 0.25
+    joint_state_watchdog_s: 0.50
+    maximum_measured_step_rad: 0.10
+    rigid_sync_delay_s: 0.05
+    command_topic: /openarm_kinesthetic/operator_command
+    arm_controller: right_joint_trajectory_controller
+    gripper_controller: right_gripper_controller
+    hardware_service: /openarm_right_hardware/set_passive
+    hardware_heartbeat_topic: /openarm_right_hardware/passive_heartbeat
+    hardware_state_topic: /openarm_right_hardware/passive_state
+    controller_manager: /controller_manager
+    controller_switch_timeout_s: 1.0
+    rigid_target_tolerance_rad: 0.002
+    diagnostic_only: false
+    cartesian_twist_topic: /openarm_kinesthetic/cartesian_twist
+    cartesian_command_watchdog_s: 0.15
+    cartesian_command_rate_hz: 10.0
+    cartesian_max_joint_velocity_rad_s: 0.25
+    cartesian_damping: 0.08
+    cartesian_hard_singularity_condition: 80.0
+    cartesian_joint_limit_margin_rad: 0.03
+    cartesian_trajectory_duration_s: 0.08
+    # Manual teaching relies on the operator's real-table avoidance.  Avoid a
+    # synchronous MoveIt query on every 10 Hz jog step; H1/H2 and recorded
+    # trajectory replay retain their own collision validation.
+    cartesian_state_validity_check: false
+    state_validity_service: /check_state_validity
+    gripper_open_rad: -0.35
+    gripper_close_rad: -0.10
+    gripper_command_duration_s: 0.50
+
+teaching_status_console:
+  ros__parameters:
+    gamepad_status_topic: /openarm_kinesthetic/gamepad_status
+    bridge_status_topic: /openarm_kinesthetic/hardware_status
+    hardware_passive_topic: /openarm_right_hardware/passive_state
+    summary_rate: 2.0
+
+wrist_right_camera:
+  ros__parameters:
+    device: /dev/v4l/by-id/usb-DCX-250107-ZW_DECXIN-video-index0
+    width: 1280
+    height: 720
+    capture_fps: 60.0
+    publish_rate: 30.0
+    jpeg_quality: 90
+    publish_raw: false
+    image_topic: /camera/wrist_right/image_raw
+    camera_info_topic: /camera/wrist_right/camera_info
+    frame_id: wrist_right_camera_optical_frame
+    camera_info_file: ""
+
+real_episode_recorder:
+  ros__parameters:
+    output_root: ~/openarm_kinesthetic_data/collections
+    ceiling_topic: /camera/global_camera/color/image_raw/compressed
+    wrist_topic: /camera/wrist_right/image_raw/compressed
+    maximum_source_age_s: 1.0
+    home_report: ~/.ros/openarm_kinesthetic/home_initialization.execution.json
+    maximum_home_report_age_s: 300.0
+    maximum_episode_start_home_error_rad: 0.06
+    require_episode_start_home: true

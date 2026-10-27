@@ -1,0 +1,20 @@
+nodes:
+  - id: position-debug-sender
+    path: python
+    args: "debug_position_command.py"
+    inputs:
+      arm_right_observation: openarm-mujoco/arm_right_observation
+      tick: dora/timer/secs/1
+    outputs:
+      - position_right
+
+  - id: openarm-mujoco
+    build: pip install -e .
+    path: dora-openarm-mujoco
+    args: "--scene demo --keyframe home --ctrl --debug-control"
+    inputs:
+      position_right: position-debug-sender/position_right
+    outputs:
+      - status
+      - arm_right_observation
+      - arm_left_observation

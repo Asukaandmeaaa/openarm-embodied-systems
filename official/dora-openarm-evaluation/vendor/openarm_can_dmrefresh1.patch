@@ -1,0 +1,51 @@
+diff --git a/python/openarm_can/__init__.py b/python/openarm_can/__init__.py
+index a1fa2a0..96dbaf2 100644
+--- a/python/openarm_can/__init__.py
++++ b/python/openarm_can/__init__.py
+@@ -22,7 +22,7 @@ allowing you to control DAMIAO motors through SocketCAN.
+ 
+ from .openarm_can import *
+ 
+-__version__ = "1.4.0"
++__version__ = "1.4.0+dmrefresh1"
+ __author__ = "Enactic, Inc."
+ 
+ # Direct export of C++ classes - no wrappers
+diff --git a/python/pyproject.toml b/python/pyproject.toml
+index 50108be..03ab6d0 100644
+--- a/python/pyproject.toml
++++ b/python/pyproject.toml
+@@ -26,7 +26,7 @@ maintainers = [{name = "Enactic, Inc."}]
+ name = "openarm_can"
+ readme = "README.md"
+ requires-python = ">= 3.10"
+-version = "1.4.0"
++version = "1.4.0+dmrefresh1"
+ 
+ [project.urls]
+ changelog = "https://github.com/enactic/openarm_can/releases"
+diff --git a/src/openarm/damiao_motor/dm_motor_device_collection.cpp b/src/openarm/damiao_motor/dm_motor_device_collection.cpp
+index 5d6e2c5..e74ce14 100644
+--- a/src/openarm/damiao_motor/dm_motor_device_collection.cpp
++++ b/src/openarm/damiao_motor/dm_motor_device_collection.cpp
+@@ -15,6 +15,9 @@
+ #include <linux/can.h>
+ #include <linux/can/raw.h>
+ 
++#include <chrono>
++#include <thread>
++
+ #include <openarm/damiao_motor/dm_motor_device_collection.hpp>
+ 
+ namespace openarm::damiao_motor {
+@@ -65,6 +68,10 @@ void DMDeviceCollection::refresh_all() {
+         auto& motor = dm_device->get_motor();
+         CANPacket refresh_packet = CanPacketEncoder::create_refresh_command(motor);
+         send_command_to_device(dm_device, refresh_packet);
++        // DM-USB2FDCAN + this DM8009 chain loses early-axis replies when
++        // 0x7ff refresh requests are emitted back-to-back. A 1 ms gap was
++        // verified on both eight-axis buses; keep motion commands untouched.
++        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+     }
+ }
+ 

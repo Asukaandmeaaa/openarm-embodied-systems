@@ -1,0 +1,50 @@
+schema_version: 1
+scene_id: nominal_layout_scan_v1
+kind: nominal
+provisional: true
+ready: true
+fallback_for_real_allowed: false
+frames:
+  world: world
+  robot_base: openarm_base
+  table_top: table_top
+  black_box: black_box
+  cube: blue_cube
+robot:
+  model: OpenArm
+  version: "2.0"
+  embodiment: bimanual_on_pedestal
+  active_arm: right
+  left_arm_role: parked
+table:
+  top_size_xy_m:
+    value: [0.60, 0.40]
+    status: reported_approximate
+  top_z_world_m:
+    value: 0.40
+    status: reported_approximate
+  thickness_m:
+    value: null
+    status: not_measured
+  pose_world:
+    value: null
+    status: not_measured
+black_box:
+  external_size_xyz_m: {value: null, status: not_measured}
+  internal_size_xyz_m: {value: null, status: not_measured}
+  wall_thickness_m: {value: null, status: not_measured}
+  bottom_z_world_m: {value: null, status: not_measured}
+  pose_world: {value: null, status: not_measured}
+cube:
+  count: 1
+  color: blue
+  size_xyz_m:
+    value: [0.04, 0.04, 0.04]
+    status: project_fact
+  material: EVA
+legacy_cell_comparison:
+  collision_top_size_xy_m: [0.82, 1.10]
+  top_z_world_m: 1.005
+  status: source_xml_snapshot
+  usable_as_real_geometry: false
+  source: vendor/openarm_mujoco/v2/cell/cell.xml

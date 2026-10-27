@@ -1,0 +1,10 @@
+{
+  "source": "user pasted terminal cat on Nano 192.168.3.112",
+  "original_path": "/home/ubuntu/.ros2/easy_handeye2/calibrations/openarm_right_global_camera.calib",
+  "sha256_local_transcription": "caddf02cc51bd7b7b3ee58553e3d74190bef01e8c809f6d77b7758665337148c",
+  "received_date": "2026-10-15",
+  "robot_base_frame": "world",
+  "tracking_base_frame": "global_camera_link",
+  "optical_transform_included": false,
+  "intrinsics_included": false
+}

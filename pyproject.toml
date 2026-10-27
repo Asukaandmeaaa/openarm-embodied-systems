@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openarm-embodied-systems"
+version = "0.1.0"
+description = "Demonstration-driven manipulation research on OpenArm"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy==2.2.6",
+  "pandas==2.3.3",
+  "scipy==1.18.0",
+  "PyYAML==6.0.3",
+  "pytest==9.1.1",
+  "mujoco==3.8.1",
+  "pyarrow==25.0.0",
+  "Pillow==12.2.0",
+  "tqdm==4.69.1",
+]
+
+# Source-layout research modules need the checkout for configs and MJCF assets.
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["openarm_cube_pick_expert*", "openarm_cube_into_black_box_expert*", "scripts*", "sim*", "vision_grasp_baseline*"]
+exclude = ["*.tests*", "*.runs*", "*.collections*", "*.recovery_source*"]
+namespaces = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "official/openarm_mujoco/src", "official/openarm_dataset/src"]
+addopts = "-ra"
+
+[tool.uv]
+package = false

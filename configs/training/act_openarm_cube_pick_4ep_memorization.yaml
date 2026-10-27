@@ -1,0 +1,36 @@
+dataset:
+  repo_id: local/openarm_cube_pick_expert_pilot_v3_nosmoothing
+  root: data/lerobot/openarm_cube_pick_expert_pilot_v3_nosmoothing
+  # Episode 4 is excluded: strict actuator replay reaches the lift height but
+  # preserves a valid hold for only 0.311 s, below the 1.0 s task contract.
+  episodes: [0, 1, 2, 3]
+  eval_split: 0.0
+  image_transforms:
+    enable: false
+
+policy:
+  type: act
+  device: cuda
+  push_to_hub: false
+  chunk_size: 100
+  n_action_steps: 100
+  # Several unused left-arm axes have near-zero variance. MEAN_STD turns tiny
+  # reset noise into inputs thousands of standard deviations out of range.
+  normalization_mapping:
+    VISUAL: MEAN_STD
+    STATE: IDENTITY
+    ACTION: MEAN_STD
+
+output_dir: outputs/act_openarm_cube_pick_4ep_identity_12000
+job_name: act_openarm_cube_pick_4ep_identity_12000
+batch_size: 8
+steps: 12000
+num_workers: 2
+seed: 1000
+cudnn_deterministic: true
+log_freq: 50
+eval_steps: 0
+save_checkpoint: true
+save_freq: 2000
+wandb:
+  enable: false

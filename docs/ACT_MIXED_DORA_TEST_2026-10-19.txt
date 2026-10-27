@@ -1,0 +1,141 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+ACT 混合数据模型（仿真300 + 实物71）Dora 部署与测试操作单
+日期：2026-10-19；工作目录：/home/lushilin/openarm_vla_ws
+
+一、当前状态
+模型：outputs/act_mixed_50k_20261016/checkpoints/050000/pretrained_model
+  16维 state/action，双相机 ceiling + wrist_right，[3,360,640]，ACT chunk=50，
+  n_action_steps=10，STATE=IDENTITY，ACTION/VISUAL=MEAN_STD。
+离线模型选择：results/act_mixed_20261016/MODEL_SELECTION_20261017.txt
+  建议先测 050000；030000 作为同摆位对照。离线 MAE 不等于抓放成功率。
+已完成的离线准备（未操作硬件）：
+  ./scripts/actctl prepare --profile task \
+    --checkpoint /home/lushilin/openarm_vla_ws/outputs/act_mixed_50k_20261016/checkpoints/050000/pretrained_model
+  新试验目录：results/act_manual_80yqsf30
+  results/act_manual_current.env 已指向该目录和 050000 模型。
+离线预检：offline_checks_passed=true；physical_execution_authorized=false。
+软件回归：207 passed, 2 skipped。
+CAN：can0/can1 均为 UP；当前没有 ROS/gateway/Dora/CAN 控制进程。
+相机路径存在：
+  wrist: /dev/v4l/by-id/usb-DCX-250107-ZW_DECXIN-video-index0
+  ceiling: /dev/v4l/by-path/pci-0000:80:14.0-usb-0:3.2:1.3-video-index0
+
+二、开始前的人工确认（必须）
+1. 双臂已可靠支撑；右臂位于允许的机械零位起点（H1 要求 14 个臂关节在 0.06 rad 内）。
+2. 右夹爪空载；桌面、黑盒和蓝色方块按测试摆位放好。
+3. 现场供电、急停、工作区隔离已准备好；操作者全程在场。
+4. 没有 ROS controller、旧 ACT executor、Dora CAN 节点同时运行。
+5. 不要运行 dataflow-real-act-two-camera-host.yaml（直连 CAN），本流程走
+   actctl → dataflow-act-trial-ros-host.yaml → gateway → ROS 控制器。
+
+三、完整终端流程（5 个终端；除 prepare 外全部由操作者手动执行）
+不要再执行 prepare。当前会话已准备好，直接按下面启动。
+
+终端 1：ROS H1（保持运行）
+  cd /home/lushilin/openarm_vla_ws
+  ./scripts/actctl h1
+  等待双臂、右夹爪控制器 active；不要关闭此终端。
+
+终端 2：独占控制 gateway（保持运行）
+  cd /home/lushilin/openarm_vla_ws
+  ./scripts/actctl gateway
+  保持运行；不要与旧 ACT 或直连 CAN 流程混跑。
+
+终端 3：状态检查 → H2
+  cd /home/lushilin/openarm_vla_ws
+  ./scripts/actctl status
+  确认 gateway idle、三个控制器 active 后：
+  ./scripts/actctl h2
+  H2 会运动双臂并打开右夹爪。必须等到：
+  HOME_AND_HANDOFF_VERIFIED
+  同一组 ROS/gateway 进程内不得重复 H2。
+
+终端 4：策略服务器（保持运行）
+  cd /home/lushilin/openarm_vla_ws
+  ./scripts/actctl policy
+  等待 Listening；确认模型路径为
+  outputs/act_mixed_50k_20261016/checkpoints/050000/pretrained_model。
+
+终端 5：Dora 图（保持运行）
+  cd /home/lushilin/openarm_vla_ws
+  ./scripts/actctl dora
+  等待图启动；不要关闭此终端。
+
+终端 3：就绪与 START
+  ./scripts/actctl ready
+  看到：
+  READY: profile=task, maximum_duration_s=None
+  后，由操作者显式执行：
+  ./scripts/actctl start
+  ./scripts/actctl status
+  核对 started=true、stage=active、owner=dora；START 请求本身不等于已执行。
+
+运行中
+  任务没有自动时长上限，由操作者判断结束：
+  ./scripts/actctl stop
+  ./scripts/actctl status
+  危险情况使用实体急停。右臂/右夹爪跟踪误差在 v3 下只记录/告警；
+  关节限位、速度/加速度、碰撞、CAN/时间戳、独占控制等保护仍然生效。
+
+四、结果查看
+  TRIAL=$(sed -n 's/^export ACT_TRIAL_DIR=//p' /home/lushilin/openarm_vla_ws/results/act_manual_current.env)
+  ls -la "$TRIAL"
+  cat "$TRIAL/result.json"
+  tail -n 30 "$TRIAL/dora.log"
+关键文件：
+  result.json          停止原因、是否 started、最后参考
+  policy_*.jsonl       模型输入、原始 50x16 预测、后处理结果
+  executor_*.jsonl     chunk 调度、整形后的右8命令
+  bridge*.jsonl        ROS bridge 决策、实际目标与反馈
+  *_observation_*.arrow 推理时使用的双相机图像和状态
+判定顺序：模型预测是否离开 HOME → 执行命令是否跟随 → 反馈是否运动 →
+是否完成抓取/放置 → 停止原因。单次失败不能直接断言模型能力。
+
+五、失败恢复
+A. START 之前的观测失败（policy/Dora 起不来，未发送 START）
+  1) 在终端 4/5 Ctrl+C；保留终端 1/2。
+  2) ./scripts/actctl retry-observation
+  3) 重新执行终端 4 policy、终端 5 dora、终端 3 ready/start。
+  不要删除记录，不要重跑 H1/H2。
+
+B. 已 START 后正常停止或故障停止
+  1) 确认机械臂已支撑，终端 4/5 Ctrl+C；保留 ROS 和 gateway。
+  2) ./scripts/actctl status 确认 gateway idle。
+  3) 需要再次试验：
+     ./scripts/actctl next-trial --profile task
+     然后重新 policy → dora → ready → start。
+  next-trial 不自动回 HOME；新的 bridge 启动仍会做实时 HOME 检查。
+
+C. 需要回 HOME
+  ./scripts/actctl plan-home     # 只规划，不运动
+  检查 plan.json 后：
+  ./scripts/actctl return-home   # 明确请求 ROS 运动
+  入口要求右夹爪命令和反馈都在打开目标 -0.35 rad 的 0.03 rad 内；
+  不满足时不要强行执行，先人工恢复姿态或重新开始完整会话。
+
+D. 完全停机
+  先安全支撑双臂，再停止 policy/Dora，最后停止 H1/gateway；
+  不要在未支撑时退出保持。
+
+六、30K 对照测试
+为公平比较，同一批物体摆位、同一 HOME、同一执行参数，只改变模型。
+推荐做法（最稳妥）：完成 50K 试验并安全停机后，双臂支撑、恢复到允许零位起点，
+重新 prepare 30K，然后完整执行 H1 → gateway → H2 → policy → dora → ready → start：
+  ./scripts/actctl prepare --profile task \
+    --checkpoint /home/lushilin/openarm_vla_ws/outputs/act_mixed_50k_20261016/checkpoints/030000/pretrained_model
+若当前试验停止后机械臂仍在 HOME 附近、右夹爪处于打开目标且 gateway idle，
+也可以不重做 H1/H2，改为更新当前环境的模型行后执行 next-trial：
+  cp results/act_manual_current.env results/act_manual_current.env.bak
+  sed -i 's#^export OPENARM_PRETRAINED_PATH=.*#export OPENARM_PRETRAINED_PATH=/home/lushilin/openarm_vla_ws/outputs/act_mixed_50k_20261016/checkpoints/030000/pretrained_model#' results/act_manual_current.env
+  grep OPENARM_PRETRAINED_PATH results/act_manual_current.env
+  ./scripts/actctl next-trial --profile task
+条件不满足时不要使用这个捷径。
+
+七、明确禁止
+- 不要运行旧直连 CAN 的 dataflow-real-act-two-camera-host.yaml，或让 ROS 与 Dora 同时占有 CAN。
+- 不要同时运行两套 ACT/专家回放/旧 executor。
+- 不要把 policy Connected、相机预览、进程存活当成物理执行成功。
+- 不要通过放宽 tracking_tolerance、关节限制或保护阈值来绕过失败。
+- 不要删除失败记录或换目录掩盖问题。
+- 左臂不输出 ACT 命令；模型仍为 16 维，实际只执行右 8 维。

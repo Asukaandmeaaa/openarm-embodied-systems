@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OpenArm Evaluation</title>
+  <style>
+    :root {
+      --bg:          #f2efe9;
+      --panel:       #ffffff;
+      --border:      #dbd6cc;
+      --text:        #1e1c18;
+      --text-dim:    #5a5650;
+      --text-faint:  #a09c94;
+      --success:     #2a6038;
+      --fail:        #842828;
+      --warn:        #6e5008;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px 48px;
+      gap: 16px;
+    }
+
+    /* ---- Panels ---- */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 24px;
+      width: 100%;
+      max-width: 820px;
+    }
+
+    .panel-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+
+    /* ---- Checkpoint panel ---- */
+    .checkpoint-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      gap: 12px;
+    }
+    .checkpoint-header .ckpt-path {
+      font-size: 12px;
+      color: var(--text-dim);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .checkpoint-header .toggle-lbl {
+      font-size: 11px;
+      color: var(--text-faint);
+      flex-shrink: 0;
+    }
+
+    .checkpoint-body { display: none; margin-top: 14px; }
+    .checkpoint-body.open { display: block; }
+
+    .ckpt-row {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 7px;
+    }
+    .ckpt-row label { font-size: 11px; color: var(--text-faint); width: 90px; flex-shrink: 0; }
+    .ckpt-row .val  { font-size: 13px; color: var(--text-dim); }
+    .ckpt-row a     { font-size: 13px; color: var(--text-dim); text-decoration: underline; }
+    .ckpt-row a:hover { color: var(--text); }
+
+    #description-input {
+      font-family: inherit;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 9px;
+      width: 100%;
+    }
+    #description-input:focus { outline: none; border-color: #a09c94; }
+
+    .auto-info {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-radius: 7px;
+      font-size: 11px;
+      color: var(--text-faint);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 18px;
+    }
+
+    /* ---- Resume banner ---- */
+    .resume-banner {
+      border: 1px solid #b8d8c0;
+      background: #eef6f0;
+      border-radius: 10px;
+      padding: 10px 18px;
+      color: var(--success);
+      font-size: 13px;
+      width: 100%;
+      max-width: 820px;
+    }
+
+    /* ---- Task section ---- */
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .task-nav {
+      font-family: inherit;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .task-nav:hover { border-color: #a09c94; color: var(--text); background: var(--bg); }
+
+    .task-counter { font-size: 12px; color: var(--text-faint); flex-shrink: 0; }
+
+    .task-prompt {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .task-meta { margin-top: 8px; font-size: 12px; color: var(--text-faint); }
+
+    /* ---- Task pending state ---- */
+    .task-prompt.pending { opacity: 0.6; font-style: italic; }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    .btn-set-task {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 6px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      border: 1px solid #b8d8c0;
+      background: none;
+      color: var(--success);
+      transition: background 0.1s;
+    }
+    .btn-set-task:hover { background: #eef6f0; }
+
+    .btn-emergency-stop {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 6px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      border: 1px solid var(--fail);
+      background: none;
+      color: var(--fail);
+      transition: background 0.1s;
+    }
+    .btn-emergency-stop:hover { background: #fdf0ee; }
+
+    .task-meta .suc { color: var(--success); }
+    .task-meta .fal { color: var(--fail); }
+
+    /* ---- Status + controls ---- */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .episode-num   { font-size: 26px; font-weight: bold; color: var(--text); }
+    .episode-label { font-size: 11px; color: var(--text-faint); }
+
+    .status-badge {
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 6px 16px;
+      border-radius: 9999px;
+    }
+    .status-badge.idle {
+      background: #eef6f0;
+      color: var(--success);
+      border: 1px solid #b8d8c0;
+    }
+    .status-badge.collecting {
+      background: #fdf0ee;
+      color: var(--fail);
+      border: 1px solid #e8b8b8;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .status-badge.reset {
+      background: #fdf6e8;
+      color: var(--warn);
+      border: 1px solid #e0cc90;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.55; }
+    }
+
+    /* ---- Session stats ---- */
+    .stats-row  { display: flex; gap: 20px; }
+    .stat       { font-size: 12px; color: var(--text-faint); }
+    .stat .num  { font-size: 18px; font-weight: bold; color: var(--text); margin-right: 3px; }
+    .stat .num.s { color: var(--success); }
+    .stat .num.f { color: var(--fail); }
+
+    /* ---- Buttons ---- */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .big-button {
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 14px 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: none;
+      transition: background 0.1s, border-color 0.1s;
+    }
+
+    .btn-start   { color: var(--text);    border-color: var(--border); }
+    .btn-start:hover   { background: var(--bg); border-color: #a09c94; }
+
+    .btn-success { color: var(--success); border-color: #b8d8c0; }
+    .btn-success:hover { background: #eef6f0; border-color: #7aba8e; }
+
+    .btn-fail    { color: var(--fail);    border-color: #e8b8b8; }
+    .btn-fail:hover    { background: #fdf0ee; border-color: #c87878; }
+
+    .btn-cancel  { color: var(--text-faint); border-color: var(--border); font-size: 14px; padding: 10px 24px; }
+    .btn-cancel:hover  { color: var(--text-dim); border-color: #a09c94; }
+
+    .btn-ready   { color: var(--warn);    border-color: #e0cc90; }
+    .btn-ready:hover   { background: #fdf6e8; border-color: #c0a040; }
+
+    .btn-quit    { color: var(--text-faint); border-color: var(--border); font-size: 13px; padding: 8px 20px; }
+    .btn-quit:hover    { color: var(--text-dim); }
+
+    /* ---- Note field ---- */
+    .note-row { display: flex; gap: 8px; align-items: center; }
+
+    #note-input {
+      font-family: inherit;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 11px;
+      flex: 1;
+      height: 34px;
+      resize: none;
+    }
+    #note-input:focus { outline: none; border-color: #a09c94; }
+    #note-input::placeholder { color: var(--text-faint); }
+
+    /* ---- Camera stats ---- */
+    .camera-grid { display: flex; flex-direction: column; gap: 5px; }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: 100px 80px 1fr;
+      gap: 10px;
+      align-items: baseline;
+      font-size: 13px;
+    }
+    .stat-row .cam-name   { color: var(--text-faint); }
+    .stat-row .cam-fps    { color: var(--text-dim); font-weight: bold; }
+    .stat-row .cam-jitter { color: var(--text-faint); }
+    .stat-row.warn  .cam-jitter { color: var(--warn); }
+    .stat-row.error .cam-fps,
+    .stat-row.error .cam-jitter { color: var(--fail); }
+    .stat-row.stale .cam-fps,
+    .stat-row.stale .cam-jitter { color: var(--text-faint); opacity: 0.5; }
+
+    /* ---- Episode history ---- */
+    .history-list { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .history-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 7px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      cursor: default;
+      position: relative;
+    }
+    .history-chip.success { border-color: #b8d8c0; background: #eef6f0; }
+    .history-chip.fail    { border-color: #e8b8b8; background: #fdf0ee; }
+
+    .chip-id   { color: var(--text-faint); }
+    .chip-task { color: var(--text-dim); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chip-icon.success { color: var(--success); }
+    .chip-icon.fail    { color: var(--fail); }
+
+    .history-chip[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      max-width: 260px;
+      z-index: 10;
+      font-size: 11px;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Checkpoint panel -->
+  <div class="panel">
+    <div class="checkpoint-header" onclick="toggleCheckpoint()">
+      <span class="ckpt-path">
+        {% if eval_metadata and eval_metadata.checkpoint_path %}
+          {{ eval_metadata.checkpoint_path }}
+        {% else %}
+          <span style="color:var(--text-faint)">No checkpoint configured — set CHECKPOINT_PATH</span>
+        {% endif %}
+      </span>
+      <span class="toggle-lbl" id="toggle-lbl">▼ expand</span>
+    </div>
+
+    <div class="checkpoint-body" id="checkpoint-body">
+      <div class="ckpt-row" style="align-items:center">
+        <label>Description</label>
+        <input id="description-input" type="text"
+               value="{{ eval_metadata.checkpoint_description if eval_metadata else '' }}"
+               placeholder="Add a description…"
+               onblur="saveDescription()"
+               onkeydown="if(event.key==='Enter') this.blur()">
+      </div>
+      {% if eval_metadata and eval_metadata.auto_info %}
+      <div class="auto-info">
+        <span>captured {{ eval_metadata.auto_info.get('captured_at', '—') }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Resume banner -->
+  {% if state.resuming %}
+  <div class="resume-banner">
+    Resuming — {{ state.resume_count }} episode{{ 's' if state.resume_count != 1 else '' }} already logged. Next: #{{ state.episode_number }}.
+  </div>
+  {% endif %}
+
+  <!-- Task section -->
+  <div class="panel">
+    <div class="panel-title">Task</div>
+    <div class="task-row">
+      <button class="task-nav" onclick="shiftTask(-1)" title="← previous task">&#8592;</button>
+      <span class="task-counter" id="task-counter">{{ state.task_index + 1 }}/{{ tasks|length }}</span>
+      <span class="task-prompt" id="task-prompt">{{ state.task_title }}</span>
+      <button class="task-nav" onclick="shiftTask(+1)" title="→ next task">&#8594;</button>
+    </div>
+    <div class="task-actions">
+      <button class="btn-set-task" id="task-commit-btn" onclick="commitTask()" style="display:none">Set Task ✓</button>
+      <button class="btn-emergency-stop" onclick="emergencyStop()">⬛ Emergency Stop</button>
+    </div>
+    <div class="task-meta" id="task-meta">
+      <span class="suc">{{ task_stats.success }}✓</span> /
+      <span class="fal">{{ task_stats.episodes - task_stats.success }}✗</span>
+      — {{ task_stats.episodes }} episode{{ 's' if task_stats.episodes != 1 else '' }}
+      ({{ task_stats.pct }}%)
+    </div>
+  </div>
+
+  <!-- Controls section -->
+  <div class="panel">
+    <!-- Status row -->
+    <div class="status-row">
+      <div>
+        <div class="episode-label">Episode</div>
+        <div class="episode-num" id="episode-num">#{{ state.episode_number }}</div>
+      </div>
+
+      <div class="status-badge
+          {% if state.collecting %}collecting
+          {% elif state.reset_needed %}reset
+          {% else %}idle{% endif %}"
+          id="status-badge">
+        {% if state.collecting %}Collecting
+        {% elif state.reset_needed %}Reset Robot
+        {% else %}Idle{% endif %}
+      </div>
+      <div id="home-status" style="font-size:12px;color:var(--text-dim)">{% if state.require_home %}HOME: {{ state.home_status_right }}{% endif %}</div>
+
+      <div style="flex:1"></div>
+
+      <div class="stats-row" id="session-stats">
+        <div class="stat"><span class="num s" id="stat-success">{{ session_stats.success }}</span>✓</div>
+        <div class="stat"><span class="num f" id="stat-fail">{{ session_stats.total - session_stats.success }}</span>✗</div>
+        <div class="stat" id="stat-pct" style="color:var(--text-faint)">{{ session_stats.pct }}%</div>
+      </div>
+    </div>
+
+    <!-- Buttons: idle -->
+    <div class="btn-row" id="btn-idle"
+         style="{% if state.collecting or state.reset_needed %}display:none{% endif %}">
+      <button class="big-button btn-start" {% if state.require_home %}disabled{% endif %} onclick="doAction('/start')" title="Space">Start</button>
+    </div>
+
+    <!-- Buttons: collecting -->
+    <div class="btn-row" id="btn-collecting"
+         style="{% if not state.collecting %}display:none{% endif %}">
+      <button class="big-button btn-success" onclick="doFinish('/success')" title="S">Success ✓</button>
+      <button class="big-button btn-fail"    onclick="doFinish('/fail')"    title="F">Fail ✗</button>
+      <button class="big-button btn-cancel"  onclick="doAction('/cancel')"  title="X">Cancel</button>
+    </div>
+
+    <!-- Buttons: waiting for manual reset -->
+    <div class="btn-row" id="btn-reset"
+         style="{% if not state.reset_needed %}display:none{% endif %}">
+      <button class="big-button btn-ready" onclick="doAction('/ready')" title="R">Ready — reset complete</button>
+    </div>
+
+    <!-- Note -->
+    <div class="note-row">
+      <textarea id="note-input" rows="1"
+                placeholder="Note for this episode…"></textarea>
+    </div>
+  </div>
+
+  <!-- Camera stats -->
+  <div class="panel">
+    <div class="panel-title">Camera streams</div>
+    <div class="camera-grid">
+      {% for cam, label in [
+          ("camera_wrist_right", "wrist R"),
+          ("camera_wrist_left",  "wrist L"),
+          ("camera_head_left",   "head L"),
+          ("camera_head_right",  "head R"),
+          ("camera_ceiling",     "ceiling"),
+      ] %}
+      <div class="stat-row stale" data-cam="{{ cam }}">
+        <span class="cam-name">{{ label }}</span>
+        <span class="cam-fps">-- Hz</span>
+        <span class="cam-jitter">Δ -- ms</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Episode history -->
+  <div class="panel">
+    <div class="panel-title">Recent episodes</div>
+    <div class="history-list" id="history-list">
+      <span style="color:var(--text-faint);font-size:12px">No episodes yet</span>
+    </div>
+  </div>
+
+  <!-- Quit -->
+  <button class="big-button btn-quit" onclick="confirmQuit()">Quit</button>
+
+  <script>
+    let currentTaskIndex = {{ state.task_index }};
+    let pendingTaskIndex = {{ state.task_index }};
+    let taskCount = {{ tasks|length }};
+    const taskPrompts = {{ tasks | map(attribute='prompt') | list | tojson }};
+
+    // ---- Actions ----
+
+    async function post(url, params) {
+      await fetch(url, {
+        method: 'POST',
+        body: new URLSearchParams(params || {}),
+      });
+    }
+
+    async function doAction(endpoint) {
+      await post(endpoint);
+    }
+
+    async function doFinish(endpoint) {
+      const note = document.getElementById('note-input').value.trim();
+      await post(endpoint, note ? { note } : {});
+      document.getElementById('note-input').value = '';
+    }
+
+    function shiftTask(delta) {
+      pendingTaskIndex = ((pendingTaskIndex + delta) % taskCount + taskCount) % taskCount;
+      updatePendingDisplay();
+    }
+
+    async function commitTask() {
+      await post('/set-task', { task_index: pendingTaskIndex });
+    }
+
+    async function emergencyStop() {
+      if (!confirm('Emergency stop: cancel current episode and disable arm motors?')) return;
+      await post('/emergency-stop');
+    }
+
+    function updatePendingDisplay() {
+      document.getElementById('task-counter').textContent = (pendingTaskIndex + 1) + '/' + taskCount;
+      document.getElementById('task-prompt').textContent  = taskPrompts[pendingTaskIndex] || '';
+      const isPending = pendingTaskIndex !== currentTaskIndex;
+      document.getElementById('task-commit-btn').style.display = isPending ? '' : 'none';
+      document.getElementById('task-prompt').classList.toggle('pending', isPending);
+    }
+
+    async function saveDescription() {
+      const desc = document.getElementById('description-input').value;
+      await post('/set-description', { description: desc });
+    }
+
+    function confirmQuit() {
+      if (confirm('Quit the evaluation session?')) post('/quit');
+    }
+
+    function toggleCheckpoint() {
+      const body = document.getElementById('checkpoint-body');
+      const lbl  = document.getElementById('toggle-lbl');
+      if (body.classList.toggle('open')) {
+        lbl.textContent = '▲ collapse';
+      } else {
+        lbl.textContent = '▼ expand';
+      }
+    }
+
+    // ---- SSE state updates ----
+
+    const eventSource = new EventSource('/events');
+    eventSource.onmessage = (e) => applyState(JSON.parse(e.data));
+
+    function applyState(s) {
+      const wasAligned = pendingTaskIndex === currentTaskIndex;
+      currentTaskIndex = s.task_index;
+      taskCount = s.task_count;
+
+      // If no staged change, follow server; otherwise keep user's pending selection.
+      if (wasAligned) {
+        pendingTaskIndex = s.task_index;
+      }
+
+      // Status badge
+      const badge = document.getElementById('status-badge');
+      const cls = s.collecting ? 'collecting' : s.reset_needed ? 'reset' : 'idle';
+      badge.className = 'status-badge ' + cls;
+      badge.textContent = s.collecting ? 'Collecting' : s.reset_needed ? 'Reset Robot' : 'Idle';
+      const home = document.getElementById('home-status');
+      home.textContent = s.require_home ? 'HOME: ' + s.home_status_right.toUpperCase() + ' ' + s.home_detail : '';
+      const startButton = document.querySelector('#btn-idle .btn-start');
+      startButton.disabled = !s.home_can_start || s.initializing;
+      startButton.title = startButton.disabled ? 'Waiting for guarded HOME' : 'Space';
+
+      // Episode number
+      document.getElementById('episode-num').textContent = '#' + s.episode_number;
+
+      // Task: always rendered from pendingTaskIndex
+      updatePendingDisplay();
+      renderTaskMeta(s.task_stats);
+
+      // Session stats
+      document.getElementById('stat-success').textContent = s.session_stats.success;
+      document.getElementById('stat-fail').textContent    = s.session_stats.total - s.session_stats.success;
+      document.getElementById('stat-pct').textContent     = s.session_stats.pct + '%';
+
+      // Button panels
+      document.getElementById('btn-idle').style.display       = (!s.collecting && !s.reset_needed) ? '' : 'none';
+      document.getElementById('btn-collecting').style.display = s.collecting ? '' : 'none';
+      document.getElementById('btn-reset').style.display      = s.reset_needed ? '' : 'none';
+
+      // History
+      renderHistory(s.episode_history);
+    }
+
+    function renderTaskMeta(stats) {
+      const el = document.getElementById('task-meta');
+      const fail = stats.episodes - stats.success;
+      el.innerHTML =
+        `<span class="suc">${stats.success}✓</span> / ` +
+        `<span class="fal">${fail}✗</span>` +
+        ` — ${stats.episodes} episode${stats.episodes !== 1 ? 's' : ''} (${stats.pct}%)`;
+    }
+
+    function renderHistory(history) {
+      const list = document.getElementById('history-list');
+      if (!history || history.length === 0) {
+        list.innerHTML = '<span style="color:var(--text-faint);font-size:12px">No episodes yet</span>';
+        return;
+      }
+      list.innerHTML = [...history].reverse().map(ep => {
+        const cls  = ep.success ? 'success' : 'fail';
+        const icon = ep.success ? '✓' : '✗';
+        const short = ep.task_title.length > 22 ? ep.task_title.slice(0, 20) + '…' : ep.task_title;
+        const tip = ep.note
+          ? `title="${ep.task_title}&#10;Note: ${ep.note}"`
+          : `title="${ep.task_title}"`;
+        return `<div class="history-chip ${cls}" ${tip}>` +
+          `<span class="chip-id">#${ep.id}</span>` +
+          `<span class="chip-task">${short}</span>` +
+          `<span class="chip-icon ${cls}">${icon}</span>` +
+          `</div>`;
+      }).join('');
+    }
+
+    // ---- Camera stats ----
+    const FPS_ERROR   = 20;
+    const JITTER_WARN = 10;
+    const JITTER_ERR  = 30;
+
+    const statsSource = new EventSource('/stats');
+    statsSource.onmessage = (e) => {
+      const stats = JSON.parse(e.data);
+      for (const [cam, s] of Object.entries(stats)) {
+        const row = document.querySelector(`[data-cam="${cam}"]`);
+        if (!row) continue;
+        const fpsEl    = row.querySelector('.cam-fps');
+        const jitterEl = row.querySelector('.cam-jitter');
+        if (!s || s.fps <= 0) {
+          fpsEl.textContent    = '-- Hz';
+          jitterEl.textContent = 'Δ -- ms';
+          row.className = 'stat-row stale';
+          continue;
+        }
+        fpsEl.textContent    = s.fps.toFixed(1) + ' Hz';
+        jitterEl.textContent = 'Δ ' + s.jitter_ms.toFixed(1) + ' ms';
+        const isErr  = s.fps < FPS_ERROR || s.jitter_ms > JITTER_ERR;
+        const isWarn = !isErr && s.jitter_ms > JITTER_WARN;
+        row.className = 'stat-row' + (isErr ? ' error' : isWarn ? ' warn' : '');
+      }
+    };
+
+    // ---- Keyboard shortcuts ----
+    // Space / s → start (idle) or success (collecting)
+    // f         → fail
+    // x         → cancel
+    // r         → ready
+    // ← / →     → prev / next task (stage only; Enter commits)
+    // Enter     → commit staged task change
+    // q         → quit
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      switch (e.key) {
+        case ' ': case 's':
+          e.preventDefault();
+          if (document.getElementById('btn-idle').style.display !== 'none')
+            doAction('/start');
+          else if (document.getElementById('btn-collecting').style.display !== 'none')
+            doFinish('/success');
+          break;
+        case 'f':
+          if (document.getElementById('btn-collecting').style.display !== 'none')
+            doFinish('/fail');
+          break;
+        case 'x':
+          if (document.getElementById('btn-collecting').style.display !== 'none')
+            doAction('/cancel');
+          break;
+        case 'r':
+          if (document.getElementById('btn-reset').style.display !== 'none')
+            doAction('/ready');
+          break;
+        case 'ArrowLeft':
+          e.preventDefault(); shiftTask(-1); break;
+        case 'ArrowRight':
+          e.preventDefault(); shiftTask(+1); break;
+        case 'Enter':
+          if (pendingTaskIndex !== currentTaskIndex) { e.preventDefault(); commitTask(); }
+          break;
+        case 'q':
+          confirmQuit(); break;
+      }
+    });
+
+    // Initial hydration
+    fetch('/state').then(r => r.json()).then(applyState);
+  </script>
+</body>
+</html>

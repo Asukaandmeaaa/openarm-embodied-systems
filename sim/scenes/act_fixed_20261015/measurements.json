@@ -1,0 +1,123 @@
+{
+  "schema": "openarm_fixed_scene_v1",
+  "status": "layout_accepted_approximate",
+  "approved_for_collection": true,
+  "units": "meters_radians",
+  "coordinate_frame": {
+    "origin": "existing OpenArm pedestal model origin at base plate datum",
+    "x": "forward from robot toward table",
+    "y": "robot left; negative is robot right / left side of first photo",
+    "z": "up"
+  },
+  "table": {
+    "size_forward_lateral_m": [
+      0.4,
+      0.6
+    ],
+    "top_z_m": 0.27,
+    "column_front_x_m": 0.03,
+    "near_edge_gap_from_column_m": 0.155,
+    "center_y_m": 0.0,
+    "thickness_m": 0.018,
+    "corner_radius_m": 0.025,
+    "unmeasured_visual_parameters": [
+      "thickness_m",
+      "corner_radius_m"
+    ],
+    "legs": "omitted; dimensions unavailable"
+  },
+  "cube": {
+    "edge_m": 0.04,
+    "gap_near_long_edge_m": 0.127,
+    "gap_robot_right_short_edge_m": 0.084,
+    "yaw_rad": 0.0,
+    "mass_kg": 0.05,
+    "mass_status": "legacy simulation assumption, not measured",
+    "friction": [
+      1.0,
+      0.5,
+      0.01
+    ],
+    "friction_status": "inherited from legacy demo; not calibrated"
+  },
+  "black_box": {
+    "centered_along_forward_dimension": true,
+    "gap_robot_right_short_edge_m": 0.24,
+    "outer_size_m": [
+      0.14,
+      0.14,
+      0.04
+    ],
+    "inner_size_m": [
+      0.12,
+      0.12,
+      0.03
+    ],
+    "wall_thickness_m": 0.01,
+    "floor_thickness_m": 0.01,
+    "geometry_status": "existing description; physical dimensions not remeasured",
+    "source": "source_snapshot/legacy_objects.xml"
+  },
+  "cameras": {
+    "training_resolution_wh": [
+      640,
+      360
+    ],
+    "ceiling_status": "user-provided eye-on-base calibration applied to link; color optical offset and intrinsics pending",
+    "wrist_right_status": "official model camera pose accepted by operator as initial parameters; photometric match not established",
+    "ceiling_calibration": "source_snapshot/global_camera_20261015.calib"
+  },
+  "pending_review": [
+    "camera and table alignment remain unresolved; accepted only for auxiliary approximate simulation",
+    "mass/friction remain unmeasured simulation assumptions"
+  ],
+  "future_training": {
+    "simulation_successful_episodes": 300,
+    "real_data_weight": "higher than simulation; ratio not yet selected",
+    "split_by_source_trajectory": true,
+    "keep_real_only_baseline": true,
+    "collection_started": false,
+    "training_started": false,
+    "simulation_episode_duration_limit_s": null,
+    "duration_policy_source": "Operator explicitly confirmed 2026-10-15: 仿真采集和实物 ACT 都取消",
+    "simulation_role": "auxiliary generalization/fine-tuning data; benefit must be measured against real-only baseline",
+    "real_data_cohorts": [
+      "historical layout expert demonstrations",
+      "new adjusted layout expert demonstrations"
+    ],
+    "comparison_plan": [
+      "existing model baseline",
+      "same initial checkpoint fine-tuned on reviewed real data only",
+      "same initial checkpoint fine-tuned on same real data plus auxiliary simulation, with higher real-domain sampling probability"
+    ],
+    "randomization": {
+      "table_xy_jitter_m": 0.02,
+      "table_yaw_jitter_deg": 5.0,
+      "cube_xy_jitter_m": 0.01,
+      "cube_yaw_jitter_deg": 30.0,
+      "sampling": "independent uniform per seed, translations in horizontal plane; cube jitter relative to table",
+      "table_rotation": "horizontal yaw about tabletop center; no roll/pitch",
+      "objects_follow_table": true,
+      "box_target_and_success_in_actual_box_frame": true,
+      "camera_randomization": false,
+      "ranges_status": "initial engineering choices, not measured real-world distributions",
+      "retain_all_attempts_for_coverage_audit": true
+    }
+  },
+  "layout_review": {
+    "date": "2026-10-15",
+    "operator_statement": "我看了下没有问题，是这个大致",
+    "scope": "approximate geometry and layout only; not camera/contact calibration or collection readiness"
+  },
+  "collection_review": {
+    "date": "2026-10-15",
+    "use": "auxiliary_approximate_simulation",
+    "operator_accepts_approximate_scene": true,
+    "camera_alignment_verified": false,
+    "table_alignment_verified": false,
+    "physical_contact_parameters_identified": false,
+    "operator_statement": "图像还是有点偏移；只采集100条仿真数据，把仿真的当作泛化的数据或者微调的数据；实物位置调整，将重新采集数据",
+    "limitations": "Not a calibrated replica or evidence of physical task success. Keep separate from real demonstrations.",
+    "latest_request": "2026-10-16: 300条；桌面位置/角度泛化；方块抓取角度泛化；仍与实物专家数据对比"
+  }
+}

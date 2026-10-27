@@ -1,0 +1,42 @@
+{
+  "dataset": {
+    "repo_id": "local/train",
+    "root": "./data/lerobot/act_closed_v2_37eps_20261023b/train",
+    "eval_split": 0.2,
+    "image_transforms": {
+      "enable": false
+    },
+    "use_imagenet_stats": true
+  },
+  "policy": {
+    "type": "act",
+    "device": "cuda",
+    "push_to_hub": false,
+    "chunk_size": 50,
+    "n_action_steps": 10,
+    "use_amp": false,
+    "normalization_mapping": {
+      "VISUAL": "MEAN_STD",
+      "STATE": "IDENTITY",
+      "ACTION": "MEAN_STD"
+    }
+  },
+  "output_dir": "./outputs/act_closed_v2_37eps_20261023b_50k",
+  "job_name": "act_closed_v2_37eps_20261023b_50k",
+  "batch_size": 8,
+  "steps": 50000,
+  "num_workers": 2,
+  "prefetch_factor": 1,
+  "persistent_workers": false,
+  "seed": 20261023,
+  "cudnn_deterministic": true,
+  "log_freq": 50,
+  "eval_steps": 5000,
+  "max_eval_samples": 0,
+  "env_eval_freq": 0,
+  "save_checkpoint": true,
+  "save_freq": 5000,
+  "wandb": {
+    "enable": false
+  }
+}

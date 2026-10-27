@@ -1,0 +1,8 @@
+{
+  "upstream": "https://github.com/enactic/openarm_can",
+  "tag": "1.4.0",
+  "commit": "f340d4b808fb177e1f297af54eb55fd51c6c7c10",
+  "local_version": "1.4.0+dmrefresh1",
+  "change": "1ms sleep after each DMDeviceCollection::refresh_all status request; motion commands unchanged",
+  "modified_cpp_sha256": "1fabde76ce5ddd33468a85bbf5aa63006ad73ae7822c833e4ef3937c649a5519"
+}

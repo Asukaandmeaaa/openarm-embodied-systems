@@ -1,0 +1,79 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+实物专家轨迹平滑候选：2026-10-16
+
+目的：用户已确认005真实抓放回放成功。本次生成独立平滑候选，供人工回放对比；不启动任何实物节点，不自动运动，不自动开始双相机采集。
+原始数据、14条清单及哈希全部保留。ACT执行流程未改动。
+
+候选目录：
+/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections_real14_20261016_smooth_v1
+处理器：scripts/smooth_real14_trajectories.py（纯离线）
+报告：候选目录/notes/processing_report.json
+
+14条中生成12条候选：005、007、008、009、010、011、013、014、016、017、018、019。
+006和012未发布：原始J6最小值分别-0.778782、-0.788319 rad，超出当前MoveIt J6下界-0.7654 rad。
+保持原始文件，未剪裁姿态或放宽限制。它们不能计作已验证成功的回放，需重新示教或另行审查。
+原015仍因历史采样间隙排除，不在本次14条输入中。
+
+处理方式：
+按起点→Y闭合→A释放→记录终点分成3段。对J1-J7做小幅平滑，合并近重合几何点，沿路径重新分配时间，再平滑加速度变化。
+每段起止关节姿态与原文件完全一致，两个语义事件、夹爪目标、顺序不变。
+每段参考曲线端点速度和加速度为0；最大采样间隔20ms。
+抓取和搬运段不缩短原段总时长，内部速度分布已重新计算；释放后回程允许缩短。
+速度不超过原轨迹每关节峰值及现有配置限制；平滑参考曲线的加速度<=0.5 rad/s²，jerk<=5 rad/s³，来自现有配置，未修改运行保护。
+单关节路径差采用双向最近折线距离，候选采样点最大值0.0095601 rad以内；这不是按原始时间逐点相减，也不是末端毫米级定位保证。
+数值报告的导数界通过分段多项式极值计算。真实播放器仍只发送位置点，控制器插值及实际硬件动态需要实测，不能把参考曲线界当作实测保证。
+运行时原有起点/跟踪/碰撞/夹爪/HOME检查和必要的HOME末端修正保留。
+
+第一条005：
+原始32.980172 s → 平滑27.368740 s。
+第一段10.350063 s → 10.350063 s。
+第二段8.390057 s → 8.390057 s。
+释放后至记录终点14.240052 s → 8.628620 s。
+以上为轨迹时间，不含夹爪等待、播放器启动、末端必要的HOME修正等墙钟时间。
+
+日志与溯源：
+处理后JSON的processing保存原文件路径、SHA256、原始quality/markers、配置SHA256及分段数值报告。
+source_timestamp_s是明确标记的合成回放时间；original_time_from_start_s是近似路径参数映射，不是新的传感器测量时间。
+原始质量没有被改成无丢帧；生成参考的quality只描述输出采样。真实双相机采集仍须记录实测状态和相机时间。
+回放日志timing=processed；episode回放元数据新增trajectory_processing，可追到原示教trial_id，训练划分应按原始trial分组防止泄漏。
+所有平滑候选physical_replay_status=pending。原轨迹的成功不自动转移到处理后轨迹。
+
+逐终端操作：
+终端1：保留当前H1；刚才成功回放结束后，不重跑H2。
+终端3：保留当前teachctl gamepad；若已经退出，由操作者重新运行：
+cd /home/lushilin/openarm_vla_ws
+./scripts/teachctl gamepad
+只保留这一份手柄输入，不运行示教bridge或旧播放器。RT/RB软件停止仍有效。
+
+终端2：加载平滑候选并选择刚才验证过的005。
+cd /home/lushilin/openarm_vla_ws
+source scripts/real14_smooth_env.sh
+real14_smooth_select 1
+set -o pipefail
+
+先进行当前场景计划检查（不运动）：
+ros2 run openarm_kinesthetic_recorder recorded_motion_player \
+  --trajectory "$FILE" --plan-only --playback-rate 1.0 \
+  --keyframe-settle-tolerance-rad 0.04 \
+  2>&1 | tee -a "$REPLAY_LOG_DIR/${TRIAL}_smooth_plan.log"
+必须退出成功，看到MARKED_TRAJECTORY_VALIDATED、timing=processed、safety=PASS。
+如果报起点不匹配，先按已有运行时回HOME流程处理，不重跑H2或放宽起点限制。
+如现场控制程序/姿态已改变，先核对状态，不能把本页当作当前状态证明。
+
+计划检查通过后，把方块放回005示教时的位置和朝向，黑盒为空，右夹爪空载张开；人工执行真实回放：
+ros2 run openarm_kinesthetic_recorder recorded_motion_player \
+  --trajectory "$FILE" --allow-real-execution --playback-rate 1.0 \
+  --keyframe-settle-tolerance-rad 0.04 \
+  2>&1 | tee -a "$REPLAY_LOG_DIR/${TRIAL}_smooth_replay.log"
+不要叠加提高playback-rate。观察起步、闭合前停止、释放、回程及末端保持；必须人工判断实际抓起、搬运、入盒是否成功。
+完成应看到COLLECTION_FIXED_HOME_ACCEPTED与MARKED_TRAJECTORY_REPLAY_COMPLETE。
+若仍抖动，保留完整日志并指出具体阶段；下一步分析实测跟踪与控制器插值，而不是继续盲目加重滤波。
+
+本条效果确认后，再逐条选2～12，重复计划检查与真实验证；不要无人值守连续执行。
+需要回原始005对比：source scripts/real14_replay_env.sh，然后real14_select 1，再按原流程计划/回放。
+双相机采集在对应平滑候选真实抓放通过后另行进行；不能直接沿用旧dry_replay_passed判断。
+
+离线核验：5项平滑数值/溯源回归测试通过；原回放/生命周期/HOME相关63项测试通过；12条完整URDF位置界、消息构建、处理溯源集成检查通过；原14条SHA256检查通过。
+仍未执行：当前现场MoveIt碰撞计划、真实平滑抓放、双相机新采集。
+参考算法API：https://hungpham2511.github.io/toppra/python_api.html （TOPPRA仅作为离线路径时间分配工具；本项目另做平滑和导数极值审计。）

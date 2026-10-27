@@ -1,0 +1,15 @@
+schema_version: 1
+rate_hz: 30
+minimum_memorization_episodes: 4
+minimum_closed_loop_episodes: 30
+recommended_closed_loop_episodes: 50
+required_source: human_virtual_handle
+require_strict_replay_valid: true
+state: {shape: [16], dtype: float32, normalization: IDENTITY}
+action: {shape: [16], dtype: float32, normalization: DATASET_STATISTICS_REQUIRED}
+cameras: [ceiling, wrist_right]
+visual_normalization: DATASET_STATISTICS_REQUIRED
+checkpoint_policy:
+  legacy_cell_50k_is_new_scene_success_evidence: false
+  require_new_scene_from_scratch_baseline: true
+closed_loop_reporting: [seen_seed, unseen_seed, seen_position, unseen_position]

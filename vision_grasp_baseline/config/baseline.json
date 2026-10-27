@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "workflow": "mechanical_zero_visual_pick_and_bin_release",
+  "implementation_status": "Legacy staged collection completed one approved physical zero-to-zero episode. Default collection now preplans and validates a complete continuous timeline; isolated controller/camera integration passed, new-speed physical trial pending.",
+  "camera_serial_sdk": "344322073972",
+  "calibration_reference": "sim/scenes/act_fixed_20261015/source_snapshot/global_camera_20261015.calib",
+  "calibration_status": "Original file retained. Local translation correction from two static poses; cumulative placement verification is tracked separately and does not certify an accepted expert trajectory.",
+  "object": "blue 40mm cube",
+  "destination": "open black bin; not the old MTC white elevated support box",
+  "start": "mechanical_zero",
+  "go_to_legacy_home": false,
+  "hover": {
+    "table_clearance_m": 0.16,
+    "velocity_scaling": 0.1,
+    "acceleration_scaling": 0.1,
+    "gripper_commanded": false,
+    "grasp_yaw_rule": "canonical_object_yaw_plus_pi_over_two",
+    "tcp_frame": "openarm_right_grasp_frame"
+  },
+  "pick_place_pending": [
+    "Smooth segment transitions and check initial table clearance with final 3cm padding",
+    "Repeat complete uninterrupted cycles at different detected object positions",
+    "Measure bin inner walls/floor and validate the collision model against actual clearance",
+    "Physically validate the new complete recorded zero-to-zero cycle before bulk collection"
+  ],
+  "manifest_only": true,
+  "physical_gripper": "Original OpenArm V2; operator confirmed no modifications",
+  "fixed_action_rules": {
+    "grasp": "vertical; canonical object yaw plus pi/2",
+    "release": "Waypoint mode: fixed rotation from the selected 20-degree/315-degree-axis candidate; live release XYZ is recomputed from detected bin and held-object transform. Legacy mode still uses pitch=0.7 rad.",
+    "gripper_open": -0.35,
+    "gripper_close": -0.085
+  },
+  "formal_dataset_collection": false,
+  "post_cycle_motor_health_ok": true,
+  "post_cycle_motor_fault": null,
+  "verified_placement_cycles": 3,
+  "collision_free_expert_cycles_accepted": 0,
+  "next_candidate": null,
+  "historical_motor_faults": [
+    {
+      "description": "Right J4 reports 0xC after placement. STOP set; further physical testing pending motor fault resolution.",
+      "evidence": "vision_grasp_baseline/runs/recovery_physical_20261021_01/fault_review.json",
+      "status": "Historical event; latest separate-zero CAN snapshot shows all 16 motors enabled without a fault code."
+    }
+  ],
+  "latest_evidence_summary": "vision_grasp_baseline/waypoint_physical_test_20261021.json",
+  "post_cycle_motor_health_evidence": "vision_grasp_baseline/runs/cycle_20261021_164451/return_zero_execution_01.raw_can.jsonl",
+  "post_cycle_motor_health_scope": "Snapshot at the end of the separate zero operation; not a live health claim.",
+  "table_collision_model": {
+    "edge_padding_each_side_m": 0.03,
+    "xy_total_padding_m": 0.06,
+    "minimum_base_size_xy_m": [
+      0.4,
+      0.6
+    ],
+    "top_height_changed": false,
+    "full_physical_grasp_place_retest_with_3cm_pending": false
+  },
+  "model_free_vision_positioning": {
+    "source": "Fresh global RGB-D detection per full cycle; detected world XY is not a fixed target.",
+    "wrist_camera": "Read-only diagnostic images currently; not used by the current object-localization algorithm."
+  },
+  "end_of_cycle": {
+    "waypoint_return": "Pickup-side clearance and orientation restoration",
+    "automatic_mechanical_zero": true,
+    "latest_zero": "Approved physical zero-to-zero episode: session_20261021_180151_587587. New default includes return to zero in the precomputed timeline."
+  },
+  "latest_review": "vision_grasp_baseline/waypoint_review_20261021.json",
+  "collection_implementation": {
+    "entrypoint": "./vision_grasp_baseline/run.sh collect --episodes 30",
+    "guide": "docs/VISUAL_ACT_COLLECTION_20261021.txt",
+    "control_hz_configured": 100,
+    "joint_hz_nominal": 100,
+    "action_hz_nominal": 50,
+    "camera_hz_requested": 30,
+    "dataset_fps": 30,
+    "image_size_wh": [
+      640,
+      480
+    ],
+    "complete_physical_collection_validated": true,
+    "last_observed_action_hz": 99.99993839813075,
+    "last_observed_joint_hz": 99.99973629921678,
+    "last_observed_session": "session_20261021_180151_587587 (approved task and recording quality passed)",
+    "physical_validation_scope": "Legacy staged execution only; new continuous timing remains physically unvalidated.",
+    "continuous_execution": {
+      "default": true,
+      "physical_validated": false,
+      "planning_during_recording": false,
+      "source": "TOPPRA + bounded quintic interpolation",
+      "mock_trajectory_duration_s": 32.64826382101122,
+      "mock_recording_duration_s": 33.70602720300667,
+      "evidence": "vision_grasp_baseline/runs/continuous_mock_20261021_01/plan_07/mock_recording_execution_trimmed.json",
+      "arm_goals": 1,
+      "gripper_goals": 1
+    }
+  }
+}

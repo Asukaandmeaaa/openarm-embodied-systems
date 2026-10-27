@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# One foreground command for native teaching. Never starts H1/H2.
+set -eo pipefail
+TEACH_WORKSPACE=/home/lushilin/openarm_vla_ws
+if [[ "${OPENARM_TEACH_CLEAN_ENV:-}" != 1 ]]; then
+  exec /usr/bin/env -i HOME="$HOME" USER="$(id -un)" LOGNAME="$(id -un)" \
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    LANG="${LANG:-C.UTF-8}" TERM="${TERM:-dumb}" \
+    XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+    OPENARM_TEACH_CLEAN_ENV=1 /bin/bash --noprofile --norc "$TEACH_WORKSPACE/scripts/teachctl" "$@"
+fi
+source "$TEACH_WORKSPACE/scripts/real14_env.sh"
+cd "$TEACH_WORKSPACE"
+exec /usr/bin/python3 scripts/teaching_session.py "$@"

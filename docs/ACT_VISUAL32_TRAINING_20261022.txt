@@ -1,0 +1,115 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+历史32条实物视觉抓取数据的ACT训练流程（2026-10-22）
+================================================
+
+2026-10-24更新：本文件为旧32条/张爪起点模型的历史记录，不是当前数据入口。
+当前closed_transit_v2数据为nearby30+spread7=37条，50K训练已完成；请阅读ACT_TRAINING_RUNBOOK.md。
+本文件train.sh仍绑定旧32条，不能用于当前37条；新train_closed.sh默认无配置时也仍指向旧27条。
+下文max_eval_samples=256在当前安装版本会取单任务前缀，不能覆盖完整抓放回零，
+因此旧验证损失不代表全流程。本批37条改为max_eval_samples=0、全量9532帧验证。
+保留下文数字与命令仅用于复现历史，不表示应重新执行。
+
+工作目录：/home/lushilin/openarm_vla_ws
+采集数据：vision_grasp_baseline/collections/{nearby,spread,rotation}/episodes
+合格数量：nearby 10、spread 16、rotation 6，总计32条。
+原始100Hz状态/目标、约30Hz双相机图像保留；训练统一对齐为30Hz。
+本次导出：train 28,565帧，validation 6,501帧，共35,066帧。
+图像保持640x480，输入为ceiling和wrist_right两个RGB相机。
+状态和动作为16维绝对关节角，关节顺序见转换manifest，不改成增量动作。
+后续实机策略执行仍只使用右侧8维。
+
+本批单独训练：fresh ACT + ImageNet ResNet18，不加载旧ACT权重，不混入旧
+640x360数据或仿真数据。训练不需要H1、网关、ROS或相机运行。
+
+终端1：准备数据
+----------------
+  cd /home/lushilin/openarm_vla_ws
+  ./vision_grasp_baseline/train.sh prepare --audit-only
+  ./vision_grasp_baseline/train.sh prepare
+
+第一条只审核并生成冻结划分；第二条导出LeRobot数据。已完成的导出会核对来源
+后跳过，不会覆盖已有数据。不完整的导出目录需先检查并移走，再重新导出。
+不需要conda activate或source ROS，脚本使用工作区的.venv-real-act。
+转换只写入data/lerobot/visual_act32_20261022，不修改原始采集数据。
+
+训练/验证按完整episode、分类型固定随机划分，seed=20261022：
+                 train   validation
+  nearby           8          2
+  spread          13          3
+  rotation         5          1
+  合计            26          6
+
+同一物理轨迹的相邻帧不会拆到两边。split_manifest.json冻结源路径，
+train_episodes.json和validation_episodes.json保存精确选择。
+状态STATE=IDENTITY，动作ACTION=MEAN_STD，相机采用ImageNet统计。
+验证集使用训练集的归一化统计；验证动作不参与训练归一化统计的计算。
+
+终端1：短训练检查
+----------------
+  ./vision_grasp_baseline/train.sh smoke
+
+真实数据上做2步GPU训练，每步执行1个样本的离线验证，batch=8，worker=0，
+并保存检查点。用于检查读图、前后向、归一化、验证和保存，不能判断抓取成功率。
+输出位于outputs/act_visual32_smoke_<日期时间>。
+
+终端1：正式训练
+----------------
+  ./vision_grasp_baseline/train.sh train
+
+配置：configs/training/act_visual32_20261022.json
+训练脚本：scripts/train_act_visual32.py
+20,000个优化step，batch=8，4个读取worker，CUDA FP32；不是20,000个epoch。
+本机短测发现FP16初始梯度非有限值，因此本版使用显存充足的FP32配置。
+4个worker采用非驻留模式，避免当前PyTorch环境在训练退出时的worker回收异常。
+chunk_size=50，30Hz下预测约1.67秒；n_action_steps=10，后续推理队列约0.33秒。
+每1000步评估最多256个验证样本，每5000步及末尾保存检查点。
+比较验证损失及实机闭环结果选择检查点；离线损失不能替代抓取成功率。
+验证集不作为独立测试集；后续实机测试应另摆未原样采过的位置。
+
+输出：outputs/act_visual32_20k_20261022
+日志：results/act_training/act_visual32_20k_20261022.log
+检查点：outputs/act_visual32_20k_20261022/checkpoints/
+pretrained_model中的权重、配置和归一化处理器需一起用于部署。
+visual32_recipe.json记录来源、相机、划分和归一化策略。
+默认不上传Hub，不启用wandb，不启动仿真或实机评估。
+
+终端2：监控
+------------
+  cd /home/lushilin/openarm_vla_ws
+  tail -f results/act_training/act_visual32_20k_20261022.log
+
+另一个终端可运行：
+  watch -n 2 nvidia-smi
+
+如果显存不足，改用新输出目录和batch=4：
+  ./vision_grasp_baseline/train.sh train --batch_size=4 \
+    --output_dir=/home/lushilin/openarm_vla_ws/outputs/act_visual32_20k_bs4_20261022
+不要覆盖已经存在的训练输出目录。batch变化会改变相同步数下的样本曝光量。
+
+中断和恢复
+----------
+Ctrl+C停止，已写好的检查点保留。确认下面实际路径存在后，从完整检查点恢复：
+  .venv-real-act/bin/python scripts/train_act_visual32.py \
+    --config_path=outputs/act_visual32_20k_20261022/checkpoints/last/pretrained_model/train_config.json \
+    --resume=true
+若安装版本的路径不同，先查看checkpoints下实际的train_config.json。
+
+后续实机契约
+------------
+训练后先做离线/影子推理，再接现有控制权限网关。核对相机名、RGB、分辨率、
+关节顺序、归一化处理器以及30Hz动作时间基准。100Hz底层控制不能把30Hz动作
+序列直接逐点按100Hz消费。实机指令待选定检查点后再核对。
+
+官方参考
+--------
+https://github.com/huggingface/lerobot/blob/main/docs/source/act.mdx
+https://github.com/huggingface/lerobot/blob/main/src/lerobot/policies/act/configuration_act.py
+具体启动参数以本机安装版本和本次脚本为准。
+
+本机完成的验证
+--------------
+32条数据已完成导出。batch=8、FP32下2步训练/验证/保存通过，损失与梯度有限；
+随后从检查点恢复到第3、4步，4-worker读取及非驻留worker退出检查通过。
+仅短测已经运行，正式20k训练尚未启动。短测模型不能用于判断抓取能力。
+验证摘要：results/act_training/visual32_preflight_20261022.json。

@@ -1,0 +1,36 @@
+schema_version: 1
+seed: 20260911
+scene: real_table_v1
+table_center_xy_candidates_m:
+  x: [0.40, 0.43, 0.46]
+  y: [-0.02, 0.0, 0.02]
+black_box_center_table_xy_candidates_m:
+  x: [-0.07, -0.05, -0.03]
+  y: [-0.10, -0.08, -0.06]
+cube_source_center_table_xy_candidates_m:
+  x: [-0.23, -0.21, -0.19]
+  y: [-0.15, -0.14, -0.13]
+cube_source_half_range_xy_m: [0.03, 0.02]
+table_edge_margin_m: 0.01
+joint_margin_rad: 0.002
+tcp_table_clearance_m: 0.015
+ik_position_tolerance_m: 0.004
+ik_iterations: 220
+path_joint_step_rad: 0.02
+box_path:
+  above_z_world_m: 0.550
+  place_z_world_m: 0.465
+  retreat_z_world_m: 0.550
+q_right_task_ready_candidates:
+  - [0, 0, 0, 1.57079632679, 0, 0, 0]
+  - [-0.76243272, 2.85588892, 0.20977818, 2.06466464, 1.40936607, 0.31656578, 0.37162189]
+safe_waypoint_candidates:
+  - [0.22722054, 1.08712100, 0.41459577, 2.34218107, -0.24927559, -0.10868420, -0.56711975]
+  - [-0.45, 1.65, -0.15, 1.85, 0.0, -0.10, 0.0]
+ik_branch_seeds:
+  - [0.44, 0.05, -0.46, 1.17, -0.35, 0.04, 0.32]
+  - [0.70, 0.13, -0.68, 0.96, 0.18, 0.23, 0.37]
+placement_branch_seeds:
+  - [0.37579274, 0.29654881, -0.32021564, 1.35591444, 0.22346977, 0.40967990, 0.55266582]
+above_box_branch_seeds:
+  - [0.41837041, 0.34526228, -0.26013488, 1.54743326, 0.26873137, 0.37405969, 0.61166643]

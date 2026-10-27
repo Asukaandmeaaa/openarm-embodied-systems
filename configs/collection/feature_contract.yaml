@@ -1,0 +1,41 @@
+contract: openarm_cube_pick_v1
+task: Pick up the orange cube with the right arm.
+rate_hz: 30
+ordering:
+  state_action:
+    - right_joint1
+    - right_joint2
+    - right_joint3
+    - right_joint4
+    - right_joint5
+    - right_joint6
+    - right_joint7
+    - right_gripper
+    - left_joint1
+    - left_joint2
+    - left_joint3
+    - left_joint4
+    - left_joint5
+    - left_joint6
+    - left_joint7
+    - left_gripper
+features:
+  observation.state:
+    shape: [16]
+    dtype: float32
+  observation.images.ceiling:
+    shape: [3, 600, 960]
+    dtype: float32
+    source_encoding: jpeg
+    decoded_color: RGB
+  observation.images.wrist_right:
+    shape: [3, 600, 960]
+    dtype: float32
+    source_encoding: jpeg
+    decoded_color: RGB
+  action:
+    shape: [16]
+    dtype: float32
+  task:
+    shape: []
+    dtype: string

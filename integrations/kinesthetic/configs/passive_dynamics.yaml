@@ -1,0 +1,52 @@
+schema_version: 1
+scope: future_right_arm_kinesthetic_teaching
+hardware_connection_permitted_in_this_project_stage: false
+right_arm:
+  passive_mode:
+    kp: 0.0
+    kd_policy: retain_configured_hardware_values
+    gravity_feedforward_policy: retain_gravity_scale_times_G_q
+    status: verified_source_code_behavior
+  simulation:
+    position_actuators: runtime_gain_and_bias_disabled
+    body_gravity_compensation_flag: 1.0
+    tested_force_path: zero_velocity_inverse_dynamics_G_q_on_right_7dof
+    gravity_compensation_scale: 1.0
+    preserve_joint_damping_and_friction: true
+    physics_hz: 1000
+virtual_handle:
+  site: right_grasp_frame
+  translational_stiffness_n_m: 500.0
+  translational_damping_ns_m: 35.0
+  rotational_stiffness_nm_rad: 8.0
+  rotational_damping_nms_rad: 0.8
+  maximum_force_n: 35.0
+  maximum_torque_nm: 4.0
+  redundant_posture:
+    objective: stay_near_right_task_ready_in_task_jacobian_nullspace
+    stiffness_nm_rad: 3.0
+    damping_nms_rad: 0.35
+    maximum_torque_nm: 3.0
+    damped_projector_ratio: 0.02
+  release_behavior: zero_applied_wrench
+  source_default_kd: [2.75, 2.5, 2.0, 2.0, 0.7, 0.6, 0.5]
+  source_default_kd_status: source_code_snapshot_not_runtime_measurement
+  gravity_scale: {value: null, status: runtime_configuration_not_audited}
+  heartbeat_timeout_s:
+    value: 0.5
+    status: source_code_default
+  heartbeat_failure_behavior: restore_rigid_position_gains
+  activation_behavior:
+    invokes_return_to_zero: true
+    target_arm: [0, 0, 0, 0, 0, 0, 0]
+    planning_scene_collision_check: false
+    status: verified_source_code_behavior
+right_gripper:
+  passive: false
+  control: keyboard_discrete
+  contact_detection_mode_for_first_hardware_trials: monitor
+  torque_threshold_nm: {value: null, status: not_calibrated}
+  torque_release_threshold_nm: {value: null, status: not_calibrated}
+  hard_torque_limit_nm: {value: null, status: not_calibrated}
+safety_language:
+  keyboard_stop_is_physical_emergency_stop: false

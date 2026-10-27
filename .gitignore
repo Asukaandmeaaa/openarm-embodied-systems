@@ -1,0 +1,71 @@
+# Python and tooling
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Virtual environments and local build trees
+.venv/
+.venv-*/
+venv/
+env/
+build/
+install/
+log/
+*.egg-info/
+
+# Local editor and agent state
+.vscode/
+.idea/
+.claude/
+.codex/
+*.swp
+*.swo
+
+# Generated experiments and datasets
+/data/
+/results/
+/outputs/
+/logs/
+/models/
+vision_grasp_baseline/collections/
+vision_grasp_baseline/runs/
+configs/collection/out/
+
+# Generated media and recordings
+*.mp4
+*.avi
+*.mov
+*.mcap
+*.bag
+
+# Hardware credentials and runtime state
+.control_ownership_keys/
+.control_ownership_overlay/
+*.pem
+*.key
+*.env
+
+# Local machine traces
+MUJOCO_LOG.TXT
+
+# Source locks and fixtures are retained; runtime artifacts are excluded by path.
+.uv-cache/
+.openarm-release-venv/
+.venv-release/
+*.calib
+**/.collection.lock
+**/.cycle.lock
+**/STOP
+**/.recovery_overlay/
+**/out/
+.act_motion_deps/
+.openarm*overlay/
+*.log
+*.tmp
+
+/integrations/kinesthetic/data/
+/integrations/kinesthetic/results/

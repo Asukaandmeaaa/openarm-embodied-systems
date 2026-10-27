@@ -1,0 +1,43 @@
+# Copyright 2026 Enactic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# UI-only test dataflow.
+#
+# Runs the evaluation-ui node by itself — no arms, cameras, policy server, or
+# recorder — so the web interface can be checked without any hardware:
+#
+#     dora run dataflow-ui-only.yaml --uv
+#
+# The UI opens at http://127.0.0.1:8000. You can browse tasks, try the keyboard
+# shortcuts, and inspect the layout. Because no arm-status node reports
+# "started", pressing Start stays in the "initializing" state and the camera
+# panel shows every stream as stale — that is expected for a hardware-free run.
+
+nodes:
+  - id: evaluation-ui
+    build: pip install -e ..
+    path: dora-openarm-evaluation-ui
+    env:
+      # Source metadata.yaml with the task list (the example shipped in this repo).
+      METADATA_FILE: "metadata.yaml"
+      # Where eval_metadata.yaml is written; kept out of the repo for a throwaway test.
+      DATASET_DIR: "/tmp/eval-ui-test"
+      AUTO_OPEN: "yes"
+      PORT: "8000"
+    inputs:
+      # A heartbeat is the only input needed to keep the node alive.
+      tick: dora/timer/secs/1
+    outputs:
+      - arm_command
+      - task_prompt

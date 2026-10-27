@@ -1,0 +1,34 @@
+# Generalization run. Use this only after collecting, strictly replaying, and
+# converting at least 30 replay-valid demonstrations to the dataset below.
+dataset:
+  repo_id: local/openarm_cube_pick_expert_robust_v3
+  root: data/lerobot/openarm_cube_pick_expert_robust_v3
+  eval_split: 0.1
+  image_transforms:
+    enable: false
+
+policy:
+  type: act
+  device: cuda
+  push_to_hub: false
+  chunk_size: 100
+  n_action_steps: 100
+  normalization_mapping:
+    VISUAL: MEAN_STD
+    STATE: IDENTITY
+    ACTION: MEAN_STD
+
+output_dir: outputs/act_openarm_cube_pick_robust_100000
+job_name: act_openarm_cube_pick_robust_100000
+batch_size: 8
+steps: 100000
+num_workers: 4
+seed: 1000
+cudnn_deterministic: true
+log_freq: 100
+eval_steps: 1000
+max_eval_samples: 512
+save_checkpoint: true
+save_freq: 10000
+wandb:
+  enable: false

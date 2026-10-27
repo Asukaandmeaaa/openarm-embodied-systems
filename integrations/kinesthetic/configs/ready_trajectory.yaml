@@ -1,0 +1,178 @@
+# Validated Teaching Ready trajectory: store, replay gate, freeze policy.
+#
+# Why this file exists
+# -------------------
+# Simulation narrowed the Teaching Ready pose space (see docs/READY_SEARCH.md), but
+# simulation and the real station differ in installation error, joint zero offsets,
+# camera extrinsics, collision geometry and wrist-camera mass. So the real arm still has
+# to run its own search, its own MoveIt IK and its own OMPL plan once, on the real
+# registered table.
+#
+# What should NOT be repeated every morning is that search. Once one real trajectory has
+# been executed and accepted enough times, it is frozen and replayed. This file holds the
+# three policies that make that safe:
+#
+#   mode        - which of the two initialization modes is the default, and what happens
+#                 when a replay is rejected (never a silent re-plan)
+#   scene_signature - how much the registered table, the cameras and the robot model are
+#                 allowed to have drifted before a frozen trajectory stops being valid
+#   replay_gate - the cheap pre-replay checks, all of which must pass
+#   freeze_policy - how many accepted runs one trajectory needs before it is production
+#
+# Hard rules encoded here (and enforced by `validate_ready_trajectory`)
+# -------------------------------------------------------------------
+# 1. A replay rejection never falls back to re-planning. It refuses the replay and
+#    requires an explicit switch to search mode, because a station that moved may need a
+#    different pose, not the same pose recomputed.
+# 2. A frozen profile is the only thing replayable, and a profile is only frozen when one
+#    single trajectory hash passed every run of the streak. Ten runs of ten different
+#    trajectories prove nothing.
+# 3. Scene-signature hash fields (camera extrinsics, robot model, hand-eye profile) are
+#    compared by equality, and a missing hash is not a pass.
+# 4. Every tolerance below is labelled `configured_prior` unless it is reusing a value the
+#    project has already accepted elsewhere, in which case the source says where from.
+
+schema_version: 1
+
+mode:
+  default: search
+  allowed: [search, acceptance_replay, validated_replay]
+  # A rejected replay must be refused, not repaired in place.
+  on_replay_rejection: require_search
+  note: >
+    `search` is the first commissioning run: register the table, generate real candidates,
+    run MoveIt IK and OMPL, then execute at low speed and save a draft. `acceptance_replay`
+    is an explicitly attended commissioning-only mode that replays that verified draft so
+    one identical trajectory can accumulate the required acceptance streak. It never plans.
+    `validated_replay` is the daily mode and only loads a frozen profile. Neither replay
+    mode silently falls back to IK or OMPL.
+
+store:
+  root: ~/.ros/openarm_kinesthetic/validated_trajectories
+  # Profile directory layout, recorded here so an operator can find things without
+  # reading code:
+  #   <root>/<profile>/metadata.yaml           identity, hashes, counters, frozen flag
+  #   <root>/<profile>/ready_pose.yaml         ready_q and the validated TCP poses
+  #   <root>/<profile>/trajectory.yaml         the JointTrajectory that is replayed
+  #   <root>/<profile>/planning_report.json    the plan/IK report that produced it
+  #   <root>/<profile>/scene_signature.yaml    the station state at validation
+  #   <root>/<profile>/acceptance_report.json  the run streak and the freeze decision
+  files:
+    metadata: metadata.yaml
+    ready_pose: ready_pose.yaml
+    trajectory: trajectory.yaml
+    planning_report: planning_report.json
+    scene_signature: scene_signature.yaml
+    acceptance_report: acceptance_report.json
+
+scene_signature:
+  # Compared against the signature captured when the profile was validated.
+  # A millimetre is not a meaningful difference for a table that is registered from
+  # depth and then padded for collision; 10 mm and 1 degree are.
+  anchor_position_tolerance_m:
+    value: 0.010
+    source: configured_prior
+  table_center_position_tolerance_m:
+    value: 0.010
+    source: configured_prior
+  table_yaw_tolerance_deg:
+    value: 1.0
+    source: configured_prior
+  plane_offset_tolerance_m:
+    value: 0.008
+    source: configured_prior
+  normal_angle_tolerance_deg:
+    value: 1.0
+    source: configured_prior
+  guard_size_tolerance_m:
+    value: 0.005
+    source: configured_prior
+  # Exact-equality fields. A missing hash on either side is `unverified`, which the
+  # policy below decides on.
+  hash_fields:
+    - camera_extrinsic_hash
+    - robot_model_hash
+    - hand_eye_profile_hash
+    - controller_config_hash
+  hash_mismatch_policy: reject      # reject | warn
+  missing_hash_policy: reject       # reject | warn. "I cannot prove the camera did not
+                                    # move" is not the same as "the camera did not move".
+  compared_fields:
+    - anchor_position_world_m
+    - table_center_world_m
+    - table_forward_world
+    - plane_normal_world
+    - plane_offset_m
+    - guard_size_xy_m
+    - selection_mode
+    - table_xy_source
+    - table_z_source
+  record_optional_fields:
+    - camera_translation_world_m
+    - camera_xyzw_world
+    - reported_camera_serial
+
+replay_gate:
+  # Cheap checks, in the order an operator would want to read them.
+  maximum_joint_state_age_s:
+    value: 0.20
+    source: reused_from_real_kinesthetic_joint_state_watchdog
+  start_position_tolerance_rad:
+    value: 0.030
+    source: configured_prior
+  required_controllers:
+    - joint_state_broadcaster
+    - left_joint_trajectory_controller
+    - right_joint_trajectory_controller
+    - right_gripper_controller
+  require_arm_rigid: true            # right-arm hardware passive state must be false
+  require_profile_frozen: true
+  require_profile_verified: true     # stored digests must match the stored data
+  require_scene_signature_match: true
+  require_start_position_match: true
+  # A trajectory whose start does not match the measured arm is not "close enough to
+  # trim": it is a different trajectory and needs a new plan.
+  allow_start_trim: false
+
+freeze_policy:
+  # The staged count the operator asked for: one first move, then repeats, and only then a
+  # frozen production trajectory. `required_consecutive_passes` is what actually gates the
+  # freeze; the two minimums are the mix of speeds inside that streak.
+  required_consecutive_passes: 10
+  minimum_low_speed_passes: 1
+  minimum_production_scaling_passes: 4
+  production_scaling:
+    velocity: 0.05
+    acceleration: 0.05
+  # A pass counts as "low speed" when both scalings are at or below this.
+  low_speed_scaling_at_most:
+    value: 0.03
+    source: configured_prior
+  require_identical_trajectory: true   # one trajectory hash across the whole streak
+  require_zero_failures_in_streak: true
+  fail_on_j4_red_light: true
+  fail_on_operator_anomaly: true
+  # Acceptance bounds are the executor's own, and they in turn match
+  # initialization.yaml. They are repeated here so that a profile can be re-checked from
+  # its stored acceptance report alone, without the executor running.
+  maximum_final_joint_error_rad:
+    value: 0.030
+    source: reused_from_initialization_yaml_execution_final_joint_tolerance
+  maximum_final_tcp_error_m:
+    value: 0.010
+    source: reused_from_initialization_yaml_execution_final_position_tolerance
+  maximum_final_orientation_error_rad:
+    value: 0.050
+    source: reused_from_initialization_yaml_execution_final_orientation_tolerance
+
+known_bad_observations:
+  - id: real_j4_2026_09_17
+    source: operator_reported_observation
+    summary: >
+      The real right arm reported a J4 red light / protection event while reaching the
+      previous fixed Teaching Ready pose.
+    j4_target_rad: 1.8984
+    j4_final_rad: 1.4120
+    policy: >
+      Observation and a reason for the `j4_red_light` field on every recorded run. No
+      acceptance bound, and no J4 angle or torque limit, is derived from it.

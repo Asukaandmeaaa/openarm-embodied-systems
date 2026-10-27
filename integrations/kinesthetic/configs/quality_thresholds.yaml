@@ -1,0 +1,25 @@
+schema_version: 1
+status: intentionally_unset_until_pilot_data
+provisional: true
+transaction_integrity:
+  require_monotonic_timestamps: true
+  require_exact_feature_dimensions: true
+  require_two_camera_keys: [ceiling, wrist_right]
+  reject_non_finite_state_action: true
+  require_terminal_label: true
+  maximum_consecutive_missing_camera_frames: 2
+  maximum_timestamp_skew_s: 0.05
+  maximum_ready_error_rad: 0.03
+  maximum_left_park_error_rad: 0.03
+engineering_references_not_official:
+  normalized_joint_margin: 0.03
+  nonallowed_collision_distance_m: 0.01
+  replay_tracking_p95_rad: 0.10
+episode_quality:
+  maximum_dropped_frame_fraction: {value: null, status: not_established}
+  maximum_timestamp_jitter_s: {value: null, status: not_established}
+  maximum_right_joint_velocity_rad_s: {value: null, status: not_established}
+  minimum_success_hold_s: {value: null, status: not_established}
+notes:
+  - Thresholds require simulator pilot evidence and later hardware calibration.
+  - Null thresholds are gates, not permissive defaults.

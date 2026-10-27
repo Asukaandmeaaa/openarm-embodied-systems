@@ -1,0 +1,156 @@
+# Copyright 2026 Enactic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+nodes:
+  - id: controller
+    build: pip install -e nodes/dora-openarm-inference-controller
+    path: dora-openarm-inference-controller
+    inputs:
+      progress_tick: dora/timer/millis/100
+      arm_left_action: actions-executor/move_position_left
+      arm_left_observation: mujoco/arm_left_observation
+      arm_left_status: mujoco/status
+      arm_right_action: actions-executor/move_position_right
+      arm_right_observation: mujoco/arm_right_observation
+      arm_right_status: mujoco/status
+      camera_ceiling: mujoco/camera_ceiling
+      camera_head_left: mujoco/camera_head_left
+      camera_head_right: mujoco/camera_head_right
+      camera_wrist_left: mujoco/camera_wrist_left
+      camera_wrist_right: mujoco/camera_wrist_right
+      observation: quittable-observer/observation
+      phase_classifier_result: phase-classifier/result
+    outputs:
+      - command
+      - progress
+      - arm_left_action
+      - arm_left_observation
+      - arm_right_action
+      - arm_right_observation
+      - camera_ceiling
+      - camera_head_left
+      - camera_head_right
+      - camera_wrist_left
+      - camera_wrist_right
+      - observation
+      - phase_classifier_result
+
+  - id: quittable-tick-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: controller/command
+      tick: dora/timer/millis/4
+    outputs:
+      - tick
+
+  - id: mujoco
+    build: pip install -e nodes/dora-openarm-mujoco
+    path: dora-openarm-mujoco
+    # args: "--scene demo --keyframe home --render --ctrl --enable-collision"
+    args: "--scene demo --keyframe home --render --ctrl --enable-collision --viewer"
+    env:
+      # MUJOCO_GL: "egl" # on GPU machine. no display. (without --viewer option)
+      MUJOCO_GL: "glfw" # on GPU machine. with display. (use with --viewer option)
+    inputs:
+      position_left: actions-executor/move_position_left
+      position_right: actions-executor/move_position_right
+    outputs:
+      - status
+      - arm_left_observation
+      - arm_right_observation
+      - camera_ceiling
+      - camera_head_left
+      - camera_head_right
+      - camera_wrist_left
+      - camera_wrist_right
+
+  - id: observer
+    build: pip install -e nodes/dora-openarm-observer
+    path: dora-openarm-observer
+    inputs:
+      tick: quittable-tick-observer/tick
+      command: controller/command
+      arm_left: mujoco/arm_left_observation
+      arm_right: mujoco/arm_right_observation
+      camera_ceiling: mujoco/camera_ceiling
+      camera_head_left: mujoco/camera_head_left
+      camera_head_right: mujoco/camera_head_right
+      camera_wrist_left: mujoco/camera_wrist_left
+      camera_wrist_right: mujoco/camera_wrist_right
+      phase_classifier_result: phase-classifier/result
+    outputs:
+      - observation
+
+  - id: quittable-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: controller/command
+      observation: observer/observation
+    outputs:
+      - observation
+
+  - id: policy-server
+    build: pip install -e nodes/dora-openarm-docker-policy-server
+    path: dora-openarm-docker-policy-server
+    args: "--execute-full-chunk"
+    env:
+      IMAGE: openarm-inference-image-lerobot:latest
+    inputs:
+      observation: quittable-observer/observation
+    outputs:
+      - actions
+
+  - id: actions-executor
+    build: pip install -e nodes/dora-openarm-actions-executor
+    path: dora-openarm-actions-executor
+    args: "--upsample --filter"
+    inputs:
+      actions: policy-server/actions
+    outputs:
+      - move_position_left
+      - move_position_right
+
+  - id: phase-classifier
+    build: pip install -e nodes/dora-openarm-classifier
+    path: dora-openarm-classifier
+    env:
+      QUESTION: "Is the orange cube inside the box?"
+      CLASSIFY_HZ: "2"
+    inputs:
+      image: mujoco/camera_head_left
+      position_left: mujoco/arm_left_observation
+      position_right: mujoco/arm_right_observation
+    outputs:
+      - result
+
+  - id: recorder
+    build: pip install -e nodes/dora-openarm-dataset-recorder
+    path: dora-openarm-dataset-recorder
+    env:
+      METADATA_FILE: "metadata.yaml"
+    inputs:
+      command:
+        source: controller/command
+        queue_size: 5
+      arm_left_action: controller/arm_left_action
+      arm_left_observation: controller/arm_left_observation
+      arm_right_action: controller/arm_right_action
+      arm_right_observation: controller/arm_right_observation
+      camera_ceiling: controller/camera_ceiling
+      camera_head_left: controller/camera_head_left
+      camera_head_right: controller/camera_head_right
+      camera_wrist_left: controller/camera_wrist_left
+      camera_wrist_right: controller/camera_wrist_right

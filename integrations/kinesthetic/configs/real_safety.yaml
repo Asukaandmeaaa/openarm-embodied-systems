@@ -1,0 +1,30 @@
+schema_version: 1
+hardware_execution_authorized: false
+limited_attended_acceptance:
+  operator_requested: true
+  implementation_ready: true
+  physically_executed: false
+  formal_collection_authorized: false
+  runbook: docs/NANO_TEACHING_READY_COMMISSIONING.md
+  arm_motion_source: mutually_exclusive_cartesian_jog_or_physical_kinesthetic
+activation_default_design: hold_current
+forbid_activation_return_to_zero_without_planning: true
+software_stop_latch_is_physical_estop: false
+required_before_can_or_ros2_control:
+  - physical_emergency_stop_verified
+  - table_and_box_calibrated
+  - world_to_global_camera_verified
+  - passive_mode_small_range_acceptance
+  - gripper_torque_monitor_calibrated
+  - current_to_task_ready_collision_plan_approved
+motion_gate:
+  joint_hard_limits: from_hardware_description
+  velocity_limits: calibration_required
+  acceleration_limits: calibration_required
+  maximum_command_step: calibration_required
+  watchdog_s: 0.15
+gripper_torque:
+  initial_mode: monitor
+  close_threshold_nm: null
+  release_threshold_nm: null
+  hard_limit_nm: null

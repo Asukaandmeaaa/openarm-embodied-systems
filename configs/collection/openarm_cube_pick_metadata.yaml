@@ -1,0 +1,42 @@
+location: MuJoCo demo cell
+operator: local
+task_contract: openarm_cube_pick_place_v2
+tasks:
+  - prompt: Pick up the blue cube, hold it for 2 seconds, place it nearby, and return the right arm home.
+    description: >-
+      Start from home, pick up the blue cube with the right arm, lift it at
+      least 5 cm, hold it for 2 seconds, place it at a nearby randomized target,
+      release it, and return the right arm to its initial pose. The left arm stays safe.
+equipment:
+  id: OpenArm-MuJoCo
+  version: "2.0"
+  embodiments:
+    arms:
+      id: OpenArm
+      version: "2.0"
+      state_action_order:
+        - right_joint1..7
+        - right_gripper
+        - left_joint1..7
+        - left_gripper
+  perceptions:
+    cameras:
+      ceiling:
+        source: camera_ceiling
+        encoding: jpeg
+        color_after_decode: RGB
+        resolution: [960, 600]
+      wrist_right:
+        source: camera_wrist_right
+        encoding: jpeg
+        color_after_decode: RGB
+        resolution: [960, 600]
+collection:
+  target_fps: 30
+  object_xy_randomization_m: [0.05, 0.06]
+  place_min_distance_m: 0.08
+  object_color: blue
+  object_yaw_randomization_deg: 15
+  base_seed: 20260902
+  collision: enabled
+  control: actuator_position

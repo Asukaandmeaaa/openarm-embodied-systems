@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-27",
+  "scope": "source release CPU baseline only",
+  "environment": "fresh uv environment from locked dependencies; staged Git tree extracted under /tmp without sibling workspaces",
+  "python": "3.12.3",
+  "tests": {
+    "command": "make test",
+    "passed": 108,
+    "failed": 0,
+    "modules": [
+      "tests/test_expert_contracts.py",
+      "tests/test_control_ownership.py",
+      "tests/test_cube_into_black_box_contract.py",
+      "tests/test_act_trial_speed_contract.py"
+    ]
+  },
+  "simulation": {
+    "command": "make smoke",
+    "steps": 100,
+    "time_s": 0.10000000000000007,
+    "observation_shape": [
+      16
+    ],
+    "scene_sha256": "3ea83d91e2fe3c37d84f616098561fbdff3f44fc2562bf80067ca9a86e76bdb9",
+    "hardware_io": false
+  },
+  "not_verified": [
+    "physical hardware",
+    "full historical pytest suite",
+    "ACT training",
+    "LeRobot conversion environment",
+    "camera acquisition",
+    "ROS compilation"
+  ],
+  "publication_checks": [
+    "staged Python syntax parsed",
+    "no nested gitlinks",
+    "no files >= 50 MiB",
+    "common credential patterns checked; not a comprehensive security audit"
+  ]
+}

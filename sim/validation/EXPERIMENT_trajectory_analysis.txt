@@ -1,0 +1,138 @@
+"""
+Trajectory Analysis Experiment Summary
+=====================================
+
+Created: 2026-09-04
+Purpose: Expert vs ACT trajectory comparison at each processing stage
+
+Experiment Design
+-----------------
+
+Goal: Isolate trajectory deviation and velocity/acceleration clamping at each stage
+      of the ACT closed-loop execution chain.
+
+Execution Chains:
+  Expert:  raw_expert_action -> ActionGuard -> data.ctrl -> mj_step
+  ACT:     raw_act_chunk (30Hz) -> HermiteUpsampler (250Hz) -> BiquadLowpass (15Hz) -> ActionGuard -> data.ctrl -> mj_step
+
+Analysis Stages:
+  1. HermiteUpsampler: Cubic Hermite spline interpolation (30Hz → 250Hz)
+  2. BiquadLowpass: Biquad lowpass filter (15Hz cutoff, Q=0.707)
+  3. ActionGuard: Safety clipping (velocity, acceleration, step limits)
+
+Key Files
+---------
+
+Analysis Script:
+  sim/validation/expert_vs_act_trajectory_analysis.py
+    - Runs ACT policy in closed loop
+    - Records raw chunks, upsampled, lowpass, and guarded trajectories
+    - Computes deviation metrics at each stage
+    - Reports clamp counts from ActionGuard
+
+Runner Script:
+  scripts/run_trajectory_analysis.sh
+    - Batch analysis across multiple seeds
+    - Generates JSON results per seed
+    - Prints summary statistics
+
+Visualization Script:
+  scripts/visualize_trajectory_analysis.py
+    - Plots stage-by-stage deviations
+    - Visualizes ActionGuard clamp counts
+    - Per-axis deviation breakdown
+
+Documentation:
+  README_trajectory_analysis.md
+    - Complete experiment documentation
+    - Usage instructions
+    - Expected results
+
+Frozen Decision: Trajectory Smoothing Responsibility
+---------------------------------------------------
+
+PRIMARY SMOOTHER: BiquadLowpass
+
+Rationale:
+  - Explicit 15Hz cutoff frequency designed for trajectory smoothness
+  - HermiteUpsampler performs interpolation only (frequency conversion)
+  - ActionGuard performs safety clipping only (reactive, not proactive)
+
+Implications:
+  1. Training: ACT should be trained on post-lowpass trajectories to match deployment
+  2. Sim-to-real: Lowpass parameters (cutoff, Q) are critical transfer parameters
+  3. Debugging: Trajectory issues should first investigate lowpass behavior
+
+Expected Results
+----------------
+
+Based on implementation analysis:
+
+1. Upsampler deviation: SMALL
+   - Hermite interpolation is smooth by design
+   - Expected: < 0.01 rad mean deviation
+
+2. Lowpass deviation: MODERATE
+   - Intentional smoothing at 15Hz cutoff
+   - Expected: 0.01-0.1 rad mean deviation
+   - This is the PRIMARY source of deviation
+
+3. Guard deviation: SMALL TO ZERO
+   - Clipping only when safety limits violated
+   - Expected: < 0.01 rad mean deviation
+   - Significant clipping indicates unsafe policy output
+
+Clamp Analysis:
+  - velocity_clamps: Policy attempts to move too fast
+  - acceleration_clamps: Policy attempts to accelerate too quickly
+  - step_clamps: Policy attempts too large a step
+  - Healthy policy should have minimal clamps after lowpass filtering
+
+Scope Limitations
+-----------------
+
+This experiment:
+  ✓ Isolates each stage's contribution to trajectory deviation
+  ✓ Identifies velocity/acceleration clamp locations
+  ✓ Freezes trajectory smoothing responsibility boundary
+  ✓ Provides diagnostic data for π0 training decisions
+
+This experiment does NOT:
+  ✗ Train a new policy (π0 training deferred)
+  ✗ Test multi-environment generalization (single env only)
+  ✗ Compare success rates (trajectory analysis only)
+  ✗ Optimize hyperparameters (diagnosis first)
+
+Next Actions
+------------
+
+After running this experiment:
+
+1. Review deviation metrics - Which stage dominates?
+2. Review clamp counts - Is ActionGuard intervening frequently?
+3. Validate smoothing boundary - Confirm BiquadLowpass is primary smoother
+4. Decision point: If lowpass deviation is acceptable, proceed to π0 training
+5. Decision point: If guard clamps are high, investigate policy training data
+
+Usage
+-----
+
+# Run batch analysis
+bash scripts/run_trajectory_analysis.sh
+
+# Visualize results
+python scripts/visualize_trajectory_analysis.py results/trajectory_analysis_<timestamp>/
+
+# Single seed for debugging
+python sim/validation/expert_vs_act_trajectory_analysis.py \\
+    outputs/act_openarm_cube_pick_smoke_g5_500/checkpoints/last \\
+    --seed 20260902
+
+References
+----------
+
+- act_closed_loop.py: ACT closed-loop validation baseline
+- expert_action_replay.py: Expert trajectory replay ground truth
+- guard.py: ActionGuard implementation
+- main.py (executor): HermiteUpsampler and BiquadLowpass implementations
+"""

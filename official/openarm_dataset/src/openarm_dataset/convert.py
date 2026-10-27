@@ -1,0 +1,132 @@
+# Copyright 2026 Enactic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Convert OpenArm dataset format."""
+
+import argparse
+import openarm_dataset
+import pathlib
+import sys
+
+
+def main():
+    """Convert OpenArm dataset format."""
+    parser = argparse.ArgumentParser(description="Convert OpenArm dataset format")
+    parser.add_argument(
+        "input",
+        help="Path of an OpenArm dataset to be converted",
+        type=pathlib.Path,
+    )
+    parser.add_argument(
+        "output",
+        help="Path of converted OpenArm dataset",
+        type=pathlib.Path,
+    )
+    parser.add_argument(
+        "--format",
+        help="Format of the output dataset (default: openarm)",
+        default="openarm",
+        choices=["openarm", "lerobot_v2.1", "lerobot_v3.0", "gr00t"],
+    )
+    parser.add_argument(
+        "--fps",
+        help="Frames per second for the output dataset (default: 30) if the output format is lerobot_v2.1, lerobot_v3.0 or gr00t",
+        type=int,
+        default=30,
+    )
+    parser.add_argument(
+        "--smoothing-cutoff",
+        help="Cutoff frequency for smoothing (default: 1.0) if the output format is lerobot_v2.1, lerobot_v3.0 or gr00t",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--no-smoothing",
+        help=(
+            "Disable conversion-time smoothing. Recommended when recorded "
+            "actions are already the safe targets actually sent to the robot."
+        ),
+        action="store_true",
+    )
+    parser.add_argument(
+        "--train-split",
+        help="Split ratio for training dataset (default: 0.8) if the output format is lerobot_v2.1, lerobot_v3.0 or gr00t",
+        type=float,
+        default=0.8,
+    )
+    parser.add_argument(
+        "--success-only",
+        help="Include only successful episodes in the output dataset (default: False) if the output format is lerobot_v2.1, lerobot_v3.0 or gr00t",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--valid-only",
+        help="Include only episodes not marked invalid by openarm-dataset-validate "
+        "in the output dataset (default: False)",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--camera-format",
+        help="How to store camera frames when the output format is openarm: "
+        "'dir' (one JPEG file per frame, default) or 'tar' (one .tar archive "
+        "per camera, recommended for Hugging Face Hub file-count limits)",
+        default="dir",
+        choices=["dir", "tar"],
+    )
+    parser.add_argument(
+        "--state",
+        help="Arm state representation of the output dataset if the output "
+        "format is lerobot_v2.1, lerobot_v3.0 or gr00t. Converted on the fly "
+        "(qpos to pose via FK, pose to qpos via IK) when the dataset stores "
+        "the other representation (default: qpos)",
+        choices=["qpos", "pose", "rot6d"],
+    )
+
+    args = parser.parse_args()
+    write_kwargs = {"format": args.format, "valid_only": args.valid_only}
+    if args.format in ("lerobot_v2.1", "lerobot_v3.0", "gr00t"):
+        write_kwargs["fps"] = args.fps
+        write_kwargs["smoothing_cutoff"] = (
+            None if args.no_smoothing else args.smoothing_cutoff
+        )
+        write_kwargs["train_split"] = args.train_split
+        write_kwargs["success_only"] = args.success_only
+        # Fall back to the writers' qpos default when --state is not given.
+        if args.state is not None:
+            write_kwargs["state"] = args.state
+    else:
+        if args.state is not None:
+            parser.error(
+                "--state applies only to the lerobot_v2.1, lerobot_v3.0 and "
+                "gr00t formats: the openarm format always stores the "
+                "recorded raw data"
+            )
+        write_kwargs["camera_format"] = args.camera_format
+
+    old_dataset = openarm_dataset.Dataset(args.input)
+    if args.valid_only and not any(
+        "valid" in episode for episode in old_dataset.meta.episodes
+    ):
+        print(
+            "Warning: --valid-only is specified but no episode has a 'valid' "
+            "flag; run openarm-dataset-validate first to mark invalid episodes",
+            file=sys.stderr,
+        )
+    old_dataset.write(args.output, **write_kwargs)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,6 @@
+{
+  "frame": "world",
+  "translation_m": [0.002, 0.0, 0.0],
+  "reason": "Operator observed repeatable pickup bias; advance TCP 2 mm along robot forward +X. World and body mounting axes coincide.",
+  "scope": "Pickup TCP target only; measured object, table, bin and calibration remain unchanged"
+}

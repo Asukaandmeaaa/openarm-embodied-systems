@@ -1,0 +1,51 @@
+> Historical workstation record; paths, results and hardware instructions are not a fresh-clone quickstart. See docs/REPRODUCIBILITY.md.
+
+平滑轨迹按B顺序采集，2026-10-16
+
+此页按用户最新要求替代此前“每条单独plan-only和试回放后再采集”的步骤。
+每次B直接进行一条采集，播放器仍在运动前执行原有validate_marked_path及运行保护；不用额外空跑一遍。
+validation_mode=inline如实记录plan_only_passed=false、dry_replay_passed=false。
+原默认prior_verified模式仍要求两项既有验证为true；未伪造未执行的检查。
+每次完成只切换选择并等待新的B，不自动连续运动。失败停在FAILED，不继续下一条。
+
+已完成第一条：20261016_130312_001，源005，位于平滑批次episodes_pending_review。
+核对存在3390条关节观测、3111条参考动作、2006条相机索引、2条夹爪事件；metadata.review_status=pending。
+保存不等于人工确认任务成功，之后仍需审核。
+
+一次性更新记录器：
+保留H1、仅手柄输入和两路相机。
+当前B按钮节点已由操作者退出，第一条已经保存。
+在终端6按Ctrl+C退出空闲的real_episode_recorder，随后手动重启它：
+source /home/lushilin/openarm_vla_ws/scripts/real14_smooth_capture_env.sh
+ros2 run openarm_kinesthetic_recorder real_episode_recorder \
+  --ros-args --params-file "$CFG" \
+  -p output_root:="$COLLECT_ROOT" \
+  -p require_episode_start_home:=true \
+  -p maximum_home_report_age_s:=7200.0
+重启是为了加载新的验证记录格式，不改变已保存episode，不重启H1/H2或相机。
+
+终端2启动剩余批次：
+cd /home/lushilin/openarm_vla_ws
+bash scripts/capture_smooth_batch.sh 2
+
+参数2为12条候选清单的第2条，即源007，并非源编号002。
+默认不提供参数也从第2条开始；启动后应看到source_trial_id=20261016_113607_007，进度(1/11)。
+清单序号与源编号：1=005，2=007，3=008，4=009，5=010，6=011，7=013，8=014，9=016，10=017，11=018，12=019。
+006/012仍因关节范围隔离，015不在候选清单；入口校验目录与12条哈希清单一致。
+
+每条流程：
+按该条示教摆位复位方块、清空黑盒，确认夹爪空载张开、已回HOME、手柄运动键松开。
+看到B_CAPTURE_READY后，短按B一次。
+等待本条真实回放、保存、下一条B_CAPTURE_READY。
+再次复位物体，再按B。
+最后显示B_CAPTURE_BATCH_COMPLETE；H1/相机/记录器继续运行，由操作者手动退出。
+实际失败的episode保留待审核，不当作成功训练样本。
+
+中断后：根据已保存episode的source_trajectory_trial_id选择下一个清单序号，手动运行bash scripts/capture_smooth_batch.sh N。
+N是完整12条清单的序号，不是恢复后(1/11)这样的局部计数。脚本不会自动猜测已成功条数。
+如果重复选择已采的轨迹，会新建episode编号而不覆盖旧数据；操作者决定是否需要重复。
+
+底层现有trajectory_directory入口继续使用；新增trajectory_start_number、validation_mode、position_id_from_source参数。
+批量切换会更新源trial和position_id，避免所有episode误记成第一条位置。
+配置/源代码备份：results/real14_batch_capture_review_20261016。
+离线回归77项通过（批次顺序、等待B、失败不前进、真实溯源、原有播放器/生命周期/HOME检查）。本次未自动启动停止设备或执行任何物理动作。

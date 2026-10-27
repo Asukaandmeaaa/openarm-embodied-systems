@@ -1,0 +1,12 @@
+# ACT streaming only. Does not change the successful collection configuration.
+right_joint_trajectory_controller:
+  ros__parameters:
+    command_interfaces: [position, velocity]
+    state_interfaces: [position, velocity]
+    # A streamed point may be moving; JTC otherwise rejects nonzero final qd.
+    allow_nonzero_velocity_at_trajectory_end: true
+    # Independent controller stale-command fallback, in addition to gateway lease.
+    cmd_timeout: 0.1
+    constraints:
+      goal_time: 0.0
+      stopped_velocity_tolerance: 0.02

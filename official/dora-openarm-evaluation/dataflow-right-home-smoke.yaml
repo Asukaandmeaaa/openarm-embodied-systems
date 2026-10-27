@@ -1,0 +1,11 @@
+# Run after stopping ROS hardware and every other CAN writer.
+# No policy, cameras, left arm, or ACT. Holds HOME until this flow exits.
+# Exiting disables motors; support the arm during the handoff to the ACT flow.
+nodes:
+  - id: arm-right
+    build: pip install ./vendor/openarm_can/python -e nodes/dora-openarm
+    path: dora-openarm
+    args: --side right --startup-home /home/ubuntu/official_act_baseline/guarded-home-right.json --config /home/ubuntu/official_act_baseline/openarm_real_ros_coordinates.yaml
+    inputs:
+      request_position: dora/timer/millis/10
+    outputs: [position, status, home_status]

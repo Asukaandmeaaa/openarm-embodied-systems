@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simulation-only mirror of home_initialization.yaml's immutable collision guard.
+     This is not a substitute for MoveIt collision checking; it supplies distance and
+     gravity-torque measurements that MoveIt's ROS service API does not expose. -->
+<mujoco model="openarm_fixed_home_guard_v1">
+  <compiler angle="radian"/>
+  <option timestep="0.001" cone="elliptic" impratio="10" integrator="implicitfast"/>
+  <asset>
+    <model name="openarm_pedestal_component" file="../../vendor/openarm_mujoco/v2/pedestal/openarm_pedestal.xml"/>
+  </asset>
+  <worldbody>
+    <geom name="floor" type="plane" size="2 2 0.05" contype="1" conaffinity="1"/>
+    <attach model="openarm_pedestal_component" prefix=""/>
+    <!-- Exact center/dimensions from the real fixed PlanningScene guard. -->
+    <body name="fixed_inflated_table_guard" pos="0.382 0.016 0.090">
+      <geom name="table_top_collision" type="box" size="0.25 0.35 0.25"
+            rgba="0.9 0.2 0.2 0.25" contype="1" conaffinity="1"/>
+    </body>
+    <!-- ModelMap expects this named free joint.  It is non-colliding and far away. -->
+    <body name="blue_cube" pos="5 5 5">
+      <freejoint name="blue_cube_free"/>
+      <geom name="blue_cube_collision" type="box" size="0.01 0.01 0.01"
+            mass="0.01" contype="0" conaffinity="0"/>
+    </body>
+  </worldbody>
+</mujoco>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2026 Enactic, Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenArm keyboard teleop</title>
+    <style>
+      :root { color-scheme: dark; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        display: flex; flex-direction: column;
+        background: #111; color: #ddd;
+        font: 14px/1.5 system-ui, sans-serif;
+      }
+      header {
+        display: flex; align-items: baseline; gap: 1em;
+        padding: 0.4em 0.8em; background: #1b1b1b;
+      }
+      header h1 { font-size: 1em; margin: 0; font-weight: 600; }
+      #status { color: #8bc; }
+      #held { color: #b96; font-family: ui-monospace, monospace; }
+      main { flex: 1; display: flex; min-height: 0; }
+      video { flex: 1; min-width: 0; object-fit: contain; background: #000; }
+      details { padding: 0.4em 0.8em; background: #1b1b1b; }
+      summary { cursor: pointer; }
+      pre { margin: 0.5em 0 0; font-family: ui-monospace, monospace; color: #aaa; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>OpenArm keyboard teleop</h1>
+      <span id="status">connecting…</span>
+      <span id="held"></span>
+    </header>
+    <main>
+      <video id="video" autoplay muted playsinline></video>
+    </main>
+    <details>
+      <summary>Key bindings</summary>
+      <pre id="help"></pre>
+    </details>
+    <script src="teleop.js"></script>
+  </body>
+</html>

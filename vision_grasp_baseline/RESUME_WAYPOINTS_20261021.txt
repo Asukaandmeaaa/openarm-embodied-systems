@@ -1,0 +1,55 @@
+归档：cycle_20261021_164451 中间点放置续接
+更新：2026-10-21（Asia/Shanghai）
+========================================
+本操作已经完成，下面是历史状态说明，不是待执行的续接命令。
+当前方块已放入盒内，机械臂随后单独返回机械零位。
+place_retry_02输出目录已经存在，不要再次用本轮旧grasp/result.json执行放置。
+新一轮从README.txt中的cycle --waypoints开始；先把方块放回盒外桌面。
+
+首次中断：place/result.json
+-------------------------
+抓取和抬升已完成，13段放置预规划后恢复夹持场景失败，stages=[]。
+附着ADD自动移除同名世界物体；原代码再次发送世界REMOVE，服务返回false。
+修复为用原始附着几何执行ADD，不再重复删除同名物体。
+实时重规划与附着几何恢复检查通过，未发送放置运动。
+
+第二次中断：place_retry_01/result.json
+------------------------------------
+13段预规划通过；ROS set_message_fields修改了输入字典中的消息序列，
+随后日志写入JSON报JointTrajectoryPoint不可序列化。
+physical_motion=false，stages=[]，同样发生在第一次搬运前。
+修复为转换深拷贝；用本轮13段保存轨迹确认转换/反向转换一致。
+预规划入口现在也检查同样的目标准备流程。
+
+完成续接：place_retry_02/result.json
+----------------------------------
+用户在H1/gateway保持运行时复位已定位的软件子程序故障，重新执行放置阶段。
+13段全部执行，放置后10/10帧在盒内，最大实时TCP跟踪差约14.47mm。
+最终状态PLACED_AND_RETURNED表示回到拾取侧高处并恢复姿态，不是机械零位。
+用户仍反馈轨迹不流畅、最初抓取接近桌面；不作为合格批量专家数据验收。
+原始cycle_result.json仍为false，未伪造成一键整轮成功。
+
+另行回零与最终桌面配置
+----------------------
+return_zero_execution_01.json：单独实体回零成功，约20.04秒，右臂最大偏差0.01469rad。
+回零开始时桌边余量为每侧5cm，执行中用户指定改为3cm；原轨迹按5cm完成。
+table_padding_03cm_live_check_01.json：回零后无运动更新当前场景为每侧3cm。
+完整抓放尚未按最终3cm配置复测，自动最终回零与轨迹平顺尚未实现。
+
+证据目录：vision_grasp_baseline/runs/cycle_20261021_164451/
+  cycle_result.json
+  grasp/result.json
+  place/result.json
+  place_retry_01/result.json
+  place_retry_01/serialization_fix_verification.json
+  place_retry_02/result.json
+  place_retry_02/after_release/color_009.png
+  return_zero_execution_01.json
+  return_zero_execution_01.raw_can.jsonl
+  table_padding_03cm_live_check_01.json
+  place_recheck_01/scene_restoration_check.json
+  diagnostic_global/color_002.png
+  diagnostic_wrist/wrist_right/wrist_right_last_captured.png
+
+完整当前技术记录：docs/VISION_GRASP_BASELINE_TECHNICAL_20261021.txt
+结构化汇总：vision_grasp_baseline/waypoint_physical_test_20261021.json

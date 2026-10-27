@@ -1,0 +1,22 @@
+{
+  "legacy_objects.xml": {
+    "source": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/demo.xml",
+    "sha256": "3ea83d91e2fe3c37d84f616098561fbdff3f44fc2562bf80067ca9a86e76bdb9"
+  },
+  "robot_pedestal.xml": {
+    "source": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/openarm_pedestal.xml",
+    "sha256": "885a2771f619250854f1ff1c76d12884b661ea6684e9282cfabb4de8acdbf44a"
+  },
+  "robot_bimanual.xml": {
+    "source": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/openarm_bimanual.xml",
+    "sha256": "e23b25277e45683c7e05ac5c3778762ed1a73fdfadf89f4948cdba7d74c05e6c"
+  },
+  "historical_scene.yaml": {
+    "source": "/home/lushilin/openarm_kinesthetic_ws/configs/scene_real_table_v1.yaml",
+    "sha256": "35a1299af44e9e9d5acbb9dc59a02fab8deed2be413ed33520c21bbbb36de9d6"
+  },
+  "physical_home.yaml": {
+    "source": "/home/lushilin/openarm_kinesthetic_ws/ros2_ws/src/openarm_kinesthetic_recorder/config/home_initialization.yaml",
+    "sha256": "bb9dd79921453413627f95ce8b789bebc133b9d903b3f7f917b5341ef054b7f5"
+  }
+}

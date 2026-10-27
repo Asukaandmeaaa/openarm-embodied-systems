@@ -1,0 +1,93 @@
+# Copyright 2026 Enactic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+nodes:
+  # --- observer: collects arms + cameras into one Arrow IPC bundle ---
+  - id: observer
+    build: pip install -e  nodes/dora-openarm-observer
+    path: dora-openarm-observer
+    args: "--arms right,left"
+    inputs:
+      tick: quittable-tick-observer/tick # 250 Hz gate; latest cameras update at 30 Hz
+      arm_right: mujoco-collect/arm_right_observation
+      arm_left: mujoco-collect/arm_left_observation
+      camera_wrist_right: mujoco-collect/camera_wrist_right
+      camera_wrist_left: mujoco-collect/camera_wrist_left
+      camera_head_left: mujoco-collect/camera_head_left
+      camera_head_right: mujoco-collect/camera_head_right
+      camera_ceiling: mujoco-collect/camera_ceiling
+      command: mujoco-collect/status # "ready" on startup opens the observer gate
+
+    outputs:
+      - observation # Arrow IPC file path + metadata, written to /dev/shm
+
+  - id: quittable-tick-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    # build: pip install dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      # 250Hz
+      tick: dora/timer/millis/4
+    outputs:
+      - tick
+
+  # --- quittable-observer: gate controlled by controller ---
+  - id: quittable-observer
+    build: pip install -e nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      observation: observer/observation
+    outputs:
+      - observation
+
+  # --- policy-server: YOUR node ---
+  - id: policy-server
+    build: pip install -e nodes/dora-openarm-local-policy-server
+    path: dora-openarm-local-policy-server
+    args: "--execute-full-chunk"
+    env:
+      SOCKET: /dev/shm/policy-server.socket # must match your running server
+    inputs:
+      observation: quittable-observer/observation
+    outputs:
+      - actions # JSON: {interval, cutoff_hz, positions: [[16D], ...]}
+
+  # --- actions-executor: unpacks the chunk and drives the arms ---
+  - id: actions-executor
+    build: pip install -e nodes/dora-openarm-actions-executor
+    path: dora-openarm-actions-executor
+    args: "--upsample --filter"
+    inputs:
+      actions: policy-server/actions
+    outputs:
+      - move_position_right # → arm-right
+      - move_position_left # → arm-left
+
+  # ── MuJoCo viewer (replaces follower-right, follower-left, and all cameras) ──
+  - id: mujoco-collect
+    build: pip install -e nodes/dora-openarm-mujoco
+    path: dora-openarm-mujoco
+    args: "--scene demo --keyframe home --enable-collision --ctrl --viewer --render --debug-qpos"
+    inputs:
+      position_left: actions-executor/move_position_left
+      position_right: actions-executor/move_position_right
+    outputs:
+      - status
+      - arm_right_observation
+      - arm_left_observation
+      - camera_wrist_right
+      - camera_wrist_left
+      - camera_head_left
+      - camera_head_right
+      - camera_ceiling

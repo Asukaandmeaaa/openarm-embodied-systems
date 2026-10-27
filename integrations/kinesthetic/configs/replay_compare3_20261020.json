@@ -1,0 +1,26 @@
+{
+  "purpose": "Compare original old recording, same source smoothed/rerecorded, and new teaching. No ACT.",
+  "entries": [
+    {
+      "label": "1_old_original_20260928_151345_001",
+      "trajectory": "/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections/trajectories/20260928_151345_001.json",
+      "metadata": "/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections/episodes_pending_review/20260928_151345_001/metadata.json",
+      "sha256": "95015dc53f6bd89ff1b460fb78cb93b4bf19828a2db076d2e3946b70739f4bf9",
+      "metadata_sha256": "a1f78e0d267de422b43aa39f918f0b62f86cf04ce1d016953b4b164cfb982f75"
+    },
+    {
+      "label": "2_old_smoothed_recapture_20261016_132805_001",
+      "trajectory": "/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections_legacy25_20261016_smooth_v1/trajectories/20260928_151345_001.json",
+      "metadata": "/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections_legacy25_20261016_smooth_v1/episodes_pending_review/20261016_132805_001/metadata.json",
+      "sha256": "d53bdc79f966ed2b8d7ae0db6525072c0c4b3740203c935fd060871eeb6f5c46",
+      "metadata_sha256": "38b69c01e3795100ce54736b0e39f7dc1f2034ce63b26049f5cfa85b981427f2"
+    },
+    {
+      "label": "3_new_teaching_20261016_113434_005",
+      "trajectory": "/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections_real14_20261016_smooth_v1/trajectories/20261016_113434_005.json",
+      "metadata": "/home/lushilin/openarm_vla_ws/openarm_kinesthetic_data/collections_real14_20261016_smooth_v1/episodes_pending_review/20261016_130312_001/metadata.json",
+      "sha256": "347fd9f8d8bfe37d5736cbf0cd04519c8835ae7317254a9d35e993f5b4d4cdec",
+      "metadata_sha256": "10a02115e52c88fb7952d777405e0e9db6671a73b874d112e8268757e1a9c59a"
+    }
+  ]
+}

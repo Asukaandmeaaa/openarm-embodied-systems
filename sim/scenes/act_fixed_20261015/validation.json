@@ -1,0 +1,13 @@
+{
+  "mujoco_version": "3.8.1",
+  "xml_load": "passed",
+  "nq": 25,
+  "nu": 16,
+  "initial_penetrations_over_10um": [],
+  "cube_2s_settling_displacement_m": 5.4453450932523406e-05,
+  "geometry_checks": "compiled table size/height/gap, cube size/edge gaps, box outer size/edge gap passed",
+  "expert_rollout_tested": false,
+  "camera_calibrated": false,
+  "hardware_connected": false,
+  "approved_for_collection": false
+}

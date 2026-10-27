@@ -1,0 +1,22 @@
+{
+  "dataset": {
+    "repo_id": "local/act_mixed_20261016_train",
+    "root": "./data/lerobot/act_mixed_20261016/train",
+    "eval_split": 0.1,
+    "image_transforms": {"enable": false},
+    "use_imagenet_stats": true
+  },
+  "policy": {
+    "type": "act", "device": "cuda", "push_to_hub": false,
+    "chunk_size": 50, "n_action_steps": 10,
+    "optimizer_lr": 0.00001, "optimizer_lr_backbone": 0.00001,
+    "normalization_mapping": {"VISUAL": "MEAN_STD", "STATE": "IDENTITY", "ACTION": "MEAN_STD"}
+  },
+  "output_dir": "./outputs/act_real7030_50k_20261020",
+  "job_name": "act_real7030_50k_20261020",
+  "batch_size": 8, "steps": 50000, "num_workers": 4, "prefetch_factor": 2,
+  "seed": 1000, "cudnn_deterministic": true,
+  "log_freq": 50, "eval_steps": 1000, "max_eval_samples": 256,
+  "env_eval_freq": 0, "save_checkpoint": true, "save_freq": 5000,
+  "wandb": {"enable": false}
+}

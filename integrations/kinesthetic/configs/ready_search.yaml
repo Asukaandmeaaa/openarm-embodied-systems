@@ -1,0 +1,297 @@
+# Teaching Ready SE(3) pose search - simulation decision support.
+#
+# Why this file exists
+# --------------------
+# The initialization chain used ONE fixed TCP pose: table-relative anchor position
+# plus the orientation taken by forward kinematics from `right_task_ready`. That
+# orientation is a top-down grasp orientation (the tool approach axis points almost
+# exactly along world -Z), and on 2026-09-17 the real arm reported a J4 red light /
+# protection event reaching it. A single fixed orientation gives the redundancy
+# resolution no freedom, so J4 is decided by whatever OMPL/IK branch happens to
+# answer first.
+#
+# This configuration drives a deliberate, bounded search over
+#   * orientation families (legacy reference, side-horizontal, oblique 30/40/50/60/70),
+#   * one operator-marked Teaching Ready TCP shared by every new family,
+# and scores each candidate on joint margin, J4 margin, manipulability, collision
+# clearance, motion from the start, and - the measurement the real arm cannot give
+# us - MuJoCo gravity torque, with J4 called out explicitly.
+#
+# Hard rules encoded here (and enforced by `validate_ready_search`)
+# ----------------------------------------------------------------
+# 1. Simulation only. Nothing in this file authorizes, reaches, or describes real
+#    hardware execution.
+# 2. Every orientation is generated from the COMPILED model's real grasp-site frame
+#    and from the registered table frame. Inventing a world RPY triple that is
+#    called "horizontal" is forbidden; `tilt_convention` and `roll_resolution` are
+#    mandatory keys precisely so the construction is auditable.
+# 3. No hard J4 limit and no absolute torque threshold. `known_bad_observations`
+#    records the 2026-09-17 real numbers as an observation and as a relative
+#    comparison baseline ONLY. Configuration validation rejects any attempted
+#    J4 limit/threshold bound.
+# 4. `legacy_reference_distance_normalized` carries weight 0.0 in this first round so
+#    the search cannot be pulled back towards the old pose by a proximity term.
+
+schema_version: 1
+
+scope:
+  mode: simulation_only
+  hardware_access: forbidden
+  real_execution_code: untouched
+  scene: simulation
+  note: >
+    The search compiles the MuJoCo scene named by `scene` and never imports the
+    recorder, the guarded executor, the MoveIt bridge, or anything that can command
+    a physical arm. Porting the same generator/scoring ideas to ROS 2 is a separate,
+    later design step.
+
+scene: null                      # null -> `initialization.scene` (prior_table_v1.xml)
+
+sources:
+  initialization: initialization.yaml
+  poses: poses.yaml
+
+search:
+  # Start state for the initialization trajectory: the physical vertical-down
+  # motor zero, exactly as the existing initialization chain uses it.
+  start_pose: simulation_initial_pose
+  reference_pose: right_task_ready
+
+  position:
+    frame: table_centered
+    # Operator-marked point in the ceiling view, projected onto the table plane with
+    # the compiled `ceiling` camera. It lies on the table's depth centerline and near
+    # the lower side in that image. The old anchor is retained only as the baseline.
+    anchor_source: operator_marked_table_point
+    anchor_table_offset_x_m: 0.0
+    anchor_table_offset_y_m: -0.24
+    anchor_projection:
+      camera: ceiling
+      approximate_render_pixel_uv: [327, 399]
+      render_size_px: [640, 480]
+      plane: table_top
+      note: operator annotation projected through the compiled camera; simulation only
+    coarse:
+      # The operator selected this point explicitly. Position is fixed; only TCP
+      # orientation and redundant IK branches are searched around it.
+      x_offsets_m: [0.0]
+      y_offsets_m: [0.0]
+      z_offsets_m: [0.0]
+    refine:
+      enabled: true
+      # Best orientation labels get explicit roll trials at the same fixed point.
+      seed_cells: 6
+      window_m: 0.0
+      step_m: 0.02
+      roll_offsets_deg: [0.0, -15.0, 15.0, -30.0, 30.0]
+    # The fixed TCP must stay this far inside the registered table footprint, and its height
+    # above the table top must stay inside these bounds. Both are pose admissibility
+    # rules, not performance thresholds. The current anchor already sits exactly
+    # `selection_rule.minimum_footprint_margin_m` (0.05 m) from the short table edge, so
+    # a 5 cm margin here would reject the anchor itself and its entire neighbourhood;
+    # 2 cm keeps the TCP on the table while still evaluating - and visibly rejecting -
+    # the offsets that would hang off the near edge.
+    footprint_margin_m: 0.02
+    minimum_height_above_table_m: 0.10
+    maximum_height_above_table_m: 0.45
+
+orientations:
+  # `tilt_below_horizontal_deg` is the angle between the tool APPROACH axis and the
+  # horizontal plane, measured downwards (towards the table). 0 deg is horizontal,
+  # 90 deg would point straight down - which is what the legacy reference actually
+  # is, so the legacy family is the 90 deg end of the same family of poses.
+  tilt_convention: angle_below_horizontal_deg
+  # The approach axis fixes two of the three rotational degrees of freedom. The third
+  # (roll about the approach axis) is resolved as the smallest rotation away from the
+  # reference orientation, so families differ in approach direction rather than in an
+  # arbitrary twist. `roll_offsets_deg` sweeps around that resolved value.
+  roll_resolution: minimal_rotation_from_reference
+  reference_pose: right_task_ready
+  families:
+    - name: legacy_pi2
+      enabled: true
+      kind: reference_orientation
+      note: >
+        The project's previously fixed orientation (FK of `right_task_ready`), kept as
+        the reproducible baseline that every new candidate is compared against.
+    - name: side_horizontal
+      enabled: true
+      kind: tilted_approach
+      base_heading_deg: 90.0            # along the table lateral axis
+      tilt_below_horizontal_deg: [0.0]
+      # Broaden the in-plane grasp direction without changing the meaning of
+      # horizontal: 45/60/75/90/105/120/135 degrees in the registered table plane.
+      heading_offsets_deg: [-45.0, -30.0, -15.0, 0.0, 15.0, 30.0, 45.0]
+      roll_offsets_deg: [0.0]
+    - name: oblique
+      enabled: true
+      kind: tilted_approach
+      base_heading_deg: 0.0             # along the table forward axis (robot -> table)
+      # Include shallower/deeper grasps and a small left/right heading correction.
+      # Refinement separately tests +/-15 degree tool roll around the approach axis.
+      tilt_below_horizontal_deg: [30.0, 40.0, 50.0, 60.0, 70.0]
+      heading_offsets_deg: [-15.0, 0.0, 15.0]
+      roll_offsets_deg: [0.0]
+
+ik:
+  seed_source: initialization_pipeline_ik_seeds
+  position_tolerance_m: 0.004
+  orientation_tolerance_rad: 0.04
+  iterations: 300
+  joint_margin_rad: 0.02
+  # Two solutions of the same target pose closer than this (max-abs joint distance)
+  # are the same physical configuration and are collapsed into one candidate.
+  dedup_max_joint_distance_rad: 0.10
+
+filters:
+  require_collision_free: true
+  forbid_cube_contact: true
+  minimum_joint_margin_normalized: 0.02
+  # A margin, not a limit. `right_task_ready` sits at a normalized J4 margin of about
+  # 0.44 and the J4-constrained oblique candidates reach about 0.12, so this only
+  # rejects configurations pressed against a stop.
+  minimum_j4_margin_normalized: 0.03
+  minimum_manipulability: 0.0
+
+metrics:
+  # Distances are capped at this value; the cap doubles as the clearance reference
+  # scale so "clear" does not need an invented engineering threshold.
+  clearance_cap_m: 0.10
+  trajectory_sample_count: 64
+  gravity_torque_source: zero_velocity_inverse_dynamics
+  self_collision_pairs: true
+
+scoring:
+  static:
+    # Every weight is dimensionless and applied to a value normalized into [0, 1].
+    # Positive weights reward, negative would penalize the matching term; the
+    # contributing sign is part of the term definition, not of the weight.
+    weights:
+      joint_margin_normalized: 0.20
+      j4_margin_normalized: 0.25
+      manipulability_normalized: 0.15
+      collision_clearance_normalized: 0.15
+      start_joint_distance_normalized: -0.05
+      gravity_torque_normalized: -0.20
+      legacy_reference_distance_normalized: 0.0
+    references:
+      # Reference scale = the value measured on the legacy baseline in the SAME run,
+      # so every new candidate is judged relative to the configuration that failed on
+      # hardware. The fallback is only used if the legacy baseline yields no valid IK.
+      manipulability: {mode: legacy_baseline, metric: yoshikawa_manipulability, fallback_value: 0.0218}
+      collision_clearance_m: {mode: configured, value: 0.10, source: metrics_clearance_cap}
+      start_joint_distance_rad: {mode: configured, value: 3.0, source: recommended_initial_value}
+      legacy_reference_distance_rad: {mode: configured, value: 0.5, source: recommended_initial_value}
+      gravity_torque_j4_nm: {mode: legacy_baseline, metric: absolute_static_gravity_torque_j4_nm, fallback_value: 3.466}
+      gravity_torque_max_all_nm: {mode: legacy_baseline, metric: maximum_absolute_static_gravity_torque_nm, fallback_value: 7.191}
+  trajectory:
+    # score = endpoint_weight * static(endpoint) - sum(weight_i * normalized_i)
+    endpoint_weight: 1.0
+    weights:
+      joint_path_length_normalized: 0.12
+      maximum_joint_travel_normalized: 0.08
+      j4_travel_normalized: 0.12
+      maximum_absolute_j4_gravity_torque_normalized: 0.28
+      maximum_velocity_normalized: 0.12
+      maximum_acceleration_normalized: 0.12
+      # Path clearance is scored as a *deficit*: the closer the whole path comes to the
+      # table, box or cube, the larger the penalty. Endpoint clearance alone is not
+      # enough - a candidate whose endpoint is 10 cm clear can still sweep past the box.
+      path_clearance_deficit_normalized: 0.16
+    references:
+      joint_path_length_rad: {mode: legacy_baseline, metric: joint_path_length_rad, fallback_value: 8.0}
+      maximum_joint_travel_rad: {mode: legacy_baseline, metric: maximum_joint_travel_rad, fallback_value: 3.0}
+      j4_travel_rad: {mode: legacy_baseline, metric: j4_travel_rad, fallback_value: 2.0}
+      maximum_absolute_j4_gravity_torque_nm:
+        {mode: legacy_baseline, metric: maximum_absolute_j4_gravity_torque_nm, fallback_value: 3.5}
+      maximum_joint_velocity_rad_s: {mode: configured, value: 0.45, source: planning_time_scaling_limit}
+      maximum_joint_acceleration_rad_s2: {mode: configured, value: 0.60, source: planning_time_scaling_limit}
+      minimum_task_obstacles_clearance_m: {mode: configured, value: 0.10, source: metrics_clearance_cap}
+
+planning:
+  # Only this many distinct configurations get a full RRT-Connect plan; the planner
+  # itself reuses the project's existing collision-checked implementation.
+  top_k: 8
+  maximum_iterations: 6000
+
+acceptance:
+  # Deliberately relative. No absolute J4 bound and no absolute torque bound appears
+  # anywhere in this file. "Clearly better than the legacy baseline" is expressed as
+  # relative comparison margins, which compare one measured candidate against another
+  # measured candidate in the same run rather than against an invented limit.
+  #
+  # `maximum_j4_margin_regression_normalized` is a tolerance, not a target: the failure
+  # on hardware was a protection event, not a limit violation, so a candidate may give
+  # up a little joint-limit margin (0.05 normalized is about 0.12 rad of the 2.44 rad J4
+  # range) in exchange for a large reduction in J4 gravity torque.
+  minimum_valid_candidates_per_enabled_family: 1
+  minimum_j4_spread_rad: 0.10
+  maximum_j4_margin_regression_normalized: 0.05
+  minimum_j4_torque_reduction_ratio: 0.20
+  penetration_tolerance_m: 0.001
+  require_gravity_improvement_over_legacy: true
+  require_top3_collision_free_paths: true
+  require_top3_within_time_scaling_limits: true
+
+report:
+  top_n: 3
+  output_name: teaching_ready_search.json
+  round_floats_to: 6
+  # How many entries the pure score ranking is published with, alongside the shortlist.
+  ranking_size: 12
+  # The Top-N is a shortlist a human is expected to compare by eye and by hand, so it
+  # must contain genuinely different poses. Without this rule the ranking concentrated
+  # on one family plus small roll offsets, which is useless for a visual comparison.
+  # This is a diversity rule, not a quality threshold: candidates omitted only because
+  # they were too similar are still published in `ranking`.
+  #
+  # The legacy family is excluded from the shortlist because the shortlist is the list
+  # of NEW poses worth a hardware trial; the legacy orientation is the thing being
+  # replaced, and it keeps its own report block and its place in `ranking` regardless.
+  diversity:
+    enabled: true
+    minimum_approach_axis_angle_deg: 15.0
+    exclude_families: [legacy_pi2]
+
+visualization:
+  marker_body: right_handle_target
+  # This marker is the actual TCP.  Do not shift it for visibility: a shifted sphere was
+  # repeatedly mistaken for the commanded point and made an inside-table target look as
+  # though it were hanging over an edge.  Orientation is already visible from the RGB
+  # tool-frame axes.
+  marker_offset_along_approach_m: 0.0
+  camera: ceiling
+  viewer_keys: {1: 0, 2: 1, 3: 2}
+  # The compiled scene's offscreen framebuffer is MuJoCo's 640x480 default; a larger
+  # render size needs a `<visual><global offwidth/offheight>` clause in the scene, which
+  # is deliberately not added just for screenshots.
+  render_width: 640
+  render_height: 480
+  # A ceiling view alone makes the arm a small part of the frame and successive
+  # candidates look nearly identical, so each image is a captioned two-panel composite:
+  # the scene camera plus a free camera aimed at the Teaching Ready anchor.
+  overview_panel: true
+  overview:
+    # Aimed at the midpoint between the right shoulder (~0, 0, 0.70) and the Teaching
+    # Ready anchor, which is what keeps the whole arm in frame. `null` would aim at the
+    # anchor alone and leave the shoulder out of the picture.
+    lookat_world_m: [0.23, -0.12, 0.66]
+    azimuth_deg: 170.0
+    elevation_deg: -35.0
+    distance_m: 0.7
+
+known_bad_observations:
+  - id: real_j4_2026_09_17
+    source: operator_reported_observation
+    summary: >
+      The real right arm was commanded towards the previous fixed Teaching Ready
+      pose with the previous fixed orientation and reported a J4 target of about
+      1.8984 rad with a final value of about 1.4120 rad, together with a motor red
+      light / protection event.
+    j4_target_rad: 1.8984
+    j4_final_rad: 1.4120
+    policy: >
+      Observation and relative comparison baseline only. No J4 hard limit, no torque
+      threshold and no acceptance bound is derived from these numbers; the search
+      answers "which candidate loads J4 less than the configuration that failed"
+      rather than "which candidate is below some limit".

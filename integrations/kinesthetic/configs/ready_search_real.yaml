@@ -1,0 +1,190 @@
+# Real-station Teaching Ready SE(3) search: search region and commissioning guards.
+#
+# Why this file exists
+# -------------------
+# `configs/ready_search.yaml` is simulation-only: it decided *which families* of tool
+# orientation load J4 least on a MuJoCo model. `configs/ready_trajectory.yaml` then decides
+# how one real trajectory is stored, replayed and frozen. Neither of them says anything
+# about how the real station should *search* on the day of commissioning, and that search
+# is the step that failed on 2026-09-17.
+#
+# Enforced by `validate_real_ready_search`:
+#   1. the search is a local, bounded neighbourhood of the registered Teaching Ready
+#      anchor - not a workspace optimizer;
+#   2. the legacy pose is a comparison baseline only and can never become the target;
+#   3. every offset, angle and guard is a named, reviewable number, because a number buried
+#      in Python is a number nobody reviewed.
+#
+# The failure this file is written against
+# ---------------------------------------
+# The previous real search held the TCP XYZ fixed and changed only the orientation. All
+# eight branches that solved then reported J4 ~= 1.913345 rad, because orientation alone
+# does not move the elbow geometry: the arm was still being asked for the configuration
+# that had already failed. The candidate that was finally chosen was `legacy_reference`,
+# the pose the arm had failed to track, because the simulation prior had only been written
+# into the report and the ranking stayed with the old generic joint score.
+#
+# This round first moves the base TCP to the operator-selected table-relative point.  That
+# base position is reconstructed from the live registered table, not copied from simulation.
+# The current commissioning pass keeps that selected point fixed while sweeping orientation
+# and redundant IK branches, and refuses to move when nothing beats the live baseline.
+#
+# The 2026-09-18 run closed the loop on that, and exposed the second failure this file is
+# written against. The new table-relative TCP did what it was chosen for: the legacy
+# orientation at the new point lands at J4 = 0.8340 rad instead of the 1.9 rad of the old
+# point. But `min_j4_improvement_rad` was then read against that same-run baseline, and all
+# 125 IK solutions at the fixed TCP reported J4 = 0.8339 rad - a 4e-5 rad improvement. The
+# search rejected every one of them, 15 orientations across 8 families deep, because a
+# 0.30 rad floor was applied to a baseline that was already far below the 1.60 rad ceiling
+# and was therefore no longer the geometry that failed. At a fixed TCP the elbow angle
+# follows the position and not the orientation, so the floor was arithmetically unreachable
+# and no search region could have satisfied it. `improvement_gate_reference` below is that
+# rule made explicit instead of being implied by the search code.
+
+schema_version: 1
+
+scope:
+  mode: real_commissioning
+  # The search is planned, reported and displayed. Motion still needs the executor's
+  # explicit --allow-real-execution, which no configuration file can grant by itself.
+  default_action: plan_only
+  execution_authorization: cli_flag_allow_real_execution
+  # Real joint values are solved by MoveIt on the live planning scene; nothing is copied
+  # from the simulator. Recorded here because copying a MuJoCo quaternion into a real IK
+  # target is a mistake this project has already made once.
+  joint_values_source: live_moveit_ik_on_registered_table
+  simulation_prior_role: search_order_only
+
+real_ready_search:
+  # Simulation found 60 degrees the best J4 trade-off, 40 degrees the second choice, and
+  # the horizontal family the lowest loaded but box-grazing option. The real search keeps
+  # that order as a *prior*: it decides which family is tried first, never the result.
+  simulation_prior: oblique_60
+  families: [oblique_60, oblique_40, side_horizontal]
+
+  # Tilt correction window around each family's nominal tilt. Kept narrow on purpose: this
+  # refines the simulation's answer locally instead of sweeping 0-90 degrees again.
+  tilt_window_deg: 10.0
+  tilt_step_deg: 5.0
+  # Per-family override, when a family needs a different local tilt set than the window
+  # above generates. Absent families use the nominal tilt +/- the window.
+  tilt_offsets_deg: {}
+
+  # Heading is the in-table-plane direction of the tool approach axis, measured from the
+  # registered table forward axis. Only the horizontal family needed a heading sweep in
+  # simulation, which is why the other two stay at zero.
+  heading_offsets_deg:
+    oblique_60: [0.0]
+    oblique_40: [0.0]
+    side_horizontal: [-15.0, 0.0, 15.0]
+
+  # Roll is resolved by minimal rotation from the reference, so the sweep is a correction
+  # around that resolved value rather than an invented twist.
+  roll_offsets_deg: [0.0]
+
+  # Optional local corrections around the operator-selected point, in the REGISTERED TABLE
+  # frame rather than fixed world XYZ.  They are zero for this acceptance pass: all tool
+  # orientations must refer to exactly the same selected TCP.
+  #
+  #   forward - along the table's forward axis (from the robot towards the anchor)
+  #   lateral - along the table's lateral axis (cross(normal, forward))
+  #   normal  - along the registered plane normal, away from the table
+  #
+  # A negative forward or lateral entry is legal (the neighbourhood is two-sided); a
+  # negative normal entry is not, because that would aim the search below the registered
+  # clearance plane the anchor sits above.
+  position_offsets_m:
+    forward: [0.0]
+    lateral: [0.0]
+    normal: [0.0]
+  # Reject offsets that would turn a local correction into a workspace survey.
+  maximum_offset_magnitude_m: 0.20
+
+  # Orientations whose approach axes are this close are the same pose for our purposes;
+  # running IK for both would let one pose occupy several shortlist slots.
+  minimum_axis_angle_deg: 5.0
+
+  candidate_max: 8
+  candidate_index: 0
+
+trajectory_selection:
+  # Gate 4 of the search: the IK shortlist is only a shortlist. Each of the top candidates
+  # is planned with OMPL, and only a candidate with a successful plan can win, so an
+  # IK-perfect pose with an unusable path loses to a slightly worse pose with a natural
+  # path. Simulation already ranked in two stages; the real side does the same.
+  planning_candidate_limit: 3
+  # Lexicographic ordering over successful plans. A leading "-" means larger is better.
+  # Every key is a metric of the planned path, reported for the operator either way.
+  #
+  # Path cost comes first and the J4 improvement only breaks ties, on purpose: the J4
+  # improvement is already a gate above with a floor, and J4 angle is not a load estimate
+  # (see the simulation result in docs/READY_SEARCH.md). So once a candidate is admissible,
+  # what is left to compare is what the manoeuvre costs - how far the worst joint has to
+  # move and how much total motion the path contains.
+  order: [maximum_joint_travel_rad, joint_path_length_rad, -joint4_improvement_rad]
+
+commissioning_guards:
+  # These three numbers are a TEMPORARY COMMISSIONING RISK GATE.
+  #
+  # They are not a motor limit, not a thermal limit, not a current limit and not a
+  # manufacturer safety limit. They exist because one geometric region has repeatedly
+  # failed to track on this specific arm, and re-commanding it is the thing to avoid.
+  #
+  # Nothing here may be used to claim "J4 above 1.60 rad is unsafe". Simulation showed J4
+  # angle and J4 gravity torque are not monotonically related, so a smaller angle is not a
+  # smaller load. The gate answers "is this candidate materially different from the pose
+  # that kept failing", not "is this candidate below some physical limit".
+  basis: repeated_real_tracking_failure_commissioning_risk_gate
+  # The search rejected every candidate on 2026-09-18 because a 0.30 rad floor was compared
+  # against the same-run legacy orientation AT THE NEW POINT: a baseline that had already
+  # left the failed region and was therefore no longer the pose that kept failing. At a
+  # fixed TCP the elbow angle follows the point, so orientation alone cannot buy 0.30 rad
+  # and the floor was unreachable by construction.
+  #
+  # The floor is therefore scoped, not weakened: it is an improvement gate while the live
+  # baseline is itself inside the failed region, which is the only situation in which "is
+  # this candidate materially different from the pose that failed" has a referent. A
+  # baseline already below `max_target_j4_rad` leaves that ceiling as the guard on its own,
+  # and the ranking still prefers the largest J4 reduction, so a candidate that is worse
+  # than the baseline can only win if every lower-J4 candidate fails to plan.
+  #
+  # The relative measurement is unchanged: still the legacy pose solved in the same run,
+  # never a stored constant.
+  improvement_gate_reference: baseline_only_when_baseline_above_ceiling
+  min_j4_improvement_rad: 0.30
+  max_target_j4_rad: 1.60
+  # The goal gate alone is insufficient: OMPL may reach a good final J4 through the same
+  # high-J4 region that already failed on hardware. Apply the same temporary commissioning
+  # envelope to every sampled point of the planned path. This is still an observation-based
+  # risk gate, not a claimed motor or physical limit.
+  max_path_absolute_j4_rad: 1.60
+  # The improvement is measured against the legacy pose solved in the SAME run, on the
+  # live model with the live registered table. 1.913 rad is an observation from one
+  # afternoon, not a constant: the table registration, the robot state and the scene all
+  # change, so a hardcoded baseline would be a claim the code cannot support.
+  baseline_source: legacy_pose_ik_solved_in_the_same_run
+  legacy_family: legacy_reference
+  # Structural, not cosmetic: the legacy pose is solved first as a baseline and then
+  # excluded from the executable shortlist. A generic score can never promote it back.
+  legacy_is_comparison_only: true
+  # No admissible candidate means no plan and no motion. There is deliberately no fallback.
+  on_no_admissible_candidate: fail_closed_adjust_search_region
+
+known_bad_observations:
+  - id: real_j4_2026_09_17
+    source: operator_reported_observation
+    summary: >
+      The real right arm was commanded towards a fixed TCP position with the previous fixed
+      orientation and reported a J4 target of about 1.8984 rad with a final value of about
+      1.4120 rad, together with a motor red light / protection event. The 2026-09-17
+      re-run changed only the orientation, produced the same J4 ~= 1.913345 rad on every
+      branch, and selected legacy_reference again.
+    j4_target_rad: 1.8984
+    j4_final_rad: 1.4120
+    measured_after_failure_rad: [-1.0919737545, 2.7208743420, 0.1234073396, 1.4124132143, 1.2239642939, 0.2290760662, 0.2035172045]
+    policy: >
+      Observation and relative comparison baseline only. No J4 hard limit, no torque
+      threshold and no acceptance bound is derived from these numbers. The commissioning
+      guards above are a risk gate against re-commanding a region that already failed, and
+      the J4 improvement that matters is always measured against the baseline solved in the
+      same run.

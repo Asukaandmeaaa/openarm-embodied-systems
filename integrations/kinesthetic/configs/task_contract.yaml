@@ -1,0 +1,54 @@
+schema_version: 1
+contract: openarm_kinesthetic_right_blue_cube_v1
+task: Put the blue cube inside the fixed black box with the right arm, then return the right arm to the task-ready pose.
+rate_hz: 30
+frames:
+  world: world
+  ceiling_camera: global_camera_link
+  wrist_right_camera: camera_wrist_right
+dimensions:
+  arm: 7
+  arm_with_gripper: 8
+  state_action: 16
+ordering:
+  state_action:
+    - right_joint1
+    - right_joint2
+    - right_joint3
+    - right_joint4
+    - right_joint5
+    - right_joint6
+    - right_joint7
+    - right_gripper
+    - left_joint1
+    - left_joint2
+    - left_joint3
+    - left_joint4
+    - left_joint5
+    - left_joint6
+    - left_joint7
+    - left_gripper
+  right_arm_with_gripper: [right_joint1, right_joint2, right_joint3, right_joint4, right_joint5, right_joint6, right_joint7, right_gripper]
+  left_arm_with_gripper: [left_joint1, left_joint2, left_joint3, left_joint4, left_joint5, left_joint6, left_joint7, left_gripper]
+features:
+  observation.state: {shape: [16], dtype: float32}
+  observation.images.ceiling: {key: ceiling, dtype: image}
+  observation.images.wrist_right: {key: wrist_right, dtype: image}
+  action: {shape: [16], dtype: float32}
+episode:
+  home_pose: right_task_ready
+  left_state_and_action: fixed_at_left_park
+  initialization_trajectory_in_training_data: false
+  success_key: S
+  failure_key: F
+  cancel_key: X
+success:
+  exactly_one_effective_grasp: true
+  minimum_lift_m: 0.05
+  bilateral_contact_hold_s: 2.0
+  placement_stable_s: 0.5
+  both_fingers_detached_after_release: true
+  maximum_ready_joint_error_rad: 0.03
+  ready_stable_s: 1.0
+  static_tail_s: 1.0
+  report_separately: [task_success, full_sequence_success]

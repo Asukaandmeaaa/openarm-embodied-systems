@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Prior-table digital twin for the initialization -> traditional planning ->
+     manual-teaching handoff. Table is 0.40 m deep (X, away from the robot) and
+     0.60 m wide (Y, lateral), matching the reported station: the near edge sits
+     `near_edge_gap_from_robot_front_m` ahead of the pedestal front structure and
+     the lateral centre is on the robot centreline.
+
+     Every number here is either model-derived (pedestal structure) or an explicit
+     per-field provenance entry in configs/initialization.yaml. Nothing in this
+     file may be relabelled as a physical measurement.
+
+     This is a separate scene from real_table_v1 (whose table is 0.60 along X and
+     0.40 along Y). real_table_v1 and its Gate A/B/D/E evidence are unchanged. -->
+<mujoco model="openarm_prior_table_v1">
+  <compiler angle="radian"/>
+  <option timestep="0.001" cone="elliptic" impratio="10" integrator="implicitfast"/>
+  <statistic center="0.43 0 0.55" extent="1.25" meansize="0.05"/>
+  <visual>
+    <headlight diffuse="0.65 0.65 0.65" ambient="0.35 0.35 0.35" specular="0.05 0.05 0.05"/>
+    <quality shadowsize="2048"/>
+  </visual>
+  <asset>
+    <model name="openarm_pedestal_component" file="../../vendor/openarm_mujoco/v2/pedestal/openarm_pedestal.xml"/>
+    <material name="table_white" rgba="0.93 0.93 0.91 1"/>
+    <material name="box_black" rgba="0.025 0.025 0.025 1"/>
+    <material name="cube_blue" rgba="0.02 0.18 0.90 1"/>
+  </asset>
+  <worldbody>
+    <light pos="0.35 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="2 2 0.05" rgba="0.25 0.27 0.30 1" contype="1" conaffinity="1"/>
+    <attach model="openarm_pedestal_component" prefix=""/>
+
+    <!-- 0.40 m (X, depth) x 0.60 m (Y, width) x 0.04 m top; world centre and
+         top height are derived by openarm_kinesthetic.initialization.table_geometry
+         and asserted against this file by the geometry tests. -->
+    <body name="prior_table_v1_table" pos="0.465 0 0.38">
+      <geom name="table_top_collision" type="box" size="0.20 0.30 0.02"
+            material="table_white" friction="0.9 0.01 0.001" contype="1" conaffinity="1"/>
+    </body>
+
+    <!-- Nominal 140 mm outer fixed box derived from the legacy ACT demo
+         geometry. Four walls plus a bottom; all are collidable. Placed in the
+         reachable near strip of the prior table. -->
+    <body name="black_box" pos="0.37 -0.03 0.400">
+      <geom name="black_box_floor" type="box" pos="0 0 0.005" size="0.07 0.07 0.005"
+            material="box_black" friction="0.8 0.01 0.001" contype="1" conaffinity="1"/>
+      <geom name="black_box_wall_x_neg" type="box" pos="-0.065 0 0.020" size="0.005 0.07 0.02"
+            material="box_black" contype="1" conaffinity="1"/>
+      <geom name="black_box_wall_x_pos" type="box" pos="0.065 0 0.020" size="0.005 0.07 0.02"
+            material="box_black" contype="1" conaffinity="1"/>
+      <geom name="black_box_wall_y_neg" type="box" pos="0 -0.065 0.020" size="0.06 0.005 0.02"
+            material="box_black" contype="1" conaffinity="1"/>
+      <geom name="black_box_wall_y_pos" type="box" pos="0 0.065 0.020" size="0.06 0.005 0.02"
+            material="box_black" contype="1" conaffinity="1"/>
+      <site name="black_box_safe_region" type="box" pos="0 0 0.030" size="0.04 0.04 0.01"
+            rgba="0.1 1 0.1 0.12" group="4"/>
+    </body>
+
+    <body name="blue_cube" pos="0.31 -0.19 0.42">
+      <freejoint name="blue_cube_free"/>
+      <geom name="blue_cube_collision" type="box" size="0.02 0.02 0.02"
+            mass="0.05" material="cube_blue" condim="4" friction="1.2 0.02 0.001"
+            solref="0.005 1" solimp="0.95 0.99 0.001" contype="1" conaffinity="1"/>
+    </body>
+
+    <!-- Operator-only Cartesian target. Group 5 is hidden from recorded cameras. -->
+    <body name="right_handle_target" mocap="true" pos="0.31 -0.19 0.5209">
+      <geom name="right_handle_target_center" type="sphere" size="0.014"
+            rgba="1.0 0.55 0.05 0.75" group="5" contype="0" conaffinity="0"/>
+      <geom name="right_handle_target_x" type="capsule" fromto="0 0 0 0.045 0 0" size="0.0025"
+            rgba="1 0.15 0.15 0.9" group="5" contype="0" conaffinity="0"/>
+      <geom name="right_handle_target_y" type="capsule" fromto="0 0 0 0 0.045 0" size="0.0025"
+            rgba="0.15 1 0.15 0.9" group="5" contype="0" conaffinity="0"/>
+      <geom name="right_handle_target_z" type="capsule" fromto="0 0 0 0 0 0.045" size="0.0025"
+            rgba="0.15 0.35 1 0.9" group="5" contype="0" conaffinity="0"/>
+    </body>
+
+    <camera name="ceiling" pos="0.465 0 1.15" xyaxes="1 0 0 0 1 0" fovy="52" resolution="640 480"/>
+  </worldbody>
+  <keyframe>
+    <!-- left park (7 + 2 fingers), right task-ready (7 + 2 fingers), cube freejoint.
+         `q_right_task_ready` here is the reference orientation / IK-seed source for
+         the teaching-ready target; it is never the initialization goal itself. -->
+    <key name="task_ready"
+      qpos="0 0 0 0 0 0 0 0 0
+            -0.76243272 2.85588892 0.20977818 2.06466464 1.40936607 0.31656578 0.37162189 -0.35 -0.35
+            0.31 -0.19 0.42 1 0 0 0"
+      ctrl="0 0 0 0 0 0 0 0
+            -0.76243272 2.85588892 0.20977818 2.06466464 1.40936607 0.31656578 0.37162189 -0.35"/>
+  </keyframe>
+</mujoco>

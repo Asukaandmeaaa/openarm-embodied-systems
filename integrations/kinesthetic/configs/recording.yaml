@@ -1,0 +1,26 @@
+schema_version: 1
+clocks:
+  physics_hz: 1000
+  joint_observation_hz: 100
+  demonstration_action_hz: 100
+  camera_target_hz: 30
+  dataset_export_hz: 30
+images:
+  keys: [ceiling, wrist_right]
+  source_encoding: JPEG
+  decoded_color_order: RGB
+  # Existing downstream candidate only.  The formal ACT training shape is not
+  # frozen until the real dual-camera pilot resolves this against the historical
+  # 960x600 reference contract.  Raw JPEG files are always preserved.
+  render_resolution_wh: [320, 240]
+resampling:
+  state_action: linear
+  camera: nearest_timestamp
+  record_missing_and_repeated_frames: true
+  maximum_timestamp_skew_s: 0.05
+transaction:
+  active_directory: .transactions
+  accepted_directory: episodes
+  failed_directory: failed
+  atomic_rename_required: true
+  fsync_metadata: true

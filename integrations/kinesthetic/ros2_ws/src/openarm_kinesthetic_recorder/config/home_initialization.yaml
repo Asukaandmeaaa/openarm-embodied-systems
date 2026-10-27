@@ -1,0 +1,110 @@
+schema_version: 1
+
+# OLD_TABLE_HEIGHT is historical evidence only.  The 2026-09-20 values are an operator's
+# approximate tape measurement.  Motion uses the fixed inflated collision guard below and
+# MoveIt's live planning result; the historical approval metadata is not an execution gate.
+# Never infer a missing geometry value from a photo or robot posture.
+table_height_calibration:
+  old_table_top_z_m: 0.340
+  old_table_measurement_status: measured_2026-09-18_now_invalidated_by_table_move
+  new_measured_table_top_z_m: 0.270
+  new_table_measurement_status: APPROXIMATE_GUARD_REAL_MOTION_VALIDATED_2026_09_21
+  measurement_source: operator_tape_measurement_2026-09-20
+  measurement_uncertainty_m: null
+  runtime_measurement_confirmed: false
+  # Operator measurement (2026-09-20): 0.175 m is the approximate distance from
+  # robot center to the table's near edge in the forward direction, not the box center.
+  # Do not derive the collision center by blindly adding 0.20 m to this rough value;
+  # retain the prior registered XY center because the table was only lowered.  That
+  # registration predicts a 0.182 m physical near edge, only 7 mm from this tape value.
+  table_near_edge_forward_from_robot_center_m: 0.175
+  registered_table_center_forward_m: 0.382
+  registered_table_center_lateral_m: 0.016
+  registered_center_implied_near_edge_forward_m: 0.182
+  near_edge_registration_residual_m: 0.007
+  physical_table_dimensions_forward_lateral_m: [0.40, 0.60]
+  physical_dimensions_source: unchanged_table_from_2026-09-18_registration
+
+# Fixed physical-collection HOME obtained by lifting the reviewed real posture's TCP
+# approximately 10 cm.  It is a joint target: no runtime IK or camera input is used.
+right_home_joint_positions_rad: [-0.1450262670, -0.0151076284, -0.0060887956, 1.3751977241, -0.0031428430, -0.1984151663, -0.1222898194]
+right_joint_names:
+  - openarm_right_joint1
+  - openarm_right_joint2
+  - openarm_right_joint3
+  - openarm_right_joint4
+  - openarm_right_joint5
+  - openarm_right_joint6
+  - openarm_right_joint7
+
+# H1 must have completed return_to_zero before this workflow starts.  The measured
+# state is authoritative; this bound only refuses an arbitrary non-zero restart.
+maximum_start_from_zero_error_rad: 0.06
+
+planning:
+  velocity_scaling: 0.70
+  acceleration_scaling: 0.50
+  service_timeout_s: 10.0
+
+# Real-station directions are explicit vectors in the collision object's `world`
+# frame.  Candidate generation projects onto these axes and never assumes that a
+# world coordinate has a particular workstation meaning.
+station_frame:
+  frame_id: world
+  forward_world: [1.0, 0.0, 0.0]
+  lateral_world: [0.0, 1.0, 0.0]
+  vertical_world: [0.0, 0.0, 1.0]
+  source: provisional_2026-09-20_robot_table_centerline_measurement
+  measurement_epoch: NEW_MEASURED_TABLE_HEIGHT
+
+side_prehome:
+  policy: collision_aware_home_fk_lateral_offsets
+  candidate_lateral_offsets_m: [-0.32, -0.28, -0.24, -0.20, -0.16, -0.12, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]
+  # Fixed intermediate target selected from the successful MoveIt + MuJoCo audit.
+  # The executor always fresh-plans both stages against the current collision guard;
+  # this is a joint target, never a stored trajectory replay.
+  selected_joint_positions_rad: [-0.1048699103, 0.2927211133, 0.1572296390, 1.2317376572, 0.3035564349, -0.2403249494, 0.1343242132]
+  selected_candidate_id: side_negative_0.120m_branch1
+  path_quality_gates:
+    minimum_clearance_m: 0.002
+    maximum_backward_excursion_m: 0.20
+    maximum_lateral_excursion_m: 0.60
+    maximum_vertical_excursion_m: 0.60
+    maximum_absolute_j4_rad: 2.20
+
+final_acceptance:
+  joint_tolerance_rad: 0.03
+  settle_timeout_s: 2.0
+  stable_duration_s: 0.2
+
+# Conservative NEW-table guard used for planning and attended first real motion.  The physical table
+# is unchanged in plan dimensions.  Because the latest placement can only be confirmed
+# approximately, use 50 mm per-side XY inflation (20 mm more per side than the reviewed
+# 30 mm guard) and retain the full 0.50 m vertical body.  The operator's 0.175 m value is the
+# approximate near-edge distance, not the box center.  Because the table was lowered but
+# not moved in XY, retain its prior live-registered center [0.382, 0.016].  With the 0.40 m
+# physical forward length this predicts near edge X=0.182 m, consistent with the rough
+# 0.175 m tape reading (7 mm residual).  Z center is top - 0.25 m.  The metadata below is
+# retained for traceability and is not read as an execution authorization gate.
+static_collision:
+  object_id: fixed_inflated_table_guard
+  frame_id: world
+  center_xyz_m: [0.382, 0.016, 0.020]
+  orientation_xyzw: [0.0, 0.0, 0.0, 1.0]
+  dimensions_xyz_m: [0.50, 0.70, 0.50]
+  top_z_m: 0.270
+  source: provisional_2026-09-20_lowered_height_with_registered_xy_and_50mm_xy_inflation
+  height_epoch: NEW_MEASURED_TABLE_HEIGHT
+
+# The continuous-marked workflow starts semantically OPEN: after J1-J7 reach the
+# fixed HOME, H2 opens J8 and requires fresh measured acceptance before HOME_READY.
+# During recording A/Y only append CLOSE/OPEN markers; replay performs the actions.
+gripper_policy: open_after_arm_home
+home_gripper:
+  joint_name: openarm_right_finger_joint1
+  open_position_rad: -0.35
+  position_tolerance_rad: 0.03
+  command_duration_s: 0.50
+  server_timeout_s: 3.0
+  result_timeout_s: 5.0
+  stable_duration_s: 0.20

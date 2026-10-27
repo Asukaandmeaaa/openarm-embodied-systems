@@ -1,0 +1,1612 @@
+diff --git a/openarm_bimanual_moveit_config/config/openarm_v2.0/joint_limits.yaml b/openarm_bimanual_moveit_config/config/openarm_v2.0/joint_limits.yaml
+index 3f60ae4..c4da8e4 100644
+--- a/openarm_bimanual_moveit_config/config/openarm_v2.0/joint_limits.yaml
++++ b/openarm_bimanual_moveit_config/config/openarm_v2.0/joint_limits.yaml
+@@ -65,40 +65,65 @@ joint_limits:
+   openarm_right_finger_joint1:
+    has_velocity_limits: true
+    max_velocity: 10.0
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 10.0
+   openarm_right_joint1:
+    has_velocity_limits: true
+    max_velocity: 16.754666
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 5.0
+   openarm_right_joint2:
+    has_velocity_limits: true
+    max_velocity: 16.754666
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 5.0
+   openarm_right_joint3:
+    has_velocity_limits: true
+    max_velocity: 5.445426
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 5.0
+   openarm_right_joint4:
+    has_velocity_limits: true
+    max_velocity: 5.445426
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 5.0
+   openarm_right_joint5:
+    has_velocity_limits: true
+    max_velocity: 20.943946
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 5.0
+   openarm_right_joint6:
++   # Planning safety bounds are 20 mrad inside the URDF/hardware hard stops.
++   # Enforce this during OMPL search instead of rejecting every complete MTC
++   # solution afterwards when an otherwise avoidable path approaches a stop.
++   has_position_limits: true
++   min_position: -0.7654
++   max_position: 0.7654
+    has_velocity_limits: true
+    max_velocity: 20.943946
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 5.0
+   openarm_right_joint7:
++   has_position_limits: true
++   min_position: -1.5508
++   max_position: 1.5508
+    has_velocity_limits: true
+    max_velocity: 20.943946
+-   has_acceleration_limits: false
+-   max_acceleration: 0.0
++   has_acceleration_limits: true
++   max_acceleration: 0.5
++   has_jerk_limits: true
++   max_jerk: 5.0
+diff --git a/openarm_bimanual_moveit_config/config/openarm_v2.0/kinematics.yaml b/openarm_bimanual_moveit_config/config/openarm_v2.0/kinematics.yaml
+index c1d6d23..c9f95d5 100644
+--- a/openarm_bimanual_moveit_config/config/openarm_v2.0/kinematics.yaml
++++ b/openarm_bimanual_moveit_config/config/openarm_v2.0/kinematics.yaml
+@@ -21,4 +21,9 @@ left_arm:
+ right_arm:
+   kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+   kinematics_solver_search_resolution: 0.0050000000000000001
+-  kinematics_solver_timeout: 0.0050000000000000001
++  # The 7-DOF wrist-near-limit grasp can need more than the previous 5 ms
++  # random-search window.  Hardware logs showed plan_only finding eight full
++  # solutions and an immediate full replan missing all four grasp IKs, while
++  # the diagnostic IK using a 20 ms window found three of them.  Match that
++  # proven window without relaxing pose, collision, or joint-limit checks.
++  kinematics_solver_timeout: 0.0200000000000000000
+diff --git a/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit.rviz b/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit.rviz
+index 3f2746d..1eb8dc7 100644
+--- a/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit.rviz
++++ b/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit.rviz
+@@ -384,7 +384,7 @@ Visualization Manager:
+             Alpha: 1
+             Show Axes: false
+             Show Trail: false
+-        Robot Alpha: 0.5
++        Robot Alpha: 1
+         Show Robot Collision: false
+         Show Robot Visual: true
+       Value: true
+diff --git a/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit_controllers.yaml b/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit_controllers.yaml
+index 90bcdfb..73b2619 100644
+--- a/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit_controllers.yaml
++++ b/openarm_bimanual_moveit_config/config/openarm_v2.0/moveit_controllers.yaml
+@@ -58,8 +58,8 @@ moveit_simple_controller_manager:
+     default: true
+ 
+   right_gripper_controller:
+-    type: GripperCommand
++    type: FollowJointTrajectory
+     joints:
+       - openarm_right_finger_joint1
+-    action_ns: gripper_cmd
++    action_ns: follow_joint_trajectory
+     default: true
+diff --git a/openarm_bimanual_moveit_config/launch/demo.launch.py b/openarm_bimanual_moveit_config/launch/demo.launch.py
+index 45a111a..48b7107 100644
+--- a/openarm_bimanual_moveit_config/launch/demo.launch.py
++++ b/openarm_bimanual_moveit_config/launch/demo.launch.py
+@@ -13,10 +13,12 @@
+ # limitations under the License.
+ 
+ import os
++import tempfile
+ import xacro
+ from ament_index_python.packages import get_package_share_directory
+ from launch import LaunchDescription, LaunchContext
+ from launch.actions import DeclareLaunchArgument, TimerAction, OpaqueFunction
++from launch.conditions import IfCondition
+ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+ from launch_ros.actions import Node
+ from launch_ros.substitutions import FindPackageShare
+@@ -50,14 +52,65 @@ def generate_robot_description(
+     description_package,
+     arm_type,
+     use_fake_hardware,
++    use_sim_hardware,
++    gripper_contact_mode,
++    gripper_torque_threshold,
++    gripper_torque_release_threshold,
++    gripper_hard_torque_limit,
++    gripper_kp,
++    gripper_kd,
++    gripper_torque_filter_alpha,
++    gripper_contact_confirm_cycles,
++    gripper_hold_kp_scale,
++    gripper_hold_kd_scale,
++    gripper_hold_position_offset,
++    gripper_close_timeout,
++    gripper_position_reached_tolerance,
++    gripper_contact_log_rate,
++    sim_gripper_block,
++    sim_gripper_block_position,
+     right_can_interface,
+     left_can_interface,
++    gravity_compensation,
++    gravity_scale,
+ ):
+     description_package_str = context.perform_substitution(description_package)
+     arm_type_str = context.perform_substitution(arm_type)
+     use_fake_hardware_str = context.perform_substitution(use_fake_hardware)
++    use_sim_hardware_str = context.perform_substitution(use_sim_hardware)
++    gripper_contact_mode_str = context.perform_substitution(gripper_contact_mode)
++    gripper_torque_threshold_str = context.perform_substitution(
++        gripper_torque_threshold)
++    gripper_torque_release_threshold_str = context.perform_substitution(
++        gripper_torque_release_threshold)
++    gripper_hard_torque_limit_str = context.perform_substitution(
++        gripper_hard_torque_limit)
++    gripper_kp_str = context.perform_substitution(gripper_kp)
++    gripper_kd_str = context.perform_substitution(gripper_kd)
++    gripper_torque_filter_alpha_str = context.perform_substitution(
++        gripper_torque_filter_alpha)
++    gripper_contact_confirm_cycles_str = context.perform_substitution(
++        gripper_contact_confirm_cycles)
++    gripper_hold_kp_scale_str = context.perform_substitution(
++        gripper_hold_kp_scale)
++    gripper_hold_kd_scale_str = context.perform_substitution(
++        gripper_hold_kd_scale)
++    gripper_hold_position_offset_str = context.perform_substitution(
++        gripper_hold_position_offset)
++    gripper_close_timeout_str = context.perform_substitution(
++        gripper_close_timeout)
++    gripper_position_reached_tolerance_str = context.perform_substitution(
++        gripper_position_reached_tolerance)
++    gripper_contact_log_rate_str = context.perform_substitution(
++        gripper_contact_log_rate)
++    sim_gripper_block_str = context.perform_substitution(sim_gripper_block)
++    sim_gripper_block_position_str = context.perform_substitution(
++        sim_gripper_block_position)
+     right_can_interface_str = context.perform_substitution(right_can_interface)
+     left_can_interface_str = context.perform_substitution(left_can_interface)
++    gravity_compensation_str = context.perform_substitution(
++        gravity_compensation)
++    gravity_scale_str = context.perform_substitution(gravity_scale)
+ 
+     folder_name, file_name = resolve_arm_config(arm_type_str)
+ 
+@@ -66,17 +119,50 @@ def generate_robot_description(
+         "assets", "robot", folder_name, "urdf", file_name
+     )
+ 
+-    return xacro.process_file(
+-        xacro_path,
+-        mappings={
+-            "arm_type": arm_type_str,
+-            "bimanual": "true",
+-            "use_fake_hardware": use_fake_hardware_str,
+-            "ros2_control": "true",
+-            "left_can_interface": left_can_interface_str,
+-            "right_can_interface": right_can_interface_str,
+-        },
+-    ).toprettyxml(indent="  ")
++    mappings = {
++        "arm_type": arm_type_str,
++        "bimanual": "true",
++        "emit_grasp_frame": "true",
++        "use_fake_hardware": use_fake_hardware_str,
++        "use_sim_hardware": use_sim_hardware_str,
++        "gripper_contact_mode": gripper_contact_mode_str,
++        "gripper_torque_threshold": gripper_torque_threshold_str,
++        "gripper_torque_release_threshold":
++            gripper_torque_release_threshold_str,
++        "gripper_hard_torque_limit": gripper_hard_torque_limit_str,
++        "gripper_kp": gripper_kp_str,
++        "gripper_kd": gripper_kd_str,
++        "gripper_torque_filter_alpha": gripper_torque_filter_alpha_str,
++        "gripper_contact_confirm_cycles":
++            gripper_contact_confirm_cycles_str,
++        "gripper_hold_kp_scale": gripper_hold_kp_scale_str,
++        "gripper_hold_kd_scale": gripper_hold_kd_scale_str,
++        "gripper_hold_position_offset": gripper_hold_position_offset_str,
++        "gripper_close_timeout": gripper_close_timeout_str,
++        "gripper_position_reached_tolerance":
++            gripper_position_reached_tolerance_str,
++        "gripper_contact_log_rate": gripper_contact_log_rate_str,
++        "sim_gripper_block": sim_gripper_block_str,
++        "sim_gripper_block_position": sim_gripper_block_position_str,
++        "ros2_control": "true",
++        "left_can_interface": left_can_interface_str,
++        "right_can_interface": right_can_interface_str,
++        "gravity_compensation": gravity_compensation_str,
++        "gravity_scale": gravity_scale_str,
++    }
++
++    # KDL gravity compensation needs a URDF file on disk; persist the
++    # expanded robot model so the hardware plugin can load it.
++    urdf_xml = xacro.process_file(xacro_path, mappings=mappings).toprettyxml(
++        indent="  ")
++    gravity_urdf_path = os.path.join(tempfile.gettempdir(),
++                                     "openarm_bimanual.urdf")
++    with open(gravity_urdf_path, "w") as urdf_file:
++        urdf_file.write(urdf_xml)
++    mappings["gravity_urdf_path"] = gravity_urdf_path
++
++    return xacro.process_file(xacro_path, mappings=mappings).toprettyxml(
++        indent="  ")
+ 
+ 
+ def robot_nodes_spawner(
+@@ -84,18 +170,56 @@ def robot_nodes_spawner(
+     description_package,
+     arm_type,
+     use_fake_hardware,
++    use_sim_hardware,
++    gripper_contact_mode,
++    gripper_torque_threshold,
++    gripper_torque_release_threshold,
++    gripper_hard_torque_limit,
++    gripper_kp,
++    gripper_kd,
++    gripper_torque_filter_alpha,
++    gripper_contact_confirm_cycles,
++    gripper_hold_kp_scale,
++    gripper_hold_kd_scale,
++    gripper_hold_position_offset,
++    gripper_close_timeout,
++    gripper_position_reached_tolerance,
++    gripper_contact_log_rate,
++    sim_gripper_block,
++    sim_gripper_block_position,
+     controllers_file,
+     right_can_interface,
+     left_can_interface,
+     arm_prefix,
++    gravity_compensation,
++    gravity_scale,
+ ):
+     robot_description = generate_robot_description(
+         context,
+         description_package,
+         arm_type,
+         use_fake_hardware,
++        use_sim_hardware,
++        gripper_contact_mode,
++        gripper_torque_threshold,
++        gripper_torque_release_threshold,
++        gripper_hard_torque_limit,
++        gripper_kp,
++        gripper_kd,
++        gripper_torque_filter_alpha,
++        gripper_contact_confirm_cycles,
++        gripper_hold_kp_scale,
++        gripper_hold_kd_scale,
++        gripper_hold_position_offset,
++        gripper_close_timeout,
++        gripper_position_reached_tolerance,
++        gripper_contact_log_rate,
++        sim_gripper_block,
++        sim_gripper_block_position,
+         right_can_interface,
+         left_can_interface,
++        gravity_compensation,
++        gravity_scale,
+     )
+ 
+     controllers_file_str = context.perform_substitution(controllers_file)
+@@ -140,9 +264,11 @@ def controller_spawner(context: LaunchContext, robot_controller):
+     ]
+ 
+ 
+-def moveit_nodes_spawner(context: LaunchContext, arm_type, use_fake_hardware):
++def moveit_nodes_spawner(context: LaunchContext, arm_type, use_fake_hardware,
++                         use_sim_hardware, launch_rviz):
+     arm_type_str = context.perform_substitution(arm_type)
+     use_fake_hardware_str = context.perform_substitution(use_fake_hardware)
++    use_sim_hardware_str = context.perform_substitution(use_sim_hardware)
+ 
+     description_pkg_path = get_package_share_directory("openarm_description")
+     moveit_pkg_path = get_package_share_directory(
+@@ -167,7 +293,9 @@ def moveit_nodes_spawner(context: LaunchContext, arm_type, use_fake_hardware):
+             mappings={
+                 "arm_type": arm_type_str,
+                 "bimanual": "true",
++                "emit_grasp_frame": "true",
+                 "use_fake_hardware": use_fake_hardware_str,
++                "use_sim_hardware": use_sim_hardware_str,
+                 "ros2_control": "true",
+             }
+         )
+@@ -183,6 +311,21 @@ def moveit_nodes_spawner(context: LaunchContext, arm_type, use_fake_hardware):
+     )
+ 
+     moveit_params = moveit_config.to_dict()
++    moveit_params["ompl"]["right_arm"] = {
++        "planner_configs": ["RRTConnect"],
++        "longest_valid_segment_fraction": 0.001,
++    }
++    response_adapters = moveit_params["ompl"].get("response_adapters", [])
++    ruckig = "default_planning_response_adapters/AddRuckigTrajectorySmoothing"
++    if ruckig not in response_adapters:
++        # Run jerk-limited smoothing after the standard request adapters.  The
++        # same adapter is installed in the MTC client configuration so plans
++        # and executions use one consistent time-parameterization contract.
++        response_adapters.insert(1 if response_adapters else 0, ruckig)
++        moveit_params["ompl"]["response_adapters"] = response_adapters
++    move_group_capabilities = {
++        "capabilities": "move_group/ExecuteTaskSolutionCapability"
++    }
+ 
+     pilz_cartesian_limits_path = os.path.join(
+         moveit_pkg_path, "config", config_dir, "pilz_cartesian_limits.yaml"
+@@ -205,7 +348,7 @@ def moveit_nodes_spawner(context: LaunchContext, arm_type, use_fake_hardware):
+             package="moveit_ros_move_group",
+             executable="move_group",
+             output="screen",
+-            parameters=[moveit_params],
++            parameters=[moveit_params, move_group_capabilities],
+         ),
+         Node(
+             package="rviz2",
+@@ -214,6 +357,7 @@ def moveit_nodes_spawner(context: LaunchContext, arm_type, use_fake_hardware):
+             output="log",
+             arguments=["-d", rviz_cfg],
+             parameters=[moveit_params],
++            condition=IfCondition(launch_rviz),
+         ),
+     ]
+ 
+@@ -228,6 +372,81 @@ def generate_launch_description():
+             description="Arm type. Accepts: v1.0, v10, openarm_v1.0, v2.0, v20, openarm_v2.0, etc."
+         ),
+         DeclareLaunchArgument("use_fake_hardware", default_value="true"),
++        DeclareLaunchArgument(
++            "launch_rviz",
++            default_value="true",
++            description="Start RViz (disable for headless randomized regression)"),
++        DeclareLaunchArgument(
++            "use_sim_hardware",
++            default_value="false",
++            description="Use the OpenArmSimHW contact-simulation plugin "
++                        "(mutually exclusive with use_fake_hardware)"),
++        DeclareLaunchArgument(
++            "gripper_contact_mode",
++            default_value="disabled",
++            description="Gripper contact detection mode: disabled | monitor "
++                        "| enforce (hardware-level torque-stop)"),
++        DeclareLaunchArgument(
++            "gripper_torque_threshold",
++            default_value="0.0",
++            description="Contact trigger threshold on motor-side torque (Nm)"),
++        DeclareLaunchArgument(
++            "gripper_torque_release_threshold",
++            default_value="0.0",
++            description="Contact hysteresis release threshold (Nm)"),
++        DeclareLaunchArgument(
++            "gripper_hard_torque_limit",
++            default_value="0.0",
++            description="Absolute safety torque limit (Nm), 0 disables"),
++        DeclareLaunchArgument(
++            "gripper_kp",
++            default_value="5.0",
++            description="Real gripper MIT position gain"),
++        DeclareLaunchArgument(
++            "gripper_kd",
++            default_value="0.1",
++            description="Real gripper MIT damping gain"),
++        DeclareLaunchArgument(
++            "gripper_torque_filter_alpha",
++            default_value="0.2",
++            description="Torque EMA coefficient in (0, 1]"),
++        DeclareLaunchArgument(
++            "gripper_contact_confirm_cycles",
++            default_value="5",
++            description="Consecutive threshold crossings required for contact"),
++        DeclareLaunchArgument(
++            "gripper_hold_kp_scale",
++            default_value="1.0",
++            description="KP scale after enforce-mode contact latch"),
++        DeclareLaunchArgument(
++            "gripper_hold_kd_scale",
++            default_value="1.0",
++            description="KD scale after enforce-mode contact latch"),
++        DeclareLaunchArgument(
++            "gripper_hold_position_offset",
++            default_value="0.0",
++            description="Positive extra squeeze magnitude after contact (rad)"),
++        DeclareLaunchArgument(
++            "gripper_close_timeout",
++            default_value="3.0",
++            description="Maximum active close duration before timeout (s)"),
++        DeclareLaunchArgument(
++            "gripper_position_reached_tolerance",
++            default_value="0.005",
++            description="Close target tolerance in gripper joint units"),
++        DeclareLaunchArgument(
++            "gripper_contact_log_rate",
++            default_value="10.0",
++            description="Hardware contact diagnostic log rate (Hz)"),
++        DeclareLaunchArgument(
++            "sim_gripper_block",
++            default_value="false",
++            description="Sim: enable the object-block contact model"),
++        DeclareLaunchArgument(
++            "sim_gripper_block_position",
++            default_value="-0.20",
++            description="Sim: joint position where the object blocks the "
++                        "fingers (v2.0 revolute, 0=closed)"),
+         DeclareLaunchArgument(
+             "robot_controller",
+             default_value="joint_trajectory_controller",
+@@ -242,17 +461,53 @@ def generate_launch_description():
+         DeclareLaunchArgument(
+             "controllers_file",
+             default_value="openarm_bimanual_moveit_controllers.yaml"),
++        DeclareLaunchArgument(
++            "gravity_compensation",
++            default_value="false",
++            description="Enable KDL gravity feedforward in openarm_hardware "
++                        "(requires use_fake_hardware:=false)"),
++        DeclareLaunchArgument(
++            "gravity_scale",
++            default_value="1.0",
++            description="Scaling factor applied to the KDL gravity "
++                        "feedforward torque"),
+     ]
+ 
+     description_package = LaunchConfiguration("description_package")
+     arm_type = LaunchConfiguration("arm_type")
+     use_fake_hardware = LaunchConfiguration("use_fake_hardware")
++    launch_rviz = LaunchConfiguration("launch_rviz")
++    use_sim_hardware = LaunchConfiguration("use_sim_hardware")
++    gripper_contact_mode = LaunchConfiguration("gripper_contact_mode")
++    gripper_torque_threshold = LaunchConfiguration("gripper_torque_threshold")
++    gripper_torque_release_threshold = LaunchConfiguration(
++        "gripper_torque_release_threshold")
++    gripper_hard_torque_limit = LaunchConfiguration("gripper_hard_torque_limit")
++    gripper_kp = LaunchConfiguration("gripper_kp")
++    gripper_kd = LaunchConfiguration("gripper_kd")
++    gripper_torque_filter_alpha = LaunchConfiguration(
++        "gripper_torque_filter_alpha")
++    gripper_contact_confirm_cycles = LaunchConfiguration(
++        "gripper_contact_confirm_cycles")
++    gripper_hold_kp_scale = LaunchConfiguration("gripper_hold_kp_scale")
++    gripper_hold_kd_scale = LaunchConfiguration("gripper_hold_kd_scale")
++    gripper_hold_position_offset = LaunchConfiguration(
++        "gripper_hold_position_offset")
++    gripper_close_timeout = LaunchConfiguration("gripper_close_timeout")
++    gripper_position_reached_tolerance = LaunchConfiguration(
++        "gripper_position_reached_tolerance")
++    gripper_contact_log_rate = LaunchConfiguration("gripper_contact_log_rate")
++    sim_gripper_block = LaunchConfiguration("sim_gripper_block")
++    sim_gripper_block_position = LaunchConfiguration(
++        "sim_gripper_block_position")
+     robot_controller = LaunchConfiguration("robot_controller")
+     runtime_config_package = LaunchConfiguration("runtime_config_package")
+     controllers_file = LaunchConfiguration("controllers_file")
+     right_can_interface = LaunchConfiguration("right_can_interface")
+     left_can_interface = LaunchConfiguration("left_can_interface")
+     arm_prefix = LaunchConfiguration("arm_prefix")
++    gravity_compensation = LaunchConfiguration("gravity_compensation")
++    gravity_scale = LaunchConfiguration("gravity_scale")
+ 
+     controllers_file = PathJoinSubstitution(
+         [FindPackageShare(runtime_config_package), "config",
+@@ -265,16 +520,35 @@ def generate_launch_description():
+             description_package,
+             arm_type,
+             use_fake_hardware,
++            use_sim_hardware,
++            gripper_contact_mode,
++            gripper_torque_threshold,
++            gripper_torque_release_threshold,
++            gripper_hard_torque_limit,
++            gripper_kp,
++            gripper_kd,
++            gripper_torque_filter_alpha,
++            gripper_contact_confirm_cycles,
++            gripper_hold_kp_scale,
++            gripper_hold_kd_scale,
++            gripper_hold_position_offset,
++            gripper_close_timeout,
++            gripper_position_reached_tolerance,
++            gripper_contact_log_rate,
++            sim_gripper_block,
++            sim_gripper_block_position,
+             controllers_file,
+             right_can_interface,
+             left_can_interface,
+             arm_prefix,
++            gravity_compensation,
++            gravity_scale,
+         ],
+     )
+ 
+     moveit_nodes_func = OpaqueFunction(
+         function=moveit_nodes_spawner,
+-        args=[arm_type, use_fake_hardware]
++        args=[arm_type, use_fake_hardware, use_sim_hardware, launch_rviz]
+     )
+ 
+     jsb_spawner = Node(
+diff --git a/openarm_bringup/config/controllers/openarm_bimanual_controllers.yaml b/openarm_bringup/config/controllers/openarm_bimanual_controllers.yaml
+index 11bc51f..f427874 100644
+--- a/openarm_bringup/config/controllers/openarm_bimanual_controllers.yaml
++++ b/openarm_bringup/config/controllers/openarm_bimanual_controllers.yaml
+@@ -15,7 +15,7 @@
+ 
+ controller_manager:
+   ros__parameters:
+-    update_rate: 750  # Hz
++    update_rate: 100  # Hz; real dual-arm CAN-FD loop
+ 
+     joint_state_broadcaster:
+       type: joint_state_broadcaster/JointStateBroadcaster
+@@ -203,6 +203,7 @@ right_gripper_controller:
+       - position
+ 
+     interpolation_method: "none"
++    interpolate_from_desired_state: false
+     constraints:
+       stopped_velocity_tolerance: 0.0
+       goal_time: 0.0
+diff --git a/openarm_bringup/config/controllers/openarm_bimanual_moveit_controllers.yaml b/openarm_bringup/config/controllers/openarm_bimanual_moveit_controllers.yaml
+index 84cf8dd..16c590a 100644
+--- a/openarm_bringup/config/controllers/openarm_bimanual_moveit_controllers.yaml
++++ b/openarm_bringup/config/controllers/openarm_bimanual_moveit_controllers.yaml
+@@ -16,6 +16,7 @@
+ controller_manager:
+   ros__parameters:
+     update_rate: 100
++    enforce_command_limits: true
+ 
+     joint_state_broadcaster:
+       type: joint_state_broadcaster/JointStateBroadcaster
+@@ -200,6 +201,9 @@ right_gripper_controller:
+       - position
+ 
+     interpolation_method: "splines"
++    # Seed each A/Y trajectory from feedback instead of the controller's stale
++    # desired 0-rad state. This avoids the observed first-cycle saturation.
++    interpolate_from_desired_state: false
+     constraints:
+       stopped_velocity_tolerance: 0.01
+       goal_time: 0.0
+diff --git a/openarm_hardware/CMakeLists.txt b/openarm_hardware/CMakeLists.txt
+index 15a2381..978ea25 100644
+--- a/openarm_hardware/CMakeLists.txt
++++ b/openarm_hardware/CMakeLists.txt
+@@ -25,31 +25,68 @@ find_package(hardware_interface REQUIRED)
+ find_package(pluginlib REQUIRED)
+ find_package(rclcpp REQUIRED)
+ find_package(rclcpp_lifecycle REQUIRED)
++find_package(std_msgs REQUIRED)
++find_package(std_srvs REQUIRED)
++find_package(kdl_parser REQUIRED)
++find_package(orocos_kdl REQUIRED)
++find_package(urdf REQUIRED)
+ 
+ # Find openarm_can library
+ find_package(OpenArmCAN REQUIRED)
+ 
+ add_library(${PROJECT_NAME} SHARED
+   src/openarm_simple_hardware.cpp
++  src/openarm_sim_hardware.cpp
++  src/dynamics.cpp
++  src/gripper_contact_detector.cpp
+ )
+ 
+ target_include_directories(
+   ${PROJECT_NAME}
+   PRIVATE
+   include
++  ${orocos_kdl_INCLUDE_DIRS}
+ )
+ 
+ target_link_libraries(${PROJECT_NAME}
+   OpenArmCAN::openarm_can
++  ${orocos_kdl_LIBRARIES}
+ )
+ 
+ ament_target_dependencies(${PROJECT_NAME}
+   hardware_interface
++  kdl_parser
+   pluginlib
+   rclcpp
+   rclcpp_lifecycle
++  std_msgs
++  std_srvs
++  urdf
+ )
+ 
++if(BUILD_TESTING)
++  find_package(ament_cmake_gtest REQUIRED)
++  # Pure-logic unit tests: compile the detector directly, no hardware needed.
++  ament_add_gtest(test_gripper_contact_detector
++    test/test_gripper_contact_detector.cpp
++    src/gripper_contact_detector.cpp
++  )
++  target_include_directories(test_gripper_contact_detector PRIVATE include)
++  # Exercises the real hardware class's cache handoff helpers without on_init,
++  # SDK construction, ROS nodes, CAN sockets, activation, or motor commands.
++  ament_add_gtest(test_gripper_startup_handoff
++    test/test_gripper_startup_handoff.cpp
++  )
++  target_include_directories(test_gripper_startup_handoff PRIVATE include)
++  target_link_libraries(test_gripper_startup_handoff ${PROJECT_NAME})
++  ament_target_dependencies(test_gripper_startup_handoff
++    hardware_interface rclcpp rclcpp_lifecycle std_msgs std_srvs)
++  # The workstation environment may point at an older installed hardware .so.
++  # This regression must exercise the library just built in this directory.
++  set_tests_properties(test_gripper_startup_handoff PROPERTIES
++    ENVIRONMENT "LD_LIBRARY_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>:$ENV{LD_LIBRARY_PATH}")
++endif()
++
+ pluginlib_export_plugin_description_file(hardware_interface openarm_hardware.xml)
+ 
+ install(
+@@ -73,6 +110,9 @@ ament_export_dependencies(
+   openarm_can
+   pluginlib
+   rclcpp
++  rclcpp_lifecycle
++  std_msgs
++  std_srvs
+ )
+ 
+ ament_package()
+diff --git a/openarm_hardware/include/openarm_hardware/openarm_simple_hardware.hpp b/openarm_hardware/include/openarm_hardware/openarm_simple_hardware.hpp
+index 60df58c..598ddb2 100644
+--- a/openarm_hardware/include/openarm_hardware/openarm_simple_hardware.hpp
++++ b/openarm_hardware/include/openarm_hardware/openarm_simple_hardware.hpp
+@@ -14,17 +14,27 @@
+ 
+ #pragma once
+ 
++#include <atomic>
+ #include <chrono>
+ #include <memory>
+ #include <openarm/can/socket/openarm.hpp>
+ #include <openarm/damiao_motor/dm_motor_constants.hpp>
++#include <rclcpp/rclcpp.hpp>
++#include <std_msgs/msg/bool.hpp>
++#include <std_msgs/msg/float64.hpp>
++#include <std_msgs/msg/int32.hpp>
++#include <std_srvs/srv/set_bool.hpp>
+ #include <string>
++#include <thread>
+ #include <vector>
+ 
+ #include "hardware_interface/handle.hpp"
+ #include "hardware_interface/hardware_info.hpp"
+ #include "hardware_interface/system_interface.hpp"
+ #include "hardware_interface/types/hardware_interface_return_values.hpp"
++#include "openarm_hardware/dynamics.hpp"
++#include "openarm_hardware/can_ownership.hpp"
++#include "openarm_hardware/gripper_contact_detector.hpp"
+ #include "openarm_hardware/visibility_control.h"
+ #include "rclcpp/macros.hpp"
+ #include "rclcpp_lifecycle/state.hpp"
+@@ -41,10 +51,12 @@ namespace openarm_hardware {
+ class OpenArmHW : public hardware_interface::SystemInterface {
+  public:
+   OpenArmHW();
++  ~OpenArmHW() override;
+ 
+   TEMPLATES__ROS2_CONTROL__VISIBILITY_PUBLIC
+   hardware_interface::CallbackReturn on_init(
+-      const hardware_interface::HardwareInfo& info) override;
++      const hardware_interface::HardwareComponentInterfaceParams& params)
++      override;
+ 
+   TEMPLATES__ROS2_CONTROL__VISIBILITY_PUBLIC
+   hardware_interface::CallbackReturn on_configure(
+@@ -75,6 +87,7 @@ class OpenArmHW : public hardware_interface::SystemInterface {
+       const rclcpp::Time& time, const rclcpp::Duration& period) override;
+ 
+  private:
++  friend class OpenArmHWStartupTest;
+   // V10 default configuration
+   static constexpr size_t ARM_DOF = 7;
+   static constexpr bool ENABLE_GRIPPER = true;
+@@ -118,9 +131,22 @@ class OpenArmHW : public hardware_interface::SystemInterface {
+   std::string can_interface_;
+   std::string arm_prefix_;
+   std::string ee_type_;
++  bool startup_gripper_closed_{false};
+   bool hand_;
+   bool can_fd_;
+ 
++  // Gravity compensation (KDL feedforward, default off)
++  bool gravity_compensation_{false};
++  double gravity_scale_{1.0};
++  std::string gravity_urdf_path_;
++  std::string gravity_base_link_;
++  std::string gravity_tip_link_;
++  std::unique_ptr<Dynamics> dynamics_;
++  std::vector<double> gravity_ff_;
++
++  // Declared before OpenArm so its lock outlives socket destruction. Keep this
++  // for the entire hardware-instance lifetime, including deactivate/cleanup.
++  std::unique_ptr<CanOwnership> can_ownership_;
+   // OpenArm instance
+   std::unique_ptr<openarm::can::socket::OpenArm> openarm_;
+ 
+@@ -135,6 +161,22 @@ class OpenArmHW : public hardware_interface::SystemInterface {
+   std::vector<double> vel_states_;
+   std::vector<double> tau_states_;
+ 
++  // Hardware-level leader mode.  In passive mode J1-J7 MIT position gain is
++  // zero while velocity damping and gravity feedforward remain active.  J8
++  // remains electrically controlled.  The heartbeat makes loss of the
++  // userspace teleop node fail back to rigid mode.
++  std::atomic<bool> passive_requested_{false};
++  std::atomic<bool> gravity_ready_{false};
++  std::atomic<int64_t> passive_heartbeat_ns_{0};
++  bool passive_applied_{false};
++  double passive_heartbeat_timeout_{0.5};
++  rclcpp::Node::SharedPtr control_node_;
++  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr passive_service_;
++  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr passive_heartbeat_sub_;
++  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr passive_state_pub_;
++  std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> control_executor_;
++  std::thread control_thread_;
++
+   static constexpr std::array<double, ARM_DOF> ZERO_POSITION = {
+       0.0,  // joint1
+       0.0,  // joint2
+@@ -146,13 +188,40 @@ class OpenArmHW : public hardware_interface::SystemInterface {
+   };
+ 
+   // Helper methods
+-  void return_to_zero();
++  bool return_to_zero();
++  bool update_gripper_feedback();
++  bool store_gripper_feedback(double motor_position, double motor_velocity,
++                              double motor_torque);
++  void seed_gripper_hold(double joint_target);
++  double startup_gripper_target() const;
+   bool parse_config(const hardware_interface::HardwareInfo& info);
+   void generate_joint_names();
++  void setup_passive_control();
++  void shutdown_passive_control();
++  void set_passive_requested(bool requested);
++  void publish_passive_state(bool enabled);
+ 
+   // Gripper mapping functions
+   double joint_to_motor_radians(double joint_value);
+   double motor_radians_to_joint(double motor_radians);
++
++  // Gripper contact detection (shared with the simulation plugin)
++  GripperContactConfig gripper_contact_config_;
++  std::unique_ptr<GripperContactDetector> gripper_contact_;
++  rclcpp::Node::SharedPtr diag_node_;
++  rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr contact_state_pub_;
++  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr motor_torque_pub_;
++  rclcpp::Time last_gripper_log_time_{0, 0, RCL_ROS_TIME};
++  double gripper_log_rate_hz_{10.0};
++  GripperCloseResult last_reported_result_{GripperCloseResult::kNone};
++
++  void setup_gripper_diagnostics();
++  void update_gripper_contact(double motor_torque, double joint_position,
++                              double joint_velocity, double command_position,
++                              double dt);
++  void publish_gripper_diagnostics();
++  void log_gripper_contact_throttled();
++  void log_gripper_close_summary(double target_position, double dt);
+ };
+ 
+ }  // namespace openarm_hardware
+diff --git a/openarm_hardware/openarm_hardware.xml b/openarm_hardware/openarm_hardware.xml
+index 8331556..b006139 100644
+--- a/openarm_hardware/openarm_hardware.xml
++++ b/openarm_hardware/openarm_hardware.xml
+@@ -22,4 +22,12 @@
+       ros2_control hardware interface for OpenArm .
+     </description>
+   </class>
++  <class name="openarm_hardware/OpenArmSimHW"
++         type="openarm_hardware::OpenArmSimHW"
++         base_class_type="hardware_interface::SystemInterface">
++    <description>
++      Simulated OpenArm hardware with gripper contact physics for validating
++      the torque-based contact detection / torque-stop pipeline.
++    </description>
++  </class>
+ </library>
+diff --git a/openarm_hardware/package.xml b/openarm_hardware/package.xml
+index 0a89278..1bec67a 100644
+--- a/openarm_hardware/package.xml
++++ b/openarm_hardware/package.xml
+@@ -25,10 +25,17 @@
+   <buildtool_depend>ament_cmake</buildtool_depend>
+ 
+   <depend>rclcpp</depend>
++  <depend>rclcpp_lifecycle</depend>
++  <depend>std_msgs</depend>
++  <depend>std_srvs</depend>
+   <depend>hardware_interface</depend>
+   <depend>openarm_can</depend>
+   <depend>pluginlib</depend>
++  <depend>kdl_parser</depend>
++  <depend>orocos_kdl</depend>
++  <depend>urdf</depend>
+ 
++  <test_depend>ament_cmake_gtest</test_depend>
+   <test_depend>ament_lint_auto</test_depend>
+   <test_depend>ament_lint_common</test_depend>
+   <test_depend>ros2_control_test_assets</test_depend>
+diff --git a/openarm_hardware/src/openarm_simple_hardware.cpp b/openarm_hardware/src/openarm_simple_hardware.cpp
+index 9321c4a..2cd69cf 100644
+--- a/openarm_hardware/src/openarm_simple_hardware.cpp
++++ b/openarm_hardware/src/openarm_simple_hardware.cpp
+@@ -17,6 +17,8 @@
+ #include <algorithm>
+ #include <cctype>
+ #include <chrono>
++#include <cmath>
++#include <functional>
+ #include <thread>
+ #include <vector>
+ 
+@@ -28,6 +30,8 @@ namespace openarm_hardware {
+ 
+ OpenArmHW::OpenArmHW() = default;
+ 
++OpenArmHW::~OpenArmHW() { shutdown_passive_control(); }
++
+ bool OpenArmHW::parse_config(const hardware_interface::HardwareInfo& info) {
+   // Parse CAN interface (default: can0)
+   auto it = info.hardware_parameters.find("can_interface");
+@@ -75,6 +79,41 @@ bool OpenArmHW::parse_config(const hardware_interface::HardwareInfo& info) {
+   it = info.hardware_parameters.find("ee_type");
+   ee_type_ =
+       (it != info.hardware_parameters.end()) ? it->second : "parallel_link";
++
++  // Explicit collection-only opt-in. Preserve legacy ACT/H1 open startup.
++  it = info.hardware_parameters.find("startup_gripper_closed");
++  startup_gripper_closed_ = false;
++  if (it != info.hardware_parameters.end()) {
++    if (it->second != "true" && it->second != "false") return false;
++    startup_gripper_closed_ = it->second == "true";
++  }
++  if (startup_gripper_closed_ &&
++      (arm_prefix_ != "right_" || ee_type_ != "pinch_gripper" || !hand_)) {
++    return false;
++  }
++
++  // Parse gravity compensation parameters (default: disabled)
++  it = info.hardware_parameters.find("gravity_compensation");
++  if (it != info.hardware_parameters.end()) {
++    std::string value = it->second;
++    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
++    gravity_compensation_ = (value == "true");
++  }
++  it = info.hardware_parameters.find("gravity_scale");
++  if (it != info.hardware_parameters.end()) {
++    gravity_scale_ = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gravity_urdf_path");
++  gravity_urdf_path_ = (it != info.hardware_parameters.end()) ? it->second : "";
++  it = info.hardware_parameters.find("gravity_base_link");
++  gravity_base_link_ = (it != info.hardware_parameters.end()) ? it->second : "";
++  it = info.hardware_parameters.find("gravity_tip_link");
++  gravity_tip_link_ = (it != info.hardware_parameters.end()) ? it->second : "";
++  it = info.hardware_parameters.find("passive_heartbeat_timeout");
++  if (it != info.hardware_parameters.end()) {
++    passive_heartbeat_timeout_ = std::stod(it->second);
++  }
++
+   if (hand_) {
+     it = info.hardware_parameters.find("kp_hand");
+     if (it != info.hardware_parameters.end()) {
+@@ -86,10 +125,91 @@ bool OpenArmHW::parse_config(const hardware_interface::HardwareInfo& info) {
+     }
+   }
+ 
++  // --- Gripper contact detection parameters (all optional, safe defaults) ---
++  // The contact detector is DISABLED by default so existing behavior is
++  // unchanged unless explicitly enabled through the URDF/xacro params.
++  auto contact_mode_from_string = [](const std::string& value) {
++    std::string v = value;
++    std::transform(v.begin(), v.end(), v.begin(), ::tolower);
++    if (v == "enforce") {
++      return GripperContactMode::kEnforce;
++    }
++    if (v == "monitor") {
++      return GripperContactMode::kMonitor;
++    }
++    return GripperContactMode::kDisabled;
++  };
++  it = info.hardware_parameters.find("gripper_contact_mode");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.mode = contact_mode_from_string(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_torque_threshold");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.torque_threshold = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_torque_release_threshold");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.torque_release_threshold = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_hard_torque_limit");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.hard_torque_limit = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_torque_filter_alpha");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.filter_alpha = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_contact_confirm_cycles");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.confirm_cycles = std::stoi(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_hold_kp_scale");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.hold_kp_scale = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_hold_kd_scale");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.hold_kd_scale = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_hold_position_offset");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.hold_position_offset = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_close_timeout");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.max_close_duration_sec = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_position_reached_tolerance");
++  if (it != info.hardware_parameters.end()) {
++    gripper_contact_config_.position_reached_tolerance = std::stod(it->second);
++  }
++  it = info.hardware_parameters.find("gripper_contact_log_rate");
++  if (it != info.hardware_parameters.end()) {
++    gripper_log_rate_hz_ = std::stod(it->second);
++  }
++  // Closing direction follows the ee_type convention:
++  //   pinch_gripper (v2.0 revolute): joint 0 = closed. Right hand opens
++  //     negative, closing = joint increasing toward 0 -> +1; the left hand is
++  //     the mirror image (opens positive), closing = joint decreasing -> -1.
++  //   parallel_link (v1.x prismatic): 0.044 open -> 0 closed -> -1
++  if (ee_type_ == "parallel_link") {
++    gripper_contact_config_.closing_direction = -1.0;
++  } else {
++    gripper_contact_config_.closing_direction =
++        (arm_prefix_ == "left_") ? -1.0 : 1.0;
++  }
++
+   RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"),
+-              "Configuration: CAN=%s, arm_prefix=%s, hand=%s, can_fd=%s",
++              "Configuration: CAN=%s, arm_prefix=%s, hand=%s, can_fd=%s, "
++              "gravity_comp=%s, gravity_scale=%.3f, "
++              "gripper_contact_mode=%s, torque_threshold=%.3f Nm, "
++              "hard_torque_limit=%.3f Nm",
+               can_interface_.c_str(), arm_prefix_.c_str(),
+-              hand_ ? "enabled" : "disabled", can_fd_ ? "enabled" : "disabled");
++              hand_ ? "enabled" : "disabled", can_fd_ ? "enabled" : "disabled",
++              gravity_compensation_ ? "enabled" : "disabled", gravity_scale_,
++              GripperContactDetector::mode_name(gripper_contact_config_.mode),
++              gripper_contact_config_.torque_threshold,
++              gripper_contact_config_.hard_torque_limit);
+   return true;
+ }
+ 
+@@ -121,13 +241,13 @@ void OpenArmHW::generate_joint_names() {
+ }
+ 
+ hardware_interface::CallbackReturn OpenArmHW::on_init(
+-    const hardware_interface::HardwareInfo& info) {
+-  if (hardware_interface::SystemInterface::on_init(info) !=
++    const hardware_interface::HardwareComponentInterfaceParams& params) {
++  if (hardware_interface::SystemInterface::on_init(params) !=
+       CallbackReturn::SUCCESS) {
+     return CallbackReturn::ERROR;
+   }
+   // Parse configuration
+-  if (!parse_config(info)) {
++  if (!parse_config(params.hardware_info)) {
+     return CallbackReturn::ERROR;
+   }
+ 
+@@ -143,6 +263,16 @@ hardware_interface::CallbackReturn OpenArmHW::on_init(
+     return CallbackReturn::ERROR;
+   }
+ 
++  // Lock BEFORE constructing the SDK: initialization may itself transmit CAN.
++  // Refusal cannot enable, disable, zero, refresh, or otherwise touch a motor.
++  try {
++    can_ownership_ = std::make_unique<CanOwnership>(
++        can_interface_, "ros2_control:" + arm_prefix_);
++  } catch (const std::exception& error) {
++    RCLCPP_ERROR(rclcpp::get_logger("OpenArmHW"), "%s", error.what());
++    return CallbackReturn::ERROR;
++  }
++
+   // Initialize OpenArm with configurable CAN-FD setting
+   RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"),
+               "Initializing OpenArm on %s with CAN-FD %s...",
+@@ -171,6 +301,13 @@ hardware_interface::CallbackReturn OpenArmHW::on_init(
+   vel_states_.resize(total_joints, 0.0);
+   tau_states_.resize(total_joints, 0.0);
+ 
++  // Gripper contact detector (shared logic with the simulation plugin).
++  // configure() arms it; in disabled mode it stays inert so the legacy
++  // behavior is fully preserved.
++  gripper_contact_ = std::make_unique<GripperContactDetector>();
++  gripper_contact_->configure(gripper_contact_config_);
++  setup_gripper_diagnostics();
++
+   RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"),
+               "OpenArm V10 Simple HW initialized successfully");
+ 
+@@ -179,11 +316,58 @@ hardware_interface::CallbackReturn OpenArmHW::on_init(
+ 
+ hardware_interface::CallbackReturn OpenArmHW::on_configure(
+     const rclcpp_lifecycle::State& /*previous_state*/) {
++  // Initialize KDL gravity compensation if enabled
++  if (gravity_compensation_) {
++    if (gravity_base_link_.empty()) {
++      gravity_base_link_ = "openarm_" + arm_prefix_ + "base_link";
++    }
++    if (gravity_tip_link_.empty()) {
++      gravity_tip_link_ = "openarm_" + arm_prefix_ + "ee_base_link";
++    }
++    dynamics_ = std::make_unique<Dynamics>(gravity_urdf_path_,
++                                           gravity_base_link_,
++                                           gravity_tip_link_);
++    if (dynamics_->Init() && dynamics_->JointCount() == ARM_DOF) {
++      gravity_ff_.resize(dynamics_->JointCount());
++      gravity_ready_.store(true);
++      RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"),
++                  "Gravity compensation enabled: chain %s -> %s, "
++                  "urdf=%s, scale=%.3f",
++                  gravity_base_link_.c_str(), gravity_tip_link_.c_str(),
++                  gravity_urdf_path_.c_str(), gravity_scale_);
++    } else {
++      RCLCPP_ERROR(rclcpp::get_logger("OpenArmHW"),
++                   "Gravity compensation initialization FAILED "
++                   "(chain must have %zu joints); disabled",
++                   ARM_DOF);
++      dynamics_.reset();
++      gravity_ff_.clear();
++      gravity_ready_.store(false);
++    }
++  } else {
++    gravity_ready_.store(false);
++  }
++
+   // Set callback mode to ignore during configuration
+   openarm_->refresh_all();
+   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+   openarm_->recv_all();
+ 
++  // Seed the gripper command with the current feedback position: the command
++  // interface defaults to 0.0 (= closed), so without this the gripper would
++  // slam shut (and could trip the contact detector / hard limit) during
++  // bring-up before the gripper controller is loaded.
++  if (hand_ && joint_names_.size() > ARM_DOF) {
++    // refresh_all/recv_all update the SDK motors, not the ROS state vectors.
++    // Copy actual feedback before seeding the command (the vectors start at 0).
++    if (!update_gripper_feedback()) {
++      return CallbackReturn::ERROR;
++    }
++    seed_gripper_hold(pos_states_[ARM_DOF]);
++  }
++
++  setup_passive_control();
++
+   return CallbackReturn::SUCCESS;
+ }
+ 
+@@ -229,7 +413,9 @@ hardware_interface::CallbackReturn OpenArmHW::on_activate(
+   openarm_->recv_all();
+ 
+   // Return to zero position
+-  return_to_zero();
++  if (!return_to_zero()) {
++    return CallbackReturn::ERROR;
++  }
+ 
+   RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"), "OpenArm V10 activated");
+   return CallbackReturn::SUCCESS;
+@@ -238,6 +424,7 @@ hardware_interface::CallbackReturn OpenArmHW::on_activate(
+ hardware_interface::CallbackReturn OpenArmHW::on_deactivate(
+     const rclcpp_lifecycle::State& /*previous_state*/) {
+   RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"), "Deactivating OpenArm V10...");
++  set_passive_requested(false);
+ 
+   // Disable all motors (like full_arm.cpp exit)
+   for (int i = 0; i < 3; ++i) {
+@@ -264,47 +451,372 @@ hardware_interface::return_type OpenArmHW::read(
+     tau_states_[i] = arm_motors[i].get_torque();
+   }
+ 
+-  // Read gripper state if enabled
+-  if (hand_ && joint_names_.size() > ARM_DOF) {
+-    const auto& gripper_motors = openarm_->get_gripper().get_motors();
+-    if (!gripper_motors.empty()) {
+-      // TODO the mappings are approximates
+-      // Convert motor position (radians) to joint value (0-0.044m)
+-      double motor_pos = gripper_motors[0].get_position();
+-      pos_states_[ARM_DOF] = motor_radians_to_joint(motor_pos);
+-
+-      // Unimplemented: Velocity and torque mapping
+-      vel_states_[ARM_DOF] = 0;  // gripper_motors[0].get_velocity();
+-      tau_states_[ARM_DOF] = 0;  // gripper_motors[0].get_torque();
+-    }
++  if (!update_gripper_feedback()) {
++    return hardware_interface::return_type::ERROR;
+   }
+ 
+   return hardware_interface::return_type::OK;
+ }
+ 
+ hardware_interface::return_type OpenArmHW::write(
+-    const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
++    const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
++  bool passive = passive_requested_.load();
++  if (passive) {
++    const int64_t heartbeat_ns = passive_heartbeat_ns_.load();
++    const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
++                               std::chrono::steady_clock::now().time_since_epoch())
++                               .count();
++    const double age = static_cast<double>(now_ns - heartbeat_ns) * 1e-9;
++    if (heartbeat_ns == 0 || age > passive_heartbeat_timeout_) {
++      passive_requested_.store(false);
++      passive = false;
++      RCLCPP_ERROR(rclcpp::get_logger("OpenArmHW"),
++                   "Passive heartbeat timed out after %.3f s on arm '%s'; "
++                   "requesting safe measured-position rigid hold",
++                   age, arm_prefix_.c_str());
++    }
++  }
++  // P0 invariant: on every passive -> rigid edge (including heartbeat
++  // timeout), overwrite every arm command interface from the latest measured
++  // state in this same hardware write cycle, before any non-zero arm kp is used.
++  // This makes an old JTC/HOME/setpoint physically incapable of becoming the
++  // first rigid target.
++  if (!passive && passive_applied_) {
++    const bool measured_valid = std::all_of(
++        pos_states_.begin(), pos_states_.begin() + ARM_DOF,
++        [](double value) { return std::isfinite(value); });
++    if (!measured_valid) {
++      passive = true;
++      passive_requested_.store(true);
++      RCLCPP_ERROR(rclcpp::get_logger("OpenArmHW"),
++                   "Refusing rigid gains on arm '%s': measured J1-J7 are not "
++                   "finite; remaining hardware-passive",
++                   arm_prefix_.c_str());
++    } else {
++      double maximum_stale_error = 0.0;
++      for (size_t i = 0; i < ARM_DOF; ++i) {
++        maximum_stale_error =
++            std::max(maximum_stale_error,
++                     std::abs(pos_commands_[i] - pos_states_[i]));
++        pos_commands_[i] = pos_states_[i];
++        vel_commands_[i] = 0.0;
++        tau_commands_[i] = 0.0;
++      }
++      RCLCPP_WARN(rclcpp::get_logger("OpenArmHW"),
++                  "Rigid target synchronized from fresh measured J1-J7 on "
++                  "arm '%s' before kp restore (discarded stale max error="
++                  "%.6f rad)",
++                  arm_prefix_.c_str(), maximum_stale_error);
++    }
++  }
++  if (passive != passive_applied_) {
++    passive_applied_ = passive;
++    publish_passive_state(passive);
++    RCLCPP_WARN(rclcpp::get_logger("OpenArmHW"),
++                "Hardware passive mode %s for arm '%s' (J1-J7 kp=%s, J8 remains "
++                "electrically controlled, arm kd+gravity retained)",
++                passive ? "ENABLED" : "DISABLED", arm_prefix_.c_str(),
++                passive ? "0" : "configured");
++  }
++
++  // Compute gravity feedforward torque G(q) from current joint states
++  if (dynamics_ && gravity_ff_.size() == ARM_DOF) {
++    dynamics_->GetGravity(pos_states_.data(), gravity_ff_.data());
++  }
++
+   // Control arm motors with MIT control
+   std::vector<openarm::damiao_motor::MITParam> arm_params;
+   for (size_t i = 0; i < ARM_DOF; ++i) {
+-    arm_params.push_back(
+-        {kp_[i], kd_[i], pos_commands_[i], vel_commands_[i], tau_commands_[i]});
++    double ff_tau = tau_commands_[i];
++    if (dynamics_ && gravity_ff_.size() == ARM_DOF) {
++      ff_tau += gravity_scale_ * gravity_ff_[i];
++    }
++    const double effective_kp = passive ? 0.0 : kp_[i];
++    const double effective_position = passive ? pos_states_[i] : pos_commands_[i];
++    const double effective_velocity = passive ? 0.0 : vel_commands_[i];
++    arm_params.push_back({effective_kp, kd_[i], effective_position,
++                          effective_velocity, ff_tau});
+   }
+   openarm_->get_arm().mit_control_all(arm_params);
+   // Control gripper if enabled
+   if (hand_ && joint_names_.size() > ARM_DOF) {
+-    // TODO the true mappings are unimplemented.
+-    double motor_command = joint_to_motor_radians(pos_commands_[ARM_DOF]);
++    const double dt = period.seconds();
++
++    // Feed the raw motor torque back into the contact state machine. In
++    // enforce mode the detector may freeze the effective close target and
++    // scale down the gains once a reliable contact is latched.
++    update_gripper_contact(tau_states_[ARM_DOF], pos_states_[ARM_DOF],
++                           vel_states_[ARM_DOF], pos_commands_[ARM_DOF], dt);
++
++    // Arm passive mode does not disable J8.  Keep the gripper controller and
++    // configured gains live so LT+LB+L3 can open/close it during teaching.
++    double gripper_command = pos_commands_[ARM_DOF];
++    double gkp = gripper_kp_;
++    double gkd = gripper_kd_;
++    if (gripper_contact_) {
++      gripper_command = gripper_contact_->effective_command(gripper_command);
++      gkp *= gripper_contact_->kp_scale();
++      gkd *= gripper_contact_->kd_scale();
++    }
++
++    double motor_command = joint_to_motor_radians(gripper_command);
+     openarm_->get_gripper().mit_control_all(
+-        {{gripper_kp_, gripper_kd_, motor_command, 0.0, 0.0}});
++        {{gkp, gkd, motor_command, 0.0, 0.0}});
++
++    publish_gripper_diagnostics();
++    log_gripper_contact_throttled();
+   }
+   openarm_->recv_all(100);
+   return hardware_interface::return_type::OK;
+ }
+ 
+-void OpenArmHW::return_to_zero() {
++void OpenArmHW::setup_passive_control() {
++  if (control_node_) {
++    return;
++  }
++  std::string side = arm_prefix_;
++  while (!side.empty() && side.back() == '_') {
++    side.pop_back();
++  }
++  const std::string node_name =
++      side.empty() ? "openarm_hardware" : "openarm_" + side + "_hardware";
++  control_node_ = std::make_shared<rclcpp::Node>(node_name);
++  passive_state_pub_ = control_node_->create_publisher<std_msgs::msg::Bool>(
++      "~/passive_state", rclcpp::QoS(1).reliable().transient_local());
++  passive_service_ = control_node_->create_service<std_srvs::srv::SetBool>(
++      "~/set_passive",
++      [this](const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
++             std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
++        if (request->data && !gravity_ready_.load()) {
++          response->success = false;
++          response->message =
++              "refused: gravity compensation is not initialized";
++          return;
++        }
++        set_passive_requested(request->data);
++        response->success = true;
++        response->message = request->data
++                                ? "hardware passive enabled: J1-J7 kp=0; J8 remains controlled"
++                                : "hardware passive disabled: rigid gains restored";
++      });
++  passive_heartbeat_sub_ = control_node_->create_subscription<std_msgs::msg::Bool>(
++      "~/passive_heartbeat", rclcpp::QoS(10).reliable(),
++      [this](const std_msgs::msg::Bool::SharedPtr msg) {
++        if (!msg->data) {
++          set_passive_requested(false);
++          return;
++        }
++        passive_heartbeat_ns_.store(
++            std::chrono::duration_cast<std::chrono::nanoseconds>(
++                std::chrono::steady_clock::now().time_since_epoch())
++                .count());
++      });
++  control_executor_ =
++      std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
++  control_executor_->add_node(control_node_);
++  control_thread_ = std::thread([executor = control_executor_]() {
++    executor->spin();
++  });
++  publish_passive_state(false);
++  RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"),
++              "Hardware passive control ready: /%s/set_passive, heartbeat "
++              "timeout=%.3f s",
++              node_name.c_str(), passive_heartbeat_timeout_);
++}
++
++void OpenArmHW::shutdown_passive_control() {
++  passive_requested_.store(false);
++  if (control_executor_) {
++    control_executor_->cancel();
++  }
++  if (control_thread_.joinable()) {
++    control_thread_.join();
++  }
++  if (control_executor_ && control_node_) {
++    control_executor_->remove_node(control_node_);
++  }
++  passive_heartbeat_sub_.reset();
++  passive_service_.reset();
++  passive_state_pub_.reset();
++  control_node_.reset();
++  control_executor_.reset();
++}
++
++void OpenArmHW::set_passive_requested(bool requested) {
++  if (requested) {
++    passive_heartbeat_ns_.store(
++        std::chrono::duration_cast<std::chrono::nanoseconds>(
++            std::chrono::steady_clock::now().time_since_epoch())
++            .count());
++  } else {
++    passive_heartbeat_ns_.store(0);
++  }
++  passive_requested_.store(requested);
++}
++
++void OpenArmHW::publish_passive_state(bool enabled) {
++  if (!passive_state_pub_) {
++    return;
++  }
++  std_msgs::msg::Bool msg;
++  msg.data = enabled;
++  passive_state_pub_->publish(msg);
++}
++
++void OpenArmHW::setup_gripper_diagnostics() {
++  if (gripper_contact_config_.mode == GripperContactMode::kDisabled) {
++    return;  // nothing to set up, legacy behavior untouched
++  }
++  // A lightweight side node so the hardware plugin can publish diagnostics.
++  // The suffix keeps the node name unique across bimanual instances.
++  diag_node_ =
++      std::make_shared<rclcpp::Node>("openarm_hw_diagnostics_" + arm_prefix_);
++  const std::string base = arm_prefix_ + "gripper";
++  contact_state_pub_ = diag_node_->create_publisher<std_msgs::msg::Int32>(
++      base + "/contact_state", rclcpp::SensorDataQoS());
++  motor_torque_pub_ = diag_node_->create_publisher<std_msgs::msg::Float64>(
++      base + "/motor_torque", rclcpp::SensorDataQoS());
++  RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"),
++              "Gripper contact diagnostics on %s/contact_state, "
++              "%s/motor_torque (mode=%s)",
++              base.c_str(), base.c_str(),
++              GripperContactDetector::mode_name(gripper_contact_config_.mode));
++}
++
++void OpenArmHW::update_gripper_contact(double motor_torque,
++                                       double joint_position,
++                                       double joint_velocity,
++                                       double command_position, double dt) {
++  if (!gripper_contact_ ||
++      gripper_contact_config_.mode == GripperContactMode::kDisabled) {
++    return;
++  }
++  const bool sensor_valid = std::isfinite(motor_torque);
++  gripper_contact_->update(motor_torque, joint_position, joint_velocity,
++                           command_position, dt, sensor_valid);
++  log_gripper_close_summary(command_position, dt);
++}
++
++void OpenArmHW::publish_gripper_diagnostics() {
++  if (!gripper_contact_ || contact_state_pub_ == nullptr ||
++      motor_torque_pub_ == nullptr) {
++    return;
++  }
++  std_msgs::msg::Int32 state_msg;
++  state_msg.data = static_cast<int>(gripper_contact_->state());
++  contact_state_pub_->publish(state_msg);
++
++  std_msgs::msg::Float64 torque_msg;
++  torque_msg.data = gripper_contact_->filtered_torque();
++  motor_torque_pub_->publish(torque_msg);
++}
++
++void OpenArmHW::log_gripper_contact_throttled() {
++  if (!gripper_contact_ ||
++      gripper_contact_config_.mode == GripperContactMode::kDisabled) {
++    return;
++  }
++  const double period = gripper_log_rate_hz_ > 0.0 ? 1.0 / gripper_log_rate_hz_
++                                                   : 0.1;
++  const auto now = rclcpp::Clock(RCL_ROS_TIME).now();
++  if (last_gripper_log_time_.seconds() > 0.0 &&
++      (now - last_gripper_log_time_).seconds() < period) {
++    return;
++  }
++  last_gripper_log_time_ = now;
++  RCLCPP_INFO(
++      rclcpp::get_logger("OpenArmHW"),
++      "[gripper-contact] state=%s result=%s raw_tau=%.3f filtered=%.3f "
++      "bias=%.3f delta=%.3f peak=%.3f Nm hold_pos=%.4f counter=%d",
++      GripperContactDetector::state_name(gripper_contact_->state()),
++      GripperContactDetector::result_name(gripper_contact_->close_result()),
++      gripper_contact_->raw_torque(), gripper_contact_->filtered_torque(),
++      gripper_contact_->torque_bias(), gripper_contact_->contact_delta(),
++      gripper_contact_->peak_torque(), gripper_contact_->hold_position(),
++      gripper_contact_->contact_counter());
++}
++
++void OpenArmHW::log_gripper_close_summary(double target_position,
++                                          double /*dt*/) {
++  if (!gripper_contact_) {
++    return;
++  }
++  const GripperCloseResult result = gripper_contact_->close_result();
++  if (result == GripperCloseResult::kNone || result == last_reported_result_) {
++    return;  // nothing new (or already reported)
++  }
++  last_reported_result_ = result;
++  RCLCPP_WARN(
++      rclcpp::get_logger("OpenArmHW"),
++      "[gripper-contact] CLOSE SETTLED: result=%s state=%s peak_torque=%.3f "
++      "Nm hold_pos=%.4f target=%.4f elapsed=%.2fs",
++      GripperContactDetector::result_name(result),
++      GripperContactDetector::state_name(gripper_contact_->state()),
++      gripper_contact_->peak_torque(), gripper_contact_->hold_position(),
++      target_position, gripper_contact_->close_elapsed_sec());
++}
++
++bool OpenArmHW::store_gripper_feedback(double motor_position,
++                                       double motor_velocity,
++                                       double motor_torque) {
++  if (!std::isfinite(motor_position) || !std::isfinite(motor_velocity)) {
++    RCLCPP_ERROR(rclcpp::get_logger("OpenArmHW"),
++                 "Non-finite gripper position/velocity; refusing startup handoff");
++    return false;
++  }
++  pos_states_[ARM_DOF] = motor_radians_to_joint(motor_position);
++  vel_states_[ARM_DOF] = ee_type_ == "pinch_gripper"
++      ? motor_velocity
++      : motor_velocity * (GRIPPER_JOINT_0_POSITION / GRIPPER_MOTOR_1_RADIANS);
++  // Preserve raw torque, including NaN, for the existing contact detector.
++  tau_states_[ARM_DOF] = motor_torque;
++  return true;
++}
++
++bool OpenArmHW::update_gripper_feedback() {
++  if (!hand_ || joint_names_.size() <= ARM_DOF) {
++    return true;
++  }
++  const auto& motors = openarm_->get_gripper().get_motors();
++  if (motors.empty()) {
++    RCLCPP_ERROR(rclcpp::get_logger("OpenArmHW"), "Missing gripper motor feedback");
++    return false;
++  }
++  return store_gripper_feedback(motors[0].get_position(),
++                                motors[0].get_velocity(), motors[0].get_torque());
++}
++
++void OpenArmHW::seed_gripper_hold(double joint_target) {
++  if (hand_ && joint_names_.size() > ARM_DOF) {
++    pos_commands_[ARM_DOF] = joint_target;
++    vel_commands_[ARM_DOF] = 0.0;
++    tau_commands_[ARM_DOF] = 0.0;
++  }
++}
++
++double OpenArmHW::startup_gripper_target() const {
++  if (ee_type_ != "pinch_gripper") {
++    return GRIPPER_JOINT_0_POSITION;
++  }
++  // The left gripper has no controller in this deployment. Preserve its
++  // measured initial hold; do not send the right-hand negative open angle.
++  return arm_prefix_ == "left_" ? pos_commands_[ARM_DOF]
++                                : (startup_gripper_closed_ ? -0.085 : -0.35);
++}
++
++bool OpenArmHW::return_to_zero() {
+   RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"), "Returning to zero position...");
+ 
++  // Keep the selected startup gripper target while the arm returns home.
++  // Legacy ACT uses open; the explicit collection opt-in uses closed.
++  // The old implementation
++  // sent +0.044 directly as a motor angle.  That value is a parallel-gripper
++  // joint displacement, is outside the v2 pinch limits [-0.7854, 0], and was
++  // not converted to motor radians for the v1 parallel gripper either.
++  const double gripper_home_joint = hand_ ? startup_gripper_target() : 0.0;
++  const double gripper_home_motor =
++      joint_to_motor_radians(gripper_home_joint);
++
+   openarm_->refresh_all();
+   // Return arm to zero with MIT control
+   std::vector<openarm::damiao_motor::MITParam> arm_params;
+@@ -316,7 +828,7 @@ void OpenArmHW::return_to_zero() {
+   // Return gripper to zero if enabled
+   if (hand_) {
+     openarm_->get_gripper().mit_control_all(
+-        {{gripper_kp_, gripper_kd_, GRIPPER_JOINT_0_POSITION, 0.0, 0.0}});
++        {{gripper_kp_, gripper_kd_, gripper_home_motor, 0.0, 0.0}});
+   }
+   std::this_thread::sleep_for(std::chrono::microseconds(1000));
+   openarm_->recv_all();
+@@ -342,14 +854,32 @@ void OpenArmHW::return_to_zero() {
+ 
+     if (hand_) {
+       openarm_->get_gripper().mit_control_all(
+-          {{GRIPPER_KP, GRIPPER_KD, GRIPPER_JOINT_0_POSITION, 0.0, 0.0}});
++          {{gripper_kp_, gripper_kd_, gripper_home_motor, 0.0, 0.0}});
+     }
+ 
+     openarm_->recv_all();
+     std::this_thread::sleep_for(std::chrono::milliseconds(step_ms));
+   }
+ 
+-  RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"), "Reached zero position");
++  // SDK homing writes bypass pos_commands_. Without this handoff the first
++  // periodic write replays the pre-home (often 0-rad/closed) gripper target.
++  // Keep the actual measured state distinct from the desired open target so
++  // a controller can initialize from real feedback, never a fabricated pose.
++  seed_gripper_hold(gripper_home_joint);
++  if (read(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.0)) !=
++      hardware_interface::return_type::OK) {
++    return false;
++  }
++  if (hand_) {
++    RCLCPP_INFO(rclcpp::get_logger("OpenArmHW"),
++                "H1 gripper handoff on '%s': measured=%.6f, hold target=%.6f",
++                arm_prefix_.c_str(), pos_states_[ARM_DOF], pos_commands_[ARM_DOF]);
++  }
++
++  RCLCPP_WARN(rclcpp::get_logger("OpenArmHW"),
++              "Zero command sequence finished; actual arrival is NOT verified here. "
++              "Require fresh motor feedback and pose acceptance before H2 or ACT.");
++  return true;
+ }
+ 
+ // void OpenArmHW::return_to_zero() {
+@@ -408,6 +938,17 @@ double OpenArmHW::motor_radians_to_joint(double motor_radians) {
+ 
+ }  // namespace openarm_hardware
+ 
++// Software-only launch admission can inspect this exported symbol with nm
++// without loading a hardware instance. Legacy installed binaries lack it.
++extern "C" __attribute__((visibility("default"))) int
++openarm_can_ownership_protocol_version() { return 1; }
++
++extern "C" __attribute__((visibility("default"))) int
++openarm_h1_gripper_handoff_version() { return 1; }
++
++extern "C" __attribute__((visibility("default"))) int
++openarm_closed_transit_startup_version() { return 1; }
++
+ #include "pluginlib/class_list_macros.hpp"
+ 
+ PLUGINLIB_EXPORT_CLASS(openarm_hardware::OpenArmHW,

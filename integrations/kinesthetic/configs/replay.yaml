@@ -1,0 +1,13 @@
+schema_version: 1
+input_hz: 30
+control_hz: 1000
+upsampler: official_HermiteUpsampler_exact_algorithm_snapshot
+filter: official_BiquadLowpass_exact_algorithm_snapshot
+filter_cutoff_hz: 15.0
+filter_q: 0.707
+source_absolute_path_read_only: /home/lushilin/openarm_vla_ws/official/dora-openarm-evaluation/nodes/dora-openarm-actions-executor/src/dora_openarm_actions_executor/main.py
+source_sha256: 134b13a56684caa3bbb7f5188f7fb517f4810849a513b99f7980899cbb7c1b0f
+source_repo_head: d15939afbe5ae30aa0766b3866e58f90e61528b0
+position_actuator_required: true
+forbid_qpos_writes_after_reset: true
+forbid_object_weld: true

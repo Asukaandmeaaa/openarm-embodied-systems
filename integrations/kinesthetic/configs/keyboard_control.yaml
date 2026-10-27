@@ -1,0 +1,27 @@
+schema_version: 1
+input_mode: discrete
+case_sensitive: false
+bindings:
+  O: gripper_open
+  C: gripper_close
+  R: recording_start
+  S: finish_success
+  F: finish_failure
+  X: cancel_transaction
+  Space: pause_hold
+  Esc: software_stop_latch
+cartesian_jog:
+  frame: world
+  default_step_m: 0.01
+  bindings:
+    Up: positive_x
+    Down: negative_x
+    Left: positive_y
+    Right: negative_y
+    U: positive_z
+    D: negative_z
+safety:
+  Esc:
+    classification: software_stop_latch
+    physical_emergency_stop: false
+  reset_requires_explicit_operator_action: true

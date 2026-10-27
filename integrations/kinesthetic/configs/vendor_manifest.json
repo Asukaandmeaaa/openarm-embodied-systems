@@ -1,0 +1,1100 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-11",
+  "source_repository": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco",
+  "source_repo_head": "a8c979629f2591ad035d99d338ce114969e6cddc",
+  "source_exact_tag": "2.2.0",
+  "source_worktree_dirty": true,
+  "snapshot_policy": "current verified worktree, including local modifications and untracked Python test",
+  "excluded": [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "build",
+    "dist",
+    "*.pyc"
+  ],
+  "coverage": "all copied regular files (superset of required XML/Python/STL/OBJ/config files)",
+  "files": [
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.editorconfig",
+      "copied_relative_path": "vendor/openarm_mujoco/.editorconfig",
+      "sha256": "f8b9b6d97a57bbd4dbabdb340d5cd07adf8cdfb08180d77ae0088611637d245f"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/ISSUE_TEMPLATE/1-bug-report.yml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/ISSUE_TEMPLATE/1-bug-report.yml",
+      "sha256": "9481529380f804224ca3592ad7ac7658102e470143c3368c83b2699a1bd37bd8"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/ISSUE_TEMPLATE/2-feature-request.yml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/ISSUE_TEMPLATE/2-feature-request.yml",
+      "sha256": "b155b669ce91db8a54a6e1acf8cb7307f826a728932000025fba92d7c7903008"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/ISSUE_TEMPLATE/config.yml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/ISSUE_TEMPLATE/config.yml",
+      "sha256": "68e21e665db31981e920947fd93b94dba53b6fd3beb357acc236d6713b2d1e4e"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/dependabot.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/dependabot.yaml",
+      "sha256": "a654dbf2d8eb9868200a9decca56607a63327bebe4e69acdd5f92568c17c0a3f"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/release.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/release.yaml",
+      "sha256": "826026f2b6eb835c6d7365be9c806a50bb323d09e517dc22df25ee3617feb935"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/workflows/lint.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/workflows/lint.yaml",
+      "sha256": "d7345c7d00ab74747b282236283293e7ed4e1226202b4bd2744c1489022eb682"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/workflows/package.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/workflows/package.yaml",
+      "sha256": "adb9908bc52a9a9ae505a19d42ffc1fbd94583ba4747bf7e33287a6193ad88a9"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/workflows/pages.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/workflows/pages.yaml",
+      "sha256": "1df2040516312779f26401adf95f56e23ead19920fd9eb5ad503515ea0cb8d99"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/workflows/preview-comment.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/workflows/preview-comment.yaml",
+      "sha256": "66258924d53f8b97193507cac6365256ecb7af33871accbd63ed968f348b4734"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.github/workflows/test.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.github/workflows/test.yaml",
+      "sha256": "6147e009abca6d7c0f7f3eadc36d6d2b0efcced47e961789c53fc2da4ace287e"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.gitignore",
+      "copied_relative_path": "vendor/openarm_mujoco/.gitignore",
+      "sha256": "cc818338cb1eabe517a656a5de984273806cd20573cd71265b80ad98f086746a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/.pre-commit-config.yaml",
+      "copied_relative_path": "vendor/openarm_mujoco/.pre-commit-config.yaml",
+      "sha256": "aecd613d8fabf2ed9dac5ea3e3423fc150b081979eba291750fd59c9dfd59b09"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/CODE_OF_CONDUCT.md",
+      "copied_relative_path": "vendor/openarm_mujoco/CODE_OF_CONDUCT.md",
+      "sha256": "e900efb61d49d1a40550bafd0682ec38d8b322691aa1f54661e43bf6d317fa88"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/CONTRIBUTING.md",
+      "copied_relative_path": "vendor/openarm_mujoco/CONTRIBUTING.md",
+      "sha256": "c4619e0f4483de094353bd2e9aeea1ab0b3e437ca5365ba700d0d147b1df2a61"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/LICENSE",
+      "copied_relative_path": "vendor/openarm_mujoco/LICENSE",
+      "sha256": "66a512fea6d46110e34cd7d320573a276a0a5db6cd2508e4eaadabbe39eb5938"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/README.md",
+      "copied_relative_path": "vendor/openarm_mujoco/README.md",
+      "sha256": "3c0695c422bf1e0c9705382b249c3a5b26c80cc5a58346143c8691601ca71d7d"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/biome.jsonc",
+      "copied_relative_path": "vendor/openarm_mujoco/biome.jsonc",
+      "sha256": "cc8eace83eb3e7e3c5628077d3486e221f6441ffb630fc427db1f67bc31c01a6"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/dev/README.md",
+      "copied_relative_path": "vendor/openarm_mujoco/dev/README.md",
+      "sha256": "789921265d5b858ab38c4a206879b7a7d921bf8cab45b9a48d81f39f54458fec"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/dev/release.sh",
+      "copied_relative_path": "vendor/openarm_mujoco/dev/release.sh",
+      "sha256": "51ae7494c3e327ad24960085528931c521c8f9aee5abbc91431489a2ea5a2daa"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/index.html",
+      "copied_relative_path": "vendor/openarm_mujoco/index.html",
+      "sha256": "094504c559222bfb698f86ec3ee217adeda6ca4cd6c1ce495ff50ccd89be53af"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/media/v2.png",
+      "copied_relative_path": "vendor/openarm_mujoco/media/v2.png",
+      "sha256": "cefaa8c136fa5cb6a6557af199580f798e03b45bb0379c81a13d1372548607b1"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/pyproject.toml",
+      "copied_relative_path": "vendor/openarm_mujoco/pyproject.toml",
+      "sha256": "7237f0a65bc76a2b7a21162b04bad145146ccabc5ef26638c14427396af14c3a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/setup.py",
+      "copied_relative_path": "vendor/openarm_mujoco/setup.py",
+      "sha256": "f56a3eaad63441471affd93c4c183f63c09f2a7f55960fbdee87e547f5801c01"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco/v2/__init__.py",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco/v2/__init__.py",
+      "sha256": "3e35a4b27963431996b592f46d73833176eb7a42c5dd8f7816da1c77e0c667dc"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco/v2/joint_resolver.py",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco/v2/joint_resolver.py",
+      "sha256": "52307e4f646ee577d826a4bce3081d88d4595f097d2eec5d5b605a5bf50bea75"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco/v2/launch.py",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco/v2/launch.py",
+      "sha256": "1b041af5fd563fbf05634f06302e25118c0c0367f2497e11be4113ac68fe027c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco.egg-info/PKG-INFO",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco.egg-info/PKG-INFO",
+      "sha256": "598e9d632cc73fe4f8770effa21bdd2c73f9ffcff83dabed5544668e2f4e9636"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco.egg-info/SOURCES.txt",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco.egg-info/SOURCES.txt",
+      "sha256": "bf32dba8d9d627e169174eddb6c8362a817e132299d6db3c2f4b7ab5885d0cb4"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco.egg-info/dependency_links.txt",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco.egg-info/dependency_links.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco.egg-info/entry_points.txt",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco.egg-info/entry_points.txt",
+      "sha256": "411c900ae1090dd74c22f1ee46a9b0008002bb0d8b44c89f9294c01bbc21265c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco.egg-info/requires.txt",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco.egg-info/requires.txt",
+      "sha256": "764252a14c8443b40c02b7c6967aec6884a85a265b3d82648f05dadff6f43c44"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco.egg-info/top_level.txt",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco.egg-info/top_level.txt",
+      "sha256": "dd7f648ed0d1c7ff594ef32542e45bcbee7864497fba8b940d4eb6edae3f0258"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/src/openarm_mujoco_v2/__init__.py",
+      "copied_relative_path": "vendor/openarm_mujoco/src/openarm_mujoco_v2/__init__.py",
+      "sha256": "1d04c36966f52e57d0a2e2788422379407cdf1def78e33b11a718a3950700fd6"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/test_openarm_mujoco_position_control.py",
+      "copied_relative_path": "vendor/openarm_mujoco/test_openarm_mujoco_position_control.py",
+      "sha256": "8138f325dc596c8e19310057e1e2a4e13cbb5762868e4018134be6fda6bfdbb8"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/d435.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/d435.stl",
+      "sha256": "d5acd46bfe330af12678b91d467b6bed45dbe0bc68068ab343cf9f3e04373b9a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/left_jaw.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/left_jaw.stl",
+      "sha256": "500e81c04059f1f88a514da92eba859f76a4734fe62345842192fcba8c418111"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link1.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link1.stl",
+      "sha256": "ee4f3cf7df97eb3212475f2f9b0da5397b79f57948c16eec9f10574db090deb2"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link2.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link2.stl",
+      "sha256": "70f6cfc1a722ce48700f61f6e9489e4178971789b2e8943d730e38a4ac7350c1"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link3.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link3.stl",
+      "sha256": "0d297dcea03094e5f1f7191db09f8322a579ca447a2471adc0cfe8f088d56f33"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link4.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link4.stl",
+      "sha256": "8cecbfb12afb6bd168af40d9d4f76b43e8de0d8ecf0ab0b57476182579ac1d35"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link5.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link5.stl",
+      "sha256": "6fdfff531268d0b8580b20d9216e3827ed43b2b90bc0867e48b9b425f028c391"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link6_leftarm.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link6_leftarm.stl",
+      "sha256": "d48bf074530a44a75278951a65ebec5a16f655a989cf904ee5675deb4a8b39a4"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link6_rightarm.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link6_rightarm.stl",
+      "sha256": "1cbd056949a6298bd01d13d3843588d9266759159c27fd66c414dd5540fc9f2c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link7_leftarm.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link7_leftarm.stl",
+      "sha256": "5970a2b26e0191b8d2f17173197535b622522937704815ed08c8a5af34aac8b1"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link7_rightarm.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link7_rightarm.stl",
+      "sha256": "64ffc98925bcdaad7e10f62028f41278bc0206758c005229883763c21e9adabd"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/link8.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/link8.stl",
+      "sha256": "cc5a417ddd4e7ad06ef2052819b721f61deb1ff6c686361d506929453515e99a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/pedestal_link.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/pedestal_link.stl",
+      "sha256": "316b7be39e2b7dd8982f1fb53e8f742161633919bca37bbec60c60c52fa93a2b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/meshes/right_jaw.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/meshes/right_jaw.stl",
+      "sha256": "fa90877f9edc97f1d1baef298296004355f6191bc9d50a53b511628e7383f7cc"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/openarm.mjcf.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/openarm.mjcf.xml",
+      "sha256": "686ea9bf66d3cf1cacb8670a47cae2497fc6ab2f0a73a7fe42c3f7f3d0b97e62"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v0.3/openarm_bimanual.mjcf.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v0.3/openarm_bimanual.mjcf.xml",
+      "sha256": "0708d352486cabaaee6a1f68407a1641bd4348c57286b5461433199de74c2237"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link0.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link0.stl",
+      "sha256": "baf52578e1d9e6225f3818cae82b6074a0b948d3cef8e9a3e6dfafca78507590"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link1.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link1.stl",
+      "sha256": "066113d13d5cc85098609003bc7ebb73c570015350877f5ed7162ef1b6601852"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link2.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link2.stl",
+      "sha256": "382ab32e4ae0880e8a1512e7a6ca6ce1f478a6c125db4efa977429ffb1d6b02a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link3.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link3.stl",
+      "sha256": "00c908cefab152c00416a570a48bf9aafed1549085f19ff2d882dc3f355d9f59"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link4.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link4.stl",
+      "sha256": "b54883b8c7c96268a68a5879f95998a53ad0b0c4fe74325fad63a6caef669c73"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link5.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link5.stl",
+      "sha256": "678a2802906eff7b45a836d2f34a2d8e51def50b6599376968f888e05c72739e"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link6.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link6.stl",
+      "sha256": "95529bec23733476dfdbbb266c7db0d25a473a568de73c8337a82440fe4a9ac3"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/arm/link7.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/arm/link7.stl",
+      "sha256": "434f207f21f75f5f0bd604e390b8e5bc7b62b619265222846770e06b3f9b5cfb"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/body/body_link0.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/body/body_link0.stl",
+      "sha256": "6c18bbf7e86b03e3faf802e61e8eb438b38dcbcf146d97cffe6e808c65e9a72a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/gripper/finger.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/gripper/finger.stl",
+      "sha256": "8e96e1314618cf434908f70df78f68dd2b049c03538964e8d41fc99abe41564d"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/collision/gripper/hand.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/collision/gripper/hand.stl",
+      "sha256": "8e5d373ebbd3fd001b506058644062ad71a68f1ced5ca5d5ed0f6de20137956b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link0_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link0_0.obj",
+      "sha256": "c7f642d10a75a61864bfb39f8376997dedc320cec9320934a8511e7ad118a29c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link0_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link0_1.obj",
+      "sha256": "efe36fab669e3819dc301c7e4c432fb5c63014488a607fcb73cfc7b29b7e0a06"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link1_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link1_0.obj",
+      "sha256": "e08c981dbef223934361c0458ef2fa7fecde3c5c4479faf200a0572c16149c04"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link1_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link1_1.obj",
+      "sha256": "1a92be9336e391075b63ce8e37aa0af21a877993afba7a6773170691f485216e"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link1_2.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link1_2.obj",
+      "sha256": "719a6d848b139ccf38948e9418ccf2690bf3390ebc47a3544df52152d4192a6a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link1_3.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link1_3.obj",
+      "sha256": "23b6fc806909bf2c0b066cc5907027a54f9b639612264bcdcc1b5e6bf97e7fca"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link2_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link2_0.obj",
+      "sha256": "b20d52bcd8a1f10e595f0782d2a827854771d38c1a25f6321a275a8f960ef10d"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link2_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link2_1.obj",
+      "sha256": "08bdbed44bf04d207fe1310f69d0aa7769b502acb4c4e31ea9e2f36ba1364e9d"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link2_2.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link2_2.obj",
+      "sha256": "520b5ac006c7cca7e5d29ca6232733ce78ec888200b2fc43d884ad8f86b890fb"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link3_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link3_0.obj",
+      "sha256": "bc399d66dd303390b5ed9c770b9b90e618faf4b823ff7ba45381c3d0c36900c8"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link3_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link3_1.obj",
+      "sha256": "c06e0ec58ee687ebcff4253469aa7ae7be3d1640d3f6036f4f848a099e7bf1e7"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link3_2.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link3_2.obj",
+      "sha256": "a7e7827a7279d74b5eb7b4c66404fa50b346e45c9da9ef228c61e02da57296d1"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link4_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link4_0.obj",
+      "sha256": "d6c70b73c9112170b00773e8d0ba00e421a00c95d95ec1ffaca29c4421cfa88d"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link4_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link4_1.obj",
+      "sha256": "076c1569313d1b146cf870ba865a09605cdbf2a07ebe164be30787440cb7ba69"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link4_2.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link4_2.obj",
+      "sha256": "23b9e23a42b3e760b30d101c720641fe18f21ec82e938156806d21ca1cce2f67"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link5_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link5_0.obj",
+      "sha256": "53a5aaf252739b16afb0caeceff3770b61e9c28d0bf8e4b3c007cf725addd896"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link5_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link5_1.obj",
+      "sha256": "fb4dbfc63ca2f91e33728aab542c0dd4aa368cf13be55062b5b4f0089629452a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link5_2.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link5_2.obj",
+      "sha256": "807d29516fd2d8fc74c4764f5048385780123ca58f2058f59738aa7214ab26f0"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link6_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link6_0.obj",
+      "sha256": "d089539cdcb06a40bb0ab4a184f523980a3fb130bba283ff425c2e4cf655dfd3"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link6_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link6_1.obj",
+      "sha256": "6e17ec2c8348cdcd9bfff84c253ae63401301ccfa55f87f13b408f54b8f7d419"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link7_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link7_0.obj",
+      "sha256": "e81e422fd6db8e6bc527a499eb4d81c4cdbc74cdcb2b154111e2a00003916e20"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/arm/link7_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/arm/link7_1.obj",
+      "sha256": "0a291f8f82eeb20641889571e579f30a191947948a148ade1fe54dc03dd7c269"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/body/body_link0_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/body/body_link0_0.obj",
+      "sha256": "45840dce38427a8ce956b715cdedce7ba703905ce61e07d744abfe7475ab61f1"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/body/body_link0_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/body/body_link0_1.obj",
+      "sha256": "099191959a5f0e96507208b24acd381cfec8fd6f5f4c5f37e11d935dd3a12033"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/body/body_link0_2.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/body/body_link0_2.obj",
+      "sha256": "0c939eb6c9273cef3974acb9cd1046d75916e1af2c7d4ce8787e0fd956250574"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/body/body_link0_3.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/body/body_link0_3.obj",
+      "sha256": "92b88899de906441350a8e6be5a1592e9ffc041711478251fc42954b62bc1b59"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/body/body_link0_4.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/body/body_link0_4.obj",
+      "sha256": "4771a1f44a1fae27de8551cc4527a498d79ef64dbec1e426a8d67b99135087e1"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/body/body_link0_5.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/body/body_link0_5.obj",
+      "sha256": "eb4fc4bb41c9497d59c14fbaa306e47a7037f0a3524a2dc4c0a6f2755bb65d20"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/gripper/finger_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/gripper/finger_0.obj",
+      "sha256": "4aff253863db205211e151c8065a8614a56c629b90ca17807c83b0dcf603abc8"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/gripper/finger_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/gripper/finger_1.obj",
+      "sha256": "3aab3095bd7848659dbaebe79b0d52fd1e921d5060f24cabfc6fdbc94b0eee57"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/gripper/hand_0.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/gripper/hand_0.obj",
+      "sha256": "bc7861f38307909c4f06d264e94a5f5ed78017179d1729fa5e01757850bfe4b9"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/meshes/visual/gripper/hand_1.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/meshes/visual/gripper/hand_1.obj",
+      "sha256": "8c764345d91c14ebe83fb50bcc225bdf664e7ac48d545a6e599905b946c17fc4"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/openarm.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/openarm.xml",
+      "sha256": "928f1cfa0e2a9f988c558ac557277deb7e01ff40e3c2fe15b25a37cf9af1963a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/openarm_bimanual.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/openarm_bimanual.xml",
+      "sha256": "3863212abcf4e69ceb0743fc67f33c6efdb3a2db9b659bb333f2fee4a0f19539"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v1/scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v1/scene.xml",
+      "sha256": "c0263cda0c391162bce4b45ed1a4154b453603bb2a21427f0dc7bce9cb39edf0"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/base_link.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/base_link.stl",
+      "sha256": "795f96ece4db1f896ba2962314c6bda5a876eac2c3cb578b018b21985b57c158"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/body_link0_symp.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/body_link0_symp.stl",
+      "sha256": "6c18bbf7e86b03e3faf802e61e8eb438b38dcbcf146d97cffe6e808c65e9a72a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/ee_base_link.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/ee_base_link.stl",
+      "sha256": "b7e0bfdc8377cf12e793752f7b65ec97dcc3f6b65a5db6b70d1c605a65e12b23"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_inner_part_00.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_inner_part_00.stl",
+      "sha256": "32bd78820acf74834b1c218cf07b714b006963cdc35a2a75ea31e54d1daf0671"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_inner_part_01.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_inner_part_01.stl",
+      "sha256": "517d11a987273d7693382aaa4c84026a734950fdc4b52a7ca8989e8416fb80d1"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_inner_part_02.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_inner_part_02.stl",
+      "sha256": "7c3c4ed509c682e07c5bf0945d271dd7792b6175ce2778f927c54de25a42120a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_inner_part_03.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_inner_part_03.stl",
+      "sha256": "dcbfef75fb9dc29b56e6a8873b0b537436fd4af5eb086b1d16bc747e511f53c6"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_outer_part_00.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_outer_part_00.stl",
+      "sha256": "b6526e60a29686561ce9c9408aca810767cf3ff1cece9e1aaba6d5e752b6613c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_outer_part_01.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_outer_part_01.stl",
+      "sha256": "b8028798ac2cac27634fa0a9808ed413449a5cfd6caa9becab423293f7b089ef"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_outer_part_02.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_outer_part_02.stl",
+      "sha256": "b5997e97a1d9524fada8c5d375e8f3077f9a9249bbb792be4cbed303edb02588"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/finger_outer_part_03.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/finger_outer_part_03.stl",
+      "sha256": "330545b4932648afb504ff275d90fb066018a939091ad58b8041e1baf7fb12c4"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link1.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link1.stl",
+      "sha256": "5fcc7bd6900fd115004f6d4553fae0602aa4b29d132b354728cca9510f701803"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link2.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link2.stl",
+      "sha256": "381f0c51a4d2bacb40a9782ecd9901877d5b32b9083329d39b741fc63a73a483"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link3.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link3.stl",
+      "sha256": "72ce0a23e5e65803c9a5d08d8bd915f5ccb4c5a285119183d461f73ab2f535b7"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link4.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link4.stl",
+      "sha256": "3eb42e669449020c05d5b17152fd22ea8d5737c831619d0f026cfeb2cf28e735"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link5_part_00.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link5_part_00.stl",
+      "sha256": "bf2eb3d231354403709ce31a5e009753610b925cc180fef5e7ccf9dcfe3ce456"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link5_part_01.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link5_part_01.stl",
+      "sha256": "989ec91e242bb847c186a35c2fae7c3b4079cc03f20b6149f67444fd6d4f0334"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link5_part_02.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link5_part_02.stl",
+      "sha256": "eaa0ded332c76f97bdf857e6e2e6a521011722d3db2ff169a96420f3126d5b1f"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/collision/link6.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/collision/link6.stl",
+      "sha256": "2f474d557a6f442922f1e4ffa4e78365c011c01f33207108da13b79e53e18f39"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/base_link_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/base_link_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/base_link_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/base_link_00.obj",
+      "sha256": "8121aefe063cb3524618f9a7831e9562ab9b0dca61600a6a843aed85989e4cba"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/base_link_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/base_link_01.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/base_link_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/base_link_01.obj",
+      "sha256": "4d66f436adbbe66c3c9eb9753ea084cae8254cace1fb559a7b20a2bba28ee39a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link1_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link1_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link1_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link1_00.obj",
+      "sha256": "88634d86cab2e96cac501a2f4737be32ebae33d2a3e209847f76fe06d1a2fa6f"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link1_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link1_01.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link1_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link1_01.obj",
+      "sha256": "0087c74c99d1e73fa58d64a48fc868ab428300af7d6ecde2fb2561c6cf45fb84"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link1_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link1_02.mtl",
+      "sha256": "56c07d42834a0aff45be124dc6a5be47b4427fba8622b9fceb3a6e8583c1e8da"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link1_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link1_02.obj",
+      "sha256": "5237cd1aaff673944a25cef65ea4aa3ab9fe43e7f4b1e1c749d6fc126ce961e8"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link2_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link2_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link2_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link2_00.obj",
+      "sha256": "0e0acc486fb35c6676580b28ccf214faef71d0026b85c95586f3ed9dde7e3d06"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link2_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link2_01.mtl",
+      "sha256": "56c07d42834a0aff45be124dc6a5be47b4427fba8622b9fceb3a6e8583c1e8da"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link2_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link2_01.obj",
+      "sha256": "65fad2b72b8143c7bec0a46cf1ca338829f446b526130c756233cb0700c3ad5b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link2_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link2_02.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link2_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link2_02.obj",
+      "sha256": "de76944dc0aa4845457c76d2d3eb66e5baa6ff9fb5e26fac81215a157de9be79"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link3_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link3_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link3_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link3_00.obj",
+      "sha256": "ea98a309b5ff1aef90dd1d6457b9fecd445f98590117308a37c60969fcfcef0c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link3_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link3_01.mtl",
+      "sha256": "56c07d42834a0aff45be124dc6a5be47b4427fba8622b9fceb3a6e8583c1e8da"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link3_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link3_01.obj",
+      "sha256": "36e02051a0d7aaa06ff23b78982bbbdd25182b4fc6160f92c7eee2d8822183c2"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link3_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link3_02.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link3_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link3_02.obj",
+      "sha256": "276a291d4174cf14b8b6edfa1f71ff838de2312ab15953809cd13ad0055f0bd2"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link4_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link4_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link4_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link4_00.obj",
+      "sha256": "0b04d3be1bbabdcab89c44ecce0959fb8105e3e8044a2aed598ccea1d0bda43c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link4_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link4_01.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link4_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link4_01.obj",
+      "sha256": "7d2b126121a794aea3e23ff669871873f70d4d02b4c7b1b99708030ae8a43bc4"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link4_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link4_02.mtl",
+      "sha256": "56c07d42834a0aff45be124dc6a5be47b4427fba8622b9fceb3a6e8583c1e8da"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link4_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link4_02.obj",
+      "sha256": "3f34012ceef299dd09fe9e2f347e02b61005af22e66d7d99587931c835484950"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link5_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link5_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link5_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link5_00.obj",
+      "sha256": "15f53aa7e9ca5fe5e31c379970a901c8e56f1c9eb82e31b743e76e5e36d3e9e6"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link5_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link5_01.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link5_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link5_01.obj",
+      "sha256": "f3300ca1f51f10f9fc949b6ab821bf69e3a43d0ba88048c3ad2051016c05ca0e"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link5_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link5_02.mtl",
+      "sha256": "56c07d42834a0aff45be124dc6a5be47b4427fba8622b9fceb3a6e8583c1e8da"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link5_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link5_02.obj",
+      "sha256": "ae3d53f2a9b7d715d36dfe16905257eea590d0025cf3834e67f7f628cb3874bd"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link6_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link6_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link6_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link6_00.obj",
+      "sha256": "9cde8f6bf6593122030cfcd2744060d41bb6cc249af6ec2320e6deba1ddb2582"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link6_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link6_01.mtl",
+      "sha256": "56c07d42834a0aff45be124dc6a5be47b4427fba8622b9fceb3a6e8583c1e8da"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link6_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link6_01.obj",
+      "sha256": "642a33b2b4440013efe8ed831af43ef560ca7d122fefe0cca42831ee59bac06c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link6_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link6_02.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/arm/link6_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/arm/link6_02.obj",
+      "sha256": "2d475e274c767b2b41772f331234e74e8fb68fff3fdbfe15cd0720e4667aeb9a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/body/body_link0.stl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/body/body_link0.stl",
+      "sha256": "7ab0afa9a26bebbf5c6149894c41d96622caa649555ae7c5f0f2548f86148d91"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/body/body_link0_5.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/body/body_link0_5.obj",
+      "sha256": "af61bd9a223c2eade53074cd4ee4c7dc8a87bee8ca6555eb9fd470e81aefa2f0"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/cell/cell.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/cell/cell.obj",
+      "sha256": "607e1109ada00d3a536cc7cbe27b939f7b57d6b4e69747bfe23bb45216e24782"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/cell/cover.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/cell/cover.obj",
+      "sha256": "a3cf8faf153b13326e0a67d0d8ae8966ed8598593deb5fde028563ab8bfbe148"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/cell/sheet.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/cell/sheet.obj",
+      "sha256": "e7a12b4b5cac629424578286e9331896365ab695be722ba03b7d245f1551dcfd"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_00.obj",
+      "sha256": "9bc93f69d2e693e62c5ba602158ec5a515841e6764f3fc8deea526cf0cf9d9cc"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_01.mtl",
+      "sha256": "56c07d42834a0aff45be124dc6a5be47b4427fba8622b9fceb3a6e8583c1e8da"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_01.obj",
+      "sha256": "eb7c8ba2ac387dd4a68689c519d1cc4fba832931fb0c1de7fee1ae0684613ef2"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_02.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/ee_base_link_02.obj",
+      "sha256": "aa5d1948f08d764d0f585ca93041d6732112c9ec2e6278fa3a9d780abbd91bb6"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_inner_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_inner_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_inner_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_inner_00.obj",
+      "sha256": "af021d37d61971417bc9f57f051d855d61859cd304a2e5a6a12fd05c85dca60b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_inner_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_inner_01.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_inner_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_inner_01.obj",
+      "sha256": "dd6f997d77ca86956cc3798614e877a4efa3bab8e112ead74c5c8381621d546b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_inner_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_inner_02.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_inner_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_inner_02.obj",
+      "sha256": "95fad3566bcc110e3c27c19d599b4f2de950dab830270b076480e7dc9c70b64b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_outer_00.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_outer_00.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_outer_00.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_outer_00.obj",
+      "sha256": "ec237af8498effa0e4c6310a1248d16185473fb5cb82b2f360952ac48b5e285f"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_outer_01.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_outer_01.mtl",
+      "sha256": "4188543f0c56428ee558b3637c62afeb1771359aca61fa7364683d1f81fd0327"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_outer_01.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_outer_01.obj",
+      "sha256": "6fbb535869ec80738eaea0c9cf08d0094375645651b7be618e668ae0fbb0355b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_outer_02.mtl",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_outer_02.mtl",
+      "sha256": "fa9b54d4a136fe362081302b8425d8b4fa2cf8f745cc244e013fb9f7cdb48388"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/assets/visual/gripper/finger_outer_02.obj",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/assets/visual/gripper/finger_outer_02.obj",
+      "sha256": "66a6ce28f644d795d2b687713a2d12178451490054286539a24819471e3905fd"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/articulated_cell_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/articulated_cell_scene.xml",
+      "sha256": "3ed65fff809aef2c1406d5d69378386ce3ab051c5bc82ec73982528a7dc95889"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/bottle_cell_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/bottle_cell_scene.xml",
+      "sha256": "39d9c70ec0cefc88e76108bf4c34565e5e936a0b6cbfe977cf221bc08832668b"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/cell.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/cell.xml",
+      "sha256": "64af269bf30d4da64df773ac0956a1190b6ae090496d87d7a7c124c8912b98fc"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/demo.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/demo.xml",
+      "sha256": "3ea83d91e2fe3c37d84f616098561fbdff3f44fc2562bf80067ca9a86e76bdb9"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/move_puck_cell_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/move_puck_cell_scene.xml",
+      "sha256": "f0f563827c2f80aa8973769fdf7ef729f855f53c03e10083642687392ea121c4"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/peg_socket_cell_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/peg_socket_cell_scene.xml",
+      "sha256": "b41189d72bb213d985b27166aa1c5f8d0a7b3040c1c2d8cf4f793e4e4b35651a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/tool_cell_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/tool_cell_scene.xml",
+      "sha256": "dfcbd569b617ae01989b83d6ca2bbd7c0e01664809e6e3598ee639852110b51a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/cell/valve_cell_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/cell/valve_cell_scene.xml",
+      "sha256": "c2145af280d8f3efa1346acc88c5a6ed96c3eca9a49d0b3e245abe6f15c91ef7"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/openarm_bimanual.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/openarm_bimanual.xml",
+      "sha256": "e23b25277e45683c7e05ac5c3778762ed1a73fdfadf89f4948cdba7d74c05e6c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/articulated_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/articulated_scene.xml",
+      "sha256": "61d1f992c4b37fe01846e8b6bb511fe76ceb6180bd53c6d89a9604207aca7c2d"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/balance_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/balance_scene.xml",
+      "sha256": "c46816d23b66930ade3e908dd1344f54ca8d4e68ae81960d047b0111d728a305"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/bottle_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/bottle_scene.xml",
+      "sha256": "99af878a5d918839b0b4004fd3f6844c7f231da334890baa905a7a2d077b0403"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/catch_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/catch_scene.xml",
+      "sha256": "704aba755e2e964385167de851d4641d12d01f80fdd8ea50106e14fa4a46c104"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/move_puck_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/move_puck_scene.xml",
+      "sha256": "0cb5d59e9d1ab3c6943b9d8fba1ba5f6ad9700727a84e415d35073b0af54dfca"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/openarm_pedestal.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/openarm_pedestal.xml",
+      "sha256": "885a2771f619250854f1ff1c76d12884b661ea6684e9282cfabb4de8acdbf44a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/pedestal.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/pedestal.xml",
+      "sha256": "49e9dfdf0bfec4f818955a4c39e91deb6b2ab2326b13f48421c1c9cd2f12dadb"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/peg_socket_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/peg_socket_scene.xml",
+      "sha256": "02bd35cb249bb32d55ef3008b6565982824116581278290c3b506bd284803dad"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/throw_multi_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/throw_multi_scene.xml",
+      "sha256": "756c12911c32ecbd5fb64d35a63bb98b1e934a41de3cbe2f4de0f274575370b2"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/throw_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/throw_scene.xml",
+      "sha256": "3fe84af557504a06eccc888f6fd89466677de2e98cff1b7a8de64eecfc14359c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/tool_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/tool_scene.xml",
+      "sha256": "a49a050ca0662ad01189cd1585eeed2bd694c39522b919ba08b456850447df84"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/pedestal/valve_scene.xml",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/pedestal/valve_scene.xml",
+      "sha256": "fb29142410305d46b5d7ed67f35ddae1536d85471279c4345e61e19f40b2d6a5"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/v2/scenes.json",
+      "copied_relative_path": "vendor/openarm_mujoco/v2/scenes.json",
+      "sha256": "633ed0bf8a42b23d1723e412e43ab9a5cd792ce6c146ad4025d64e7f5978884a"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/README.md",
+      "copied_relative_path": "vendor/openarm_mujoco/web/README.md",
+      "sha256": "4a7ce1e487ac370fc50e5ada95b4aca696dd9d7b2990cb8c2036ddd3e2cf6e5d"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/browser.spec.mjs",
+      "copied_relative_path": "vendor/openarm_mujoco/web/browser.spec.mjs",
+      "sha256": "f871b0573d264db21cecfbc8c9a90f8e641dec0e33750f9478bc36bfcc886d2c"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/ik.js",
+      "copied_relative_path": "vendor/openarm_mujoco/web/ik.js",
+      "sha256": "28fdd8846f1142b540c55d0b73a349d428f917d3e13a76a9baee313aa7b9f4f7"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/keymap.js",
+      "copied_relative_path": "vendor/openarm_mujoco/web/keymap.js",
+      "sha256": "a86e6dee43bfb39c6ab3f27c160c331b2450336fe8d063bd8118b2979d526b0e"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/load-model.mjs",
+      "copied_relative_path": "vendor/openarm_mujoco/web/load-model.mjs",
+      "sha256": "7514807b5a1b945b2f89bacc8e79abc5d25e1d08c8180242d3e87237213c0eff"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/main.js",
+      "copied_relative_path": "vendor/openarm_mujoco/web/main.js",
+      "sha256": "02239f48831e66098efaa35b118ff71f881a9e6bfaa094800221500aca380ae2"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/model-vfs.js",
+      "copied_relative_path": "vendor/openarm_mujoco/web/model-vfs.js",
+      "sha256": "4f897e2f35960a9ff3b8432d4434924f3f1ec7cd1c7da4459570ab1da9fe8d30"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/package-lock.json",
+      "copied_relative_path": "vendor/openarm_mujoco/web/package-lock.json",
+      "sha256": "e7aabb06034f0272197923ab87c760c5e5b7d0493e04508bcf5135da2c0ba61e"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/package.json",
+      "copied_relative_path": "vendor/openarm_mujoco/web/package.json",
+      "sha256": "e87a040eb77c211b8f5a1c4c416f310b4a64f8cb14048b4350a153bcdfcbb0ee"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/playwright.config.js",
+      "copied_relative_path": "vendor/openarm_mujoco/web/playwright.config.js",
+      "sha256": "809bcca6fd9faa5120523a94f13d45a011927f2c75c111be0384c61802271513"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/serve.mjs",
+      "copied_relative_path": "vendor/openarm_mujoco/web/serve.mjs",
+      "sha256": "cf6cc8f1c5d087b2f7365a00dc349365de2b633b89d1e96c593ed729fd33d032"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/teleop.js",
+      "copied_relative_path": "vendor/openarm_mujoco/web/teleop.js",
+      "sha256": "1d493cedf3cba196625673371c6259efce43e64a5ee542f21464db661d3aecad"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/test-ik.mjs",
+      "copied_relative_path": "vendor/openarm_mujoco/web/test-ik.mjs",
+      "sha256": "fcb54c6e74568cafbf3c5605be203f01f56a142969c737ca7f7ed237ad089a76"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/test-scenes.mjs",
+      "copied_relative_path": "vendor/openarm_mujoco/web/test-scenes.mjs",
+      "sha256": "29f49ae181b2a3d88d42e264a71326db6b56c4f6ffcfb5e61aef0072ec080758"
+    },
+    {
+      "source_absolute_path": "/home/lushilin/openarm_vla_ws/official/openarm_mujoco/web/test-teleop.mjs",
+      "copied_relative_path": "vendor/openarm_mujoco/web/test-teleop.mjs",
+      "sha256": "bb5fb921b8785f8ab3aa5c5e5d965f1fe1af0299c96b6f31cd2be8ab25f2e1cd"
+    }
+  ]
+}

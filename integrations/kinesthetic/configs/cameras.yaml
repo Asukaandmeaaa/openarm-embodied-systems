@@ -1,0 +1,29 @@
+schema_version: 1
+frames:
+  world: world
+  global_camera_link: global_camera_link
+  wrist_right_camera: camera_wrist_right
+global_eye_to_hand:
+  transform_world_to_global_camera_link:
+    translation_m: [0.071134, 0.006854, 0.734108]
+    quaternion_xyzw: [0.022884, 0.526320, -0.017376, 0.849801]
+    status: historical_snapshot
+    source_document: references/openarm_real/md/04_视觉抓取_MTC/OpenArm_D435i_MTC视觉抓取_完整方案与当前进度交接_2026-08-21.md
+  expected_calibration_file:
+    path: ~/.ros2/easy_handeye2/calibrations/openarm_right_global_camera.calib
+    present_in_audited_workspaces: false
+    status: unavailable_during_snapshot
+  currently_verified: false
+  required_checks: [physical_calib_file, runtime_tf, camera_and_base_not_moved]
+wrist_right:
+  role: ACT_RGB_input
+  precise_hand_eye_required_for_rgb_only: false
+  mount_frozen: false
+  mount_pose: {value: null, status: not_measured}
+  focal_parameters: {value: null, status: not_measured}
+  orientation: {value: null, status: not_measured}
+  formal_collection_ready: false
+
+# Formal readiness is gated by docs/ACT_REAL_DATA_COLLECTION_PLAN.md: record
+# actual resolution/FPS/FOV for both streams, freeze the mounts per batch, then
+# choose one exporter training shape without modifying the raw JPEG files.

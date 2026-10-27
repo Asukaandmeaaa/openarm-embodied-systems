@@ -1,0 +1,105 @@
+# Frozen P1 dataflow: browser keyboard -> bimanual IK -> MuJoCo -> recorder.
+# Run from the workspace root with sim/teleop/run_pilot.sh.
+nodes:
+  - id: ui
+    build: pip install -e ../../official/dora-openarm-data-collection/nodes/dora-openarm-data-collection-ui
+    path: dora-openarm-data-collection-ui
+    env:
+      METADATA_FILE: openarm_cube_pick_metadata.yaml
+      DATASET_DIR: ../../data/raw/openarm_cube_pick/pilot
+    inputs:
+      tick: dora/timer/secs/1
+      camera_ceiling: mujoco/camera_ceiling
+      camera_wrist_right: mujoco/camera_wrist_right
+    outputs:
+      - command
+      - arm_command
+
+  - id: collection-tick
+    build: pip install -e ../../official/dora-openarm-data-collection/nodes/dora-openarm-quitter
+    path: dora-openarm-quitter
+    inputs:
+      command: ui/command
+      tick: dora/timer/millis/33
+    outputs:
+      - tick
+
+  - id: keyboard
+    build: pip install -e ../../official/dora-openarm-keyboard
+    path: dora-openarm-keyboard
+    args: "--host 127.0.0.1 --port 8080 --linear-speed 0.04 --angular-speed 0.4"
+    inputs:
+      tick: collection-tick/tick
+      image: mujoco/camera_ceiling
+      control: ui/command
+    outputs:
+      - pose_right
+      - pose_left
+      - command
+      - status
+
+  - id: ik
+    build: pip install -e ../../official/dora-openarm-data-collection/nodes/dora-openarm-kinematics
+    path: dora-openarm-ik
+    args: "--mode bimanual --max-iters 10 --dt 0.1 --damping 0.1 --posture-cost 0.01 --lm-damping 0.01"
+    inputs:
+      target_right: keyboard/pose_right
+      target_left: keyboard/pose_left
+      position:
+        source: state-join/state
+        queue_size: 1
+    outputs:
+      - position_left
+      - position_right
+      - status
+
+  - id: state-join
+    build: pip install -e ../../sim/teleop/state_join
+    path: openarm-state-join
+    inputs:
+      arm_right: mujoco/arm_right_observation
+      arm_left: mujoco/arm_left_observation
+    outputs:
+      - state
+
+  - id: mujoco
+    build: pip install -e ../../official/dora-openarm-evaluation/nodes/dora-openarm-mujoco
+    path: dora-openarm-mujoco
+    args: >-
+      --scene demo --keyframe home --enable-collision --ctrl --viewer 30 --render
+      --cameras camera_ceiling,camera_wrist_right
+      --randomize-objects 0.02 --randomize-yaw-deg 15 --seed 20260902
+    env:
+      MUJOCO_GL: glfw
+    inputs:
+      command: ui/command
+      position_right: ik/position_right
+      position_left: ik/position_left
+      pose_right: keyboard/pose_right
+      pose_left: keyboard/pose_left
+    outputs:
+      - status
+      - arm_right_observation
+      - arm_left_observation
+      - camera_ceiling
+      - camera_wrist_right
+      - episode_metadata
+
+  - id: recorder
+    build: pip install -e ../../official/dora-openarm-evaluation/nodes/dora-openarm-dataset-recorder
+    path: dora-openarm-dataset-recorder
+    args: "--record-hz 30"
+    env:
+      METADATA_FILE: openarm_cube_pick_metadata.yaml
+      DIRECTORY: ../../data/raw/openarm_cube_pick
+      NAME: pilot
+      OPERATION_TYPE: teleop
+    inputs:
+      command: ui/command
+      episode_metadata: mujoco/episode_metadata
+      arm_right_action: ik/position_right
+      arm_right_observation: mujoco/arm_right_observation
+      arm_left_action: ik/position_left
+      arm_left_observation: mujoco/arm_left_observation
+      camera_ceiling: mujoco/camera_ceiling
+      camera_wrist_right: mujoco/camera_wrist_right

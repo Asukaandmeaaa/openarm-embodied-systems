@@ -1,0 +1,71 @@
+task_prompt: Put the blue cube inside the black box, then return both arms home.
+physics_hz: 1000
+record_hz: 30
+episode_timeout_s: 45.0
+stabilize_s: 0.8
+cube_xy_center_m: [0.33, -0.28]
+cube_xy_half_range_m: [0.05, 0.04]
+fixed_place_xy_m: [0.40, 0.0]
+success_place_xy_m: [0.40, 0.0]
+transport_waypoint_s: 0.10
+place_min_distance_m: 0.0
+place_tolerance_m: 0.035
+place_axis_tolerance: true
+place_height_tolerance_m: 0.025
+box_cube_center_z_m: 1.035
+box_cube_center_z_tolerance_m: 0.015
+release_above_box: false
+full_candidate_preflight: true
+placement_stable_s: 0.5
+home_stable_s: 1.0
+static_joint_tolerance_rad: 0.005
+transport_step_m: 0.01
+transport_clearance_z_m: 1.16
+transport_midpoint_fraction: 0.5
+retreat_waypoint_s: 0.03
+stream_waypoint_s: 0.025
+stream_settle_s: 0.55
+return_settle_s: 1.0
+approach_waypoint_s: 0.055
+approach_settle_s: 1.20
+close_timeout_s: 1.50
+release_s: 1.2
+# The 7 cm pose let the dynamically tracked joint-space transit brush the
+# rear-edge seed 20270001 before APPROACH.  Nine centimetres clears the cube
+# while retaining IK reachability across the fixed validation seeds.
+pregrasp_offset_m: 0.09
+max_pregrasp_cube_displacement_m: 0.005
+approach_step_m: 0.005
+lift_m: 0.065
+grasp_center_z_offset_m: 0.035
+aperture_preload_m: 0.002
+object_width_m: 0.040
+finger_contact_radius_m: 0.070
+reference_width_m: 0.040
+reference_right_gripper_rad: -0.10
+pregrasp_right_gripper_rad: -0.55
+approach_right_gripper_rad: -0.55
+left_gripper_open_rad: 0.55
+hold_height_m: 0.05
+hold_s: 2.0
+tcp_distance_m: 0.075
+planning_timeout_s: 20.0
+ik_attempts: 8
+ik_attempt_timeout_s: 1.0
+ik_reference_seed: [-0.84, 2.79, -0.48, 2.12, -0.44, -0.09, -0.17]
+ik_iterations: 140
+ik_position_tolerance_m: 0.0015
+ik_orientation_tolerance_rad: 0.02
+joint_margin_rad: 0.020
+transit_joint_step_rad: 0.015
+max_ik_branch_jump_rad: 0.35
+verify_contact_s: 0.20
+max_relative_drift_m: 0.025
+post_success_tail_s: 3.0
+guard:
+  watchdog_timeout_s: 0.15
+  limit_policy: clip
+  target_response_time_s: 0.25
+  max_velocity: [0.65, 0.65, 0.65, 0.65, 0.65, 0.50, 0.50, 0.25, 0.65, 0.65, 0.65, 0.65, 0.65, 0.50, 0.50, 0.25]
+  max_acceleration: [2.5, 2.5, 2.5, 2.5, 2.5, 2.0, 2.0, 0.8, 2.5, 2.5, 2.5, 2.5, 2.5, 2.0, 2.0, 0.8]
+  max_step: [0.003, 0.003, 0.003, 0.003, 0.003, 0.0025, 0.0025, 0.0004, 0.003, 0.003, 0.003, 0.003, 0.003, 0.0025, 0.0025, 0.0004]

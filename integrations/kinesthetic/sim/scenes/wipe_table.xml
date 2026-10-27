@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Isolated visualization scene for replaying a measured wiping trajectory.
+     The table top is placed from the measured trajectory's OpenArm v2 FK; the
+     trajectory itself is never shifted or replanned. -->
+<mujoco model="openarm_wipe_table">
+  <compiler angle="radian"/>
+  <option timestep="0.001" cone="elliptic" impratio="10"/>
+  <statistic center="0.30 -0.08 0.50" extent="1.15" meansize="0.05"/>
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+    <headlight diffuse="0.75 0.75 0.75" ambient="0.35 0.35 0.35" specular="0.05 0.05 0.05"/>
+    <quality shadowsize="4096"/>
+    <map znear="0.01" zfar="5"/>
+  </visual>
+  <asset>
+    <model name="openarm_pedestal_component"
+           file="../../vendor/openarm_mujoco/v2/pedestal/openarm_pedestal.xml"/>
+    <texture name="floor_grid" type="2d" builtin="checker"
+             rgb1="0.18 0.20 0.23" rgb2="0.25 0.27 0.30"
+             width="512" height="512"/>
+    <material name="floor_material" texture="floor_grid" texrepeat="4 4" texuniform="true"/>
+    <material name="table_material" rgba="0.94 0.94 0.92 1" roughness="0.9"/>
+    <material name="cloth_purple" rgba="0.50 0.06 0.70 1" roughness="1"/>
+    <material name="cloth_purple_top" rgba="0.64 0.16 0.84 1" roughness="1"/>
+  </asset>
+  <worldbody>
+    <light pos="0.25 -0.25 1.55" dir="0.05 0.05 -1" directional="true" castshadow="true"/>
+    <light pos="0.75 -0.85 1.05" dir="-0.5 0.6 -0.5" diffuse="0.45 0.45 0.45"/>
+    <geom name="floor" type="plane" size="2 2 0.05" material="floor_material"
+          contype="0" conaffinity="0"/>
+    <attach model="openarm_pedestal_component" prefix=""/>
+
+    <!-- H2 physical table contract (not the inflated planning guard):
+         forward x lateral = 0.40 x 0.60 m, registered center XY =
+         [0.382, 0.016] m, and measured top z = 0.270 m. -->
+    <body name="wipe_table" pos="0.382 0.016 0.250">
+      <geom name="wipe_table_top" type="box" size="0.20 0.30 0.02"
+            material="table_material" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- A stable visual proxy, deliberately not a soft-body simulation.  The
+         replay drags it only while the gripper head is actually sunk into it,
+         which is decided by real collision against the slab below, and leaves
+         it where it was released.  It starts where the recorded motion first
+         presses down, i.e. where the operator had laid it out. -->
+    <body name="purple_wipe_cloth" mocap="true" pos="0.3013 -0.1214 0.284">
+      <!-- 200 x 140 x 28 mm padded cloth proxy.  The slab carries the collision
+           so the gripper can be felt reaching into the cloth; the raised top
+           panel and seams are decoration only and lift the silhouette ~0.4 mm
+           above the slab that CLOTH_TOP_Z describes. -->
+      <geom name="purple_wipe_cloth_visual" type="box" size="0.100 0.070 0.014"
+            material="cloth_purple" contype="1" conaffinity="1"/>
+      <geom name="purple_wipe_cloth_top" type="box" pos="0 0 0.0141"
+            size="0.094 0.064 0.0003" material="cloth_purple_top"
+            contype="0" conaffinity="0"/>
+      <geom name="purple_wipe_cloth_seam_x1" type="box" pos="0 0.063 0.0141"
+            size="0.092 0.0012 0.0003" rgba="0.82 0.48 0.94 1"
+            contype="0" conaffinity="0"/>
+      <geom name="purple_wipe_cloth_seam_x2" type="box" pos="0 -0.063 0.0141"
+            size="0.092 0.0012 0.0003" rgba="0.82 0.48 0.94 1"
+            contype="0" conaffinity="0"/>
+      <geom name="purple_wipe_cloth_seam_y1" type="box" pos="0.093 0 0.0141"
+            size="0.0012 0.062 0.0003" rgba="0.82 0.48 0.94 1"
+            contype="0" conaffinity="0"/>
+      <geom name="purple_wipe_cloth_seam_y2" type="box" pos="-0.093 0 0.0141"
+            size="0.0012 0.062 0.0003" rgba="0.82 0.48 0.94 1"
+            contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- Historical real eye-to-hand calibration from configs/cameras.yaml.
+         The source is world -> global_camera_link (ROS x-forward/y-left/z-up);
+         this wxyz quaternion converts that link pose to MuJoCo camera axes. -->
+    <camera name="camera_ceiling" pos="0.071134 0.006854 0.734108"
+            quat="0.66793047 0.16449449 -0.15898649 -0.70819047"
+            fovy="66" resolution="960 600"/>
+  </worldbody>
+  <keyframe>
+    <key name="home"
+      qpos="0 0 0 1.570796 0 0 0 0 0
+            0 0 0 1.570796 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>

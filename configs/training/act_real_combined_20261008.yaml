@@ -1,0 +1,36 @@
+# First expanded-data baseline: train from scratch on the original dataset
+# plus the reviewed 20261008 train/validation episodes. The merged dataset is
+# ordered with training episodes first and validation episodes last, so
+# eval_split=0.1 holds out the final four validation episodes when all 23
+# latest episodes are approved (36 combined episodes total).
+dataset:
+  repo_id: local/openarm_real_combined_20261008
+  root: ./data/lerobot/openarm_real_combined_20261008
+  eval_split: 0.1
+  image_transforms:
+    enable: false
+policy:
+  type: act
+  device: cuda
+  push_to_hub: false
+  chunk_size: 50
+  n_action_steps: 10
+  normalization_mapping:
+    VISUAL: MEAN_STD
+    STATE: IDENTITY
+    ACTION: MEAN_STD
+output_dir: ./outputs/act_real_combined_20000_20261008
+job_name: act_real_combined_20000_20261008
+batch_size: 8
+steps: 20000
+num_workers: 4
+prefetch_factor: 2
+seed: 1000
+cudnn_deterministic: true
+log_freq: 50
+eval_steps: 500
+env_eval_freq: 0
+save_checkpoint: true
+save_freq: 1000
+wandb:
+  enable: false
