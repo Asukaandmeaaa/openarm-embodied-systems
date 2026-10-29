@@ -1,0 +1,4 @@
+# Optional ACT/CUDA tools; independent from the locked CPU collection profile.
+# Select a platform-appropriate torch/torchvision build before installing.
+-r dataset.txt
+opencv-python-headless==4.12.0.88

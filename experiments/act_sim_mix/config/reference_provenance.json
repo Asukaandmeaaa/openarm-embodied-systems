@@ -1,0 +1,13 @@
+{
+  "upstream_source": "official/dora-openarm-evaluation/nodes/dora-openarm-actions-executor/src/dora_openarm_actions_executor/main.py",
+  "upstream_sha256": "79d1a61a743bd4195efa651c173fbb4cde848b68713315de9fd9b636e339f7e1",
+  "classes_copied_verbatim": [
+    "HermiteUpsampler",
+    "BiquadLowpass"
+  ],
+  "prepare_chunk_source": "development snapshot: deployment/chunk_execution.py (not required at runtime)",
+  "prepare_chunk_sha256": "a48f9107a9a66f8c13401b5e9657b4dd8a5814352923e2f3ff3e60c04fd2a09e",
+  "changes": "Only removed local import; same math, indexing, interpolation and filtering.",
+  "reference_copy_sha256": "ff8fe57416eb826e3f0d992e89e0c42b6b0a1639e64b967ac06bf2f730442e86",
+  "release_note": "Historical port provenance; source hashes record the development snapshot. This source release uses repository-relative assets and has no dependency on the original workspace."
+}

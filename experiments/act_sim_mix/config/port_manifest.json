@@ -1,0 +1,18 @@
+{
+  "created": "2026-10-28",
+  "note": "Read-only source audit. These files were read to port expert/mapping code; runtime imports only this workspace.",
+  "source_workspace": "historical development snapshot",
+  "sources": {
+    "scripts/act_fixed_scene_pilot.py": "23416749c6a837a403560a1310fce8e1247109e5ed0fa64a01ddac2514510833",
+    "openarm_cube_pick_expert/expert.py": "d3f8af336aadab1e930054e772e80b9f8d06fcb026f002981fb05eeef1d4d145",
+    "openarm_cube_pick_expert/geometry.py": "61abe95d913087a2a5556ab2d7a3ec60316db5774a75d5084d784945d9cc91c7",
+    "openarm_cube_pick_expert/config.py": "f9ea5b4a33a8396131083e86f80c00de24c43827e8afb0210bef67997afc2ca4",
+    "official/openarm_mujoco/src/openarm_mujoco/v2/joint_resolver.py": "52307e4f646ee577d826a4bce3081d88d4595f097d2eec5d5b605a5bf50bea75",
+    "configs/collection/openarm_cube_into_black_box_expert_params.yaml": "d422148688a3eacdc0925dd27eae0c59347622b4995cbe9ffd48a2ba3a916928",
+    "sim/scenes/act_fixed_20261015/scene.xml": "747263d284898c5de0ea74b3fb611ffbcf5389765c9c9ef72c0dbd23be512fe2"
+  },
+  "current_workspace_scene": "sim/scenes/act_fixed_20261015/scene.xml",
+  "current_workspace_scene_sha256": "8badc6f6528a69245e2a156fac10e3d729c76e9f4c49f80d58962885ecf787a9",
+  "release_note": "Historical port provenance; source hashes record the development snapshot. This source release uses repository-relative assets and has no dependency on the original workspace.",
+  "release_scene": "experiments/act_sim_mix/assets/scene.xml"
+}

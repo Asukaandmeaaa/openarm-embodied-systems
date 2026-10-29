@@ -44,6 +44,7 @@ The root `uv.lock` pins the CPU baseline. Optional LeRobot/ACT and camera profil
 | `scripts/control_ownership/` | Single-writer control authority and DDS policy tooling |
 | `scripts/home_replay/`, `scripts/expert_replay/` | Recorded motion validation and replay integration |
 | `sim/`, `configs/`, `tests/` | Simulation scenes, experiment settings and regression tests |
+| [`experiments/act_sim_mix/`](experiments/act_sim_mix/README.md) | Independent MuJoCo collection, five recovery types, grouped splits, compact JPEG conversion, ACT 100/50 experiments and closed-loop diagnostics |
 | `official/` | Upstream source snapshots, including local integration modifications |
 
 The existing directory layout is preserved to retain relative imports and resource references. A separate teaching source snapshot is included because the original workspace depended on it outside this repository.
@@ -53,6 +54,12 @@ The existing directory layout is preserved to retain relative imports and resour
 The commands above define the validated CPU baseline. See [NOTICE](NOTICE.md) for upstream attribution.
 
 Historical experiment notes, raw demonstrations, trained weights, runtime reports and control credentials are not distributed in this source release. Prior experiment metrics are not fresh-clone benchmarks.
+
+The [ACT simulation-mix guide](experiments/act_sim_mix/README.md) adds a locked CPU
+collection/test profile (`make test-sim-mix`, `make smoke-sim-mix`). Its ACT
+training and policy evaluation commands require optional LeRobot/PyTorch, a
+compatible checkpoint, and locally collected data. The experiment is a research
+workflow; it does not establish successful sim-to-real transfer.
 
 ## Real hardware
 

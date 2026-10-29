@@ -1,0 +1,59 @@
+{
+  "schema": "act_deployment_command_envelope_v1",
+  "control_mode": "collection_feedforward",
+  "applied_stage": "after official Hermite and lowpass, before actuator command",
+  "right_joint_names": [
+    "openarm_right_joint1",
+    "openarm_right_joint2",
+    "openarm_right_joint3",
+    "openarm_right_joint4",
+    "openarm_right_joint5",
+    "openarm_right_joint6",
+    "openarm_right_joint7",
+    "openarm_right_finger_joint1"
+  ],
+  "right_position_limits_rad": [
+    [
+      -1.3963,
+      3.4907
+    ],
+    [
+      -0.17453,
+      3.3161
+    ],
+    [
+      -1.5708,
+      1.5708
+    ],
+    [
+      -0.02,
+      2.4435
+    ],
+    [
+      -1.5708,
+      1.5708
+    ],
+    [
+      -0.7854,
+      0.7854
+    ],
+    [
+      -1.5708,
+      1.5708
+    ],
+    [
+      -0.7854,
+      0.0
+    ]
+  ],
+  "position_saturation": "np.clip at URDF endpoints; no new gains, dynamics, blend, or compensation",
+  "source_sha256": {
+    "historical-development-snapshot/assets/hardware.yaml": "eaa372dfd5d8eec60c6c5c561e71b24a214b46b436c125f981dd40c220154fcd",
+    "historical-development-snapshot/assets/collection_robot.urdf": "3d019da6d7cc7365114cb8cbc526ab1803d2d5f91be3fd4dd5063e65bd99fb71",
+    "historical-development-snapshot/deployment/feedforward.py": "df1c37a7f71c8ee239ea3db7974404609fba1f71fc9aa16f4aebcd7562c68197"
+  },
+  "limitations": [
+    "Position saturation only; simulated ideal gravity and actuator dynamics remain approximate.",
+    "Teacher gripper [-0.45,-0.02] and planner wrist margins are not the deployed hard endpoint limits."
+  ]
+}

@@ -1,0 +1,62 @@
+# Ported expert motion parameters for the fixed 2026-10-15 scene.
+# Values follow configs/collection/openarm_cube_into_black_box_expert_params.yaml
+# in the source workspace, with the gripper range changed to the current real
+# ACT data range and image-independent motion retained.
+record_hz: 30
+physics_hz: 1000
+planning_timeout_s: 20.0
+ik_attempts: 8
+ik_attempt_timeout_s: 1.0
+ik_reference_seed: [-0.84, 2.79, -0.48, 2.12, -0.44, -0.09, -0.17]
+ik_iterations: 140
+ik_position_tolerance_m: 0.0015
+ik_orientation_tolerance_rad: 0.02
+joint_margin_rad: 0.020
+transit_joint_step_rad: 0.015
+max_ik_branch_jump_rad: 0.35
+pregrasp_offset_m: 0.09
+approach_step_m: 0.005
+lift_m: 0.065
+grasp_center_z_offset_m: 0.035
+object_width_m: 0.040
+finger_contact_radius_m: 0.070
+reference_width_m: 0.040
+hold_height_m: 0.05
+hold_s: 2.0
+max_relative_drift_m: 0.025
+placement_stable_s: 0.5
+home_stable_s: 1.0
+max_home_error_rad: 0.03
+post_success_tail_s: 3.0
+
+# Real ACT data: open = -0.45 rad, preload/hold = -0.085 rad, closed return = -0.02.
+# The expert opens fully, closes to the observed carry target, and uses the
+# parked/closed value for the left gripper.
+pregrasp_right_gripper_rad: -0.45
+approach_right_gripper_rad: -0.45
+closed_right_gripper_rad: -0.085
+return_closed_right_gripper_rad: -0.02
+left_gripper_hold_rad: -0.02
+gripper_command_range_rad: [-0.45, -0.02]
+
+# Command envelope from sim/scenes/act_fixed_20261015/control_contract.json.
+max_velocity_rad_s: 0.25
+max_acceleration_rad_s2: 0.25
+position_limits_rad:
+  - [-1.3963, 3.4907]
+  - [-0.17453, 3.3161]
+  - [-1.5708, 1.5708]
+  - [-0.02, 2.4435]
+  - [-1.5708, 1.5708]
+  - [-0.7654, 0.7654]
+  - [-1.5508, 1.5508]
+  - [-0.7854, 0.0]
+
+# Transfer pose and randomisation defaults.
+transport_roll_y_deg: 45.0
+transport_yaw_z_deg: 45.0
+release_above_box_m: 0.08
+cube_xy_jitter_m: 0.01
+cube_yaw_jitter_deg: 30.0
+table_xy_jitter_m: 0.02
+table_yaw_jitter_deg: 5.0

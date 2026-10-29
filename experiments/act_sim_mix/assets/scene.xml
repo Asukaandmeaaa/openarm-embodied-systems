@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="openarm_fixed_scene_20261015_review">
+  <!--SIMULATION GEOMETRY PREVIEW. See measurements.json for assumptions. Not a hardware motion configuration.-->
+  <compiler angle="radian" />
+  <option timestep="0.001" cone="elliptic" impratio="10" />
+  <statistic center="0.23 0 0.36" extent="1.15" />
+  <visual>
+    <global offwidth="1280" offheight="960" azimuth="145" elevation="-25" />
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.35 0.35 0.35" specular="0 0 0" />
+  </visual>
+  <asset>
+    <model name="robot" file="../../../official/openarm_mujoco/v2/pedestal/openarm_pedestal.xml" />
+  </asset>
+  <worldbody>
+    <light pos="0.4 -0.4 1.6" dir="0 0 -1" directional="true" />
+    <geom name="base_datum_surface" type="plane" size="1.5 1.5 .01" pos="0 0 -0.001" rgba=".19 .28 .25 1" />
+    <attach model="robot" prefix="" />
+    <body name="table" pos="0.385 0 0.261">
+      <geom name="table_top" type="box" size="0.175 0.3 0.009" rgba=".88 .87 .82 1" friction="1 .005 .0001" />
+      <geom name="table_top_cross" type="box" size="0.2 0.275 0.009" rgba=".88 .87 .82 1" friction="1 .005 .0001" />
+      <geom name="table_corner_0" type="cylinder" pos="0.175 0.275 0" size="0.025 0.009" rgba=".88 .87 .82 1" friction="1 .005 .0001" />
+      <geom name="table_corner_1" type="cylinder" pos="0.175 -0.275 0" size="0.025 0.009" rgba=".88 .87 .82 1" friction="1 .005 .0001" />
+      <geom name="table_corner_2" type="cylinder" pos="-0.175 0.275 0" size="0.025 0.009" rgba=".88 .87 .82 1" friction="1 .005 .0001" />
+      <geom name="table_corner_3" type="cylinder" pos="-0.175 -0.275 0" size="0.025 0.009" rgba=".88 .87 .82 1" friction="1 .005 .0001" />
+    </body>
+    <body name="orange_cube" pos="0.332 -0.196 0.29" euler="0 0 0">
+      <freejoint name="cube_free" />
+      <geom name="blue_cube_geom" type="box" size="0.02 0.02 0.02" rgba=".02 .18 .9 1" mass="0.05" friction="1 0.5 0.01" />
+    </body>
+    <body name="black_frame" pos="0.385 0.01 0.27">
+      <geom type="box" pos="0 0 0.005" size="0.07 0.07 0.005" rgba="0.1 0.1 0.1 1" contype="1" conaffinity="1" name="black_box_floor" />
+      <geom type="box" pos="0.065 0 0.02" size="0.005 0.07 0.02" rgba="0.1 0.1 0.1 1" contype="1" conaffinity="1" name="black_box_x_plus" />
+      <geom type="box" pos="-0.065 0 0.02" size="0.005 0.07 0.02" rgba="0.1 0.1 0.1 1" contype="1" conaffinity="1" name="black_box_x_minus" />
+      <geom type="box" pos="0 0.065 0.02" size="0.06 0.005 0.02" rgba="0.1 0.1 0.1 1" contype="1" conaffinity="1" name="black_box_y_plus" />
+      <geom type="box" pos="0 -0.065 0.02" size="0.06 0.005 0.02" rgba="0.1 0.1 0.1 1" contype="1" conaffinity="1" name="black_box_y_minus" />
+    </body>
+    <camera name="preview_top" pos="0.385 0 1.65" xyaxes="0 1 -0 -1 0 0" fovy="35" />
+    <camera name="preview_overview" pos="1.25 -1.1 1.12" xyaxes="0.7233555441 0.6904757467 -0 -0.3151263264 0.330132342 0.8897797678" fovy="43" />
+    <camera name="preview_side" pos="0.28 -1.65 0.65" xyaxes="1 0 -0 0 0.1731042527 0.9849035068" fovy="36" />
+    <!--Global calibrated link pose; RGB optical offset/intrinsics still pending. fovy=42 is a preview assumption.-->
+    <camera name="camera_ceiling" pos="0.07172405647 0.01642801978 0.7340815277" xyaxes="-0.04869060061 -0.9987501051 -0.01128950372 0.8390968106 -0.04703320472 0.5419450342" fovy="42" />
+  </worldbody>
+  <custom>
+    <text name="scene_status" data="layout_accepted_approximate" />
+  </custom>
+  <keyframe>
+    <key name="mechanical_zero_preview" qpos="0 0 0 0 0 0 0 0.35 0.35 0 0 0 0 0 0 0 -0.35 -0.35 0.332 -0.196 0.29 1 0 0 0" ctrl="0 0 0 0 0 0 0 0.35 0 0 0 0 0 0 0 -0.35" />
+    <key name="physical_home_reference" qpos="0 0 0 0 0 0 0 0.35 0.35 -0.145026267 -0.0151076284 -0.0060887956 1.375197724 -0.003142843 -0.1984151663 -0.1222898194 -0.35 -0.35 0.332 -0.196 0.29 1 0 0 0" ctrl="0 0 0 0 0 0 0 0.35 -0.145026267 -0.0151076284 -0.0060887956 1.375197724 -0.003142843 -0.1984151663 -0.1222898194 -0.35" />
+  </keyframe>
+</mujoco>

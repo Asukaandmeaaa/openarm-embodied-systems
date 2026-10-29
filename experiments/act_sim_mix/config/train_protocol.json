@@ -1,0 +1,32 @@
+{
+  "initial_model": "models/act100_init/pretrained_model",
+  "converted_dataset": "outputs/act_sim_mix/converted",
+  "additional_steps": 30000,
+  "eval_every": 5000,
+  "batch_size": 8,
+  "seed": 20261028,
+  "lr": 1e-05,
+  "weight_decay": 0.0001,
+  "grad_clip": 10.0,
+  "loss": "native ACT valid-element L1 + 10 KL",
+  "dropout": 0.1,
+  "chunk_size": 100,
+  "n_action_steps": 50,
+  "domain_probabilities": {
+    "real": 0.5,
+    "sim_normal": 0.25,
+    "sim_recovery": 0.25
+  },
+  "within_domain_sampling": "uniform frame index with replacement",
+  "scheduler": null,
+  "augmentation": false,
+  "validation": "Existing real validation episodes plus held-out simulation validation; no gradients or fitted statistics",
+  "selection": "review adjacent checkpoints and physical-input regression; no automatic best-loss or final-checkpoint selection",
+  "deployment": "no automatic deployment; simulation success is not physical success",
+  "expected_counts": {
+    "sim_train_normal_episodes": 80,
+    "sim_train_recovery_episodes": 40,
+    "sim_validation_episodes": 15,
+    "sim_test_episodes": 15
+  }
+}

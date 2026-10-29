@@ -20,3 +20,7 @@ jobs:
         run: make test
       - name: Headless physics smoke
         run: make smoke
+      - name: Simulation collection and recovery contracts
+        run: make test-sim-mix
+      - name: Independent simulation expert smoke
+        run: make smoke-sim-mix

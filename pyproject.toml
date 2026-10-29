@@ -24,7 +24,7 @@ dependencies = [
 # Source-layout research modules need the checkout for configs and MJCF assets.
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["openarm_cube_pick_expert*", "openarm_cube_into_black_box_expert*", "scripts*", "sim*", "vision_grasp_baseline*"]
+include = ["openarm_cube_pick_expert*", "openarm_cube_into_black_box_expert*", "scripts*", "sim*", "vision_grasp_baseline*", "experiments*"]
 exclude = ["*.tests*", "*.runs*", "*.collections*", "*.recovery_source*"]
 namespaces = true
 
@@ -35,3 +35,6 @@ addopts = "-ra"
 
 [tool.uv]
 package = false
+
+[dependency-groups]
+sim-mix = ["opencv-python-headless==4.12.0.88"]

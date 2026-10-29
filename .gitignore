@@ -73,3 +73,14 @@ MUJOCO_LOG.TXT
 # Local workspace documentation is not part of the published source release.
 /docs/
 /MD/
+
+# ACT simulation tools are source; their generated data/weights stay local.
+/experiments/act_sim_mix/artifacts/
+/experiments/act_sim_mix/runs/
+/experiments/act_sim_mix/eval/
+/experiments/act_sim_mix/logs/
+/experiments/act_sim_mix/validation/
+*.safetensors
+*.pt
+*.pth
+*.parquet
